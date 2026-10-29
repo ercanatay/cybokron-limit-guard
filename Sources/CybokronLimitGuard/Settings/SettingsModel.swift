@@ -57,6 +57,7 @@ final class SettingsModel: ObservableObject {
         do {
             try store.save(updated)
             saveFailed = false
+            NotificationCenter.default.post(name: .limitGuardSettingsChanged, object: nil)
         } catch {
             saveFailed = true
         }

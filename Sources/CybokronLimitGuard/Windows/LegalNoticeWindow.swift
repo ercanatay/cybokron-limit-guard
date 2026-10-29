@@ -33,17 +33,20 @@ enum LegalNoticeWindow {
 
     /// At launch: when the current notice version hasn't been accepted, ask; "I understand" stores the
     /// version and the date, "Quit" ends the app.
-    static func runAtLaunch(store: JSONStore<Settings>) {
+    /// Returns false when the owner chose "Quit" (the app is then terminating).
+    @discardableResult
+    static func runAtLaunch(store: JSONStore<Settings>) -> Bool {
         let loaded = Result { try store.load() }
         var settings = (try? loaded.get()) ?? Settings()
-        guard Notice.mustShow(settings: settings) else { return }
+        guard Notice.mustShow(settings: settings) else { return true }
         guard show(mode: .acceptance) else {
             NSApp.terminate(nil)
-            return
+            return false
         }
         settings.noticeAcceptedVersion = Notice.currentVersion
         settings.noticeAcceptedAt = Date()
         // A settings file written by a newer app is left alone.
         if case .success = loaded { try? store.save(settings) }
+        return true
     }
 }
