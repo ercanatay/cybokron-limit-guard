@@ -215,36 +215,42 @@ private struct PopoverFooter: View {
                     PlanLabel(engine: engine, palette: palette)
                 }
             }
-            HStack(spacing: 10) {
-                footerButton(L10n.Activity.menuItem) { model.actions.showActivity() }
-                footerButton(L10n.Chart.menuItem) { model.actions.showChart() }
-                footerButton(L10n.Settings.menuItem) { model.actions.showSettings() }
-            }
-            HStack(spacing: 10) {
-                footerButton(L10n.Common.about(L10n.App.name)) { model.actions.showAbout() }
-                Spacer(minLength: 4)
+            HStack(spacing: 6) {
+                footerButton(L10n.Popover.Footer.activity, help: L10n.Activity.menuItem) { model.actions.showActivity() }
+                footerButton(L10n.Popover.Footer.chart, help: L10n.Chart.menuItem) { model.actions.showChart() }
+                footerButton(L10n.Popover.Footer.settings, help: L10n.Settings.menuItem) { model.actions.showSettings() }
+                footerButton(L10n.Popover.Footer.about, help: L10n.Common.about(L10n.App.name)) { model.actions.showAbout() }
                 Button {
                     NSApp.terminate(nil)
                 } label: {
-                    Label(L10n.Menu.quit(L10n.App.name), systemImage: "power")
+                    Label(L10n.Popover.Footer.quit, systemImage: "power")
+                        .lineLimit(1)
+                        .fixedSize()
+                        .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.borderless)
+                .buttonStyle(.bordered)
                 .controlSize(.small)
-                .foregroundStyle(.red)
+                .tint(.red)
+                .help(L10n.Menu.quit(L10n.App.name))
             }
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
     }
 
-    private func footerButton(_ title: String, action: @escaping () -> Void) -> some View {
-        Button(title) {
+    private func footerButton(_ title: String, help: String, action: @escaping () -> Void) -> some View {
+        Button {
             closePopover()
             action()
+        } label: {
+            Text(title)
+                .lineLimit(1)
+                .fixedSize()
+                .frame(maxWidth: .infinity)
         }
-        .buttonStyle(.borderless)
+        .buttonStyle(.bordered)
         .controlSize(.small)
-        .foregroundStyle(palette.primaryText)
+        .help(help)
     }
 }
 

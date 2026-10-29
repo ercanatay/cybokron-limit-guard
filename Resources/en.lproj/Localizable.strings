@@ -462,5 +462,10 @@
 "popover.footer.resume" = "Resume";
 "popover.footer.pauseHelp" = "Pause automatic continuing and spending";
 "popover.footer.plan" = "Plan: %@";
+"popover.footer.activity" = "Activity";
+"popover.footer.chart" = "Chart";
+"popover.footer.settings" = "Settings";
+"popover.footer.about" = "About";
+"popover.footer.quit" = "Quit";
 "popover.status.notSignedIn" = "Codex isn't signed in — run `codex login` in Terminal";
 "popover.resets.noLongerAvailable" = "This reset is no longer available";

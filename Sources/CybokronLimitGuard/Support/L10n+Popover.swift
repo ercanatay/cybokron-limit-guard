@@ -139,6 +139,11 @@ extension L10n {
             static var resume: String { tr("popover.footer.resume", "Resume") }
             static var pauseHelp: String { tr("popover.footer.pauseHelp", "Pause automatic continuing and spending") }
             static func plan(_ name: String) -> String { tr("popover.footer.plan", "Plan: %@", name) }
+            static var activity: String { tr("popover.footer.activity", "Activity") }
+            static var chart: String { tr("popover.footer.chart", "Chart") }
+            static var settings: String { tr("popover.footer.settings", "Settings") }
+            static var about: String { tr("popover.footer.about", "About") }
+            static var quit: String { tr("popover.footer.quit", "Quit") }
         }
     }
 }
