@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Questions & help
+    url: https://github.com/ercanatay/cybokron-limit-guard/discussions/categories/q-a
+    about: Ask how to install, build or use the app.
+  - name: Ideas
+    url: https://github.com/ercanatay/cybokron-limit-guard/discussions/categories/ideas
+    about: Share and discuss feature ideas before opening a request.
+  - name: Report a security vulnerability
+    url: https://github.com/ercanatay/cybokron-limit-guard/security/advisories/new
+    about: Please report security issues privately, not as public issues.
