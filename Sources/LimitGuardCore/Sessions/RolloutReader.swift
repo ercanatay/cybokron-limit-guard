@@ -61,6 +61,43 @@ public struct RolloutReader {
         events.append(.userMessage(text: text, at: at, clientMessageId: clientId))
     }
 
+    /// The last `count` real user messages (see `LanguageSample`), oldest first, read backwards from
+    /// the end of the file. Long turns push the owner's messages megabytes before the end (up to
+    /// ~15 MB for the third-last one in real rollouts), far outside `tailEvents`' window; this stops
+    /// after `maxBytes` and decodes only lines that mention a user role.
+    public func recentUserMessages(of url: URL, count: Int = 3, maxBytes: Int = 32 * 1_024 * 1_024) throws -> [String] {
+        try recentUserMessages(of: url, count: count, maxBytes: maxBytes, chunkSize: 1_024 * 1_024)
+    }
+
+    func recentUserMessages(of url: URL, count: Int, maxBytes: Int, chunkSize: Int) throws -> [String] {
+        let handle = try FileHandle(forReadingFrom: url)
+        defer { try? handle.close() }
+        let size = try handle.seekToEnd()
+        let floor = size > UInt64(maxBytes) ? size - UInt64(maxBytes) : 0
+        let marker = Data(#""role":"user""#.utf8)
+
+        var messages: [String] = []
+        var position = size
+        var carry = Data() // the start of a line whose beginning lies before `position`
+        while position > floor, messages.count < count {
+            let start = max(floor, position >= UInt64(chunkSize) ? position - UInt64(chunkSize) : 0)
+            try handle.seek(toOffset: start)
+            var buffer = try handle.read(upToCount: Int(position - start)) ?? Data()
+            buffer.append(carry)
+            position = start
+            var lines = buffer.split(separator: 0x0A, omittingEmptySubsequences: false)
+            // Unless at the file start, the first piece may be cut; keep it for the next chunk.
+            carry = position > 0 ? Data(lines.removeFirst()) : Data()
+            for line in lines.reversed() where messages.count < count && line.range(of: marker) != nil {
+                guard case let .event(.userMessage(text, _, _))? = RolloutEvent.decode(line: Data(line), isFirstLine: false)
+                else { continue }
+                let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+                if LanguageSample.isReal(trimmed) { messages.insert(trimmed, at: 0) }
+            }
+        }
+        return messages
+    }
+
     private func readFirstLine(_ handle: FileHandle) throws -> Data? {
         try handle.seek(toOffset: 0)
         var line = Data()

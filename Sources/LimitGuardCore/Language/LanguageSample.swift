@@ -10,12 +10,13 @@ public enum LanguageSample {
     /// Injected blocks are skipped: anything starting with a `<` tag (`<environment_context>`,
     /// `<user_instructions>`, …), AGENTS.md instructions and messages over 4000 characters.
     public static func extract(from userMessages: [String]) -> String {
-        let real = userMessages
-            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-            .filter { message in
-                !message.isEmpty && !message.hasPrefix("<") && !message.hasPrefix("# AGENTS.md instructions")
-                    && message.count <= maxMessageLength
-            }
+        let real = userMessages.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter(isReal)
         return String(real.suffix(messageCount).joined(separator: "\n").prefix(maxSampleLength))
+    }
+
+    /// Whether a (trimmed) user message is something the owner typed rather than an injected block.
+    static func isReal(_ message: String) -> Bool {
+        !message.isEmpty && !message.hasPrefix("<") && !message.hasPrefix("# AGENTS.md instructions")
+            && message.count <= maxMessageLength
     }
 }

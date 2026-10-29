@@ -168,6 +168,60 @@ struct SessionTests {
         }
     }
 
+    private func userLine(_ text: String) -> String {
+        let escaped = String(data: try! JSONSerialization.data(withJSONObject: [text]), encoding: .utf8)!.dropFirst().dropLast()
+        return #"{"timestamp":"2026-10-26T10:00:00.000Z","type":"response_item","payload":{"type":"message","role":"user","content":[{"type":"input_text","text":"#
+            + escaped + "}]}}"
+    }
+
+    private func fillerLine(_ size: Int) -> String {
+        #"{"timestamp":"2026-10-26T10:00:01.000Z","type":"response_item","payload":{"type":"reasoning","content":""#
+            + String(repeating: "x", count: size) + #""}}"#
+    }
+
+    @Test func recentUserMessagesReadsBackwardsAcrossChunks() throws {
+        let dir = try TemporaryDirectory()
+        defer { dir.remove() }
+        let url = dir.url.appending(path: "rollout.jsonl")
+        let lines = [
+            #"{"timestamp":"2026-10-26T10:00:00Z","type":"session_meta","payload":{"id":"a","cwd":"/x"}}"#,
+            userLine("first"), fillerLine(2_500), userLine("second"), fillerLine(900),
+            userLine("<environment_context>\n</environment_context>"), userLine("third"), fillerLine(3_000),
+            #"{"timestamp":"2026-10-26T10:00:02Z","type":"response_item","payload":{"type":"message","role":"assistant","content":[]},"note":"\"role\":\"user\""}"#,
+            userLine("fourth"), fillerLine(1_200),
+        ]
+        try Data((lines.joined(separator: "\n") + "\n").utf8).write(to: url)
+        let reader = RolloutReader()
+        #expect(try reader.recentUserMessages(of: url, count: 3, maxBytes: 1_000_000, chunkSize: 700) == ["second", "third", "fourth"])
+        #expect(try reader.recentUserMessages(of: url, count: 10, maxBytes: 1_000_000, chunkSize: 700) == ["first", "second", "third", "fourth"])
+        #expect(try reader.recentUserMessages(of: url, count: 3, maxBytes: 1_500, chunkSize: 700) == ["fourth"])
+        #expect(try reader.recentUserMessages(of: url) == ["second", "third", "fourth"])
+    }
+
+    @Test func scannerReadsLanguageSampleBeyondTheTail() async throws {
+        let dir = try TemporaryDirectory()
+        defer { dir.remove() }
+        let url = dir.url.appending(path: "rollout.jsonl")
+        var text = #"{"timestamp":"2026-10-26T10:00:00.000Z","type":"session_meta","payload":{"id":"t","cwd":"/w","originator":"codex-tui"}}"#
+            + "\n" + userLine("şu dosyayı düzelt") + "\n"
+        while text.utf8.count < 700_000 { text += fillerLine(1_000) + "\n" }
+        text += #"{"timestamp":"2026-10-26T11:00:00.000Z","type":"event_msg","payload":{"type":"task_complete","turn_id":"t1","error":{"codex_error_info":"usage_limit_exceeded"}}}"# + "\n"
+        try Data(text.utf8).write(to: url)
+
+        let row = ThreadRow(id: "t", rolloutPath: url, cwd: "/w", originator: "codex-tui",
+                            updatedAt: date("2026-10-26T11:00:00.000Z"), archived: false, title: "", isSubagent: false)
+        #expect(SessionState.build(thread: row, events: try RolloutReader().tailEvents(of: url)).languageSample == "")
+
+        let dbURL = dir.url.appending(path: "state_5.sqlite")
+        let now = date("2026-10-26T12:00:00.000Z")
+        let updated = Int64(now.timeIntervalSince1970) - 3_600
+        try makeDatabase(at: dbURL, rows: [("t", url.path, "/w", "codex-tui", updated, updated * 1000, 0, "", "vscode")])
+        let scanner = SessionScanner(index: ThreadIndex(databaseURL: dbURL), reader: RolloutReader())
+        let first = await scanner.scan(now: now)
+        #expect(first.map(\.languageSample) == ["şu dosyayı düzelt"])
+        #expect(await scanner.scan(now: now) == first) // cached
+    }
+
     // MARK: - Language sample
 
     @Test func boilerplateIsExcludedFromLanguageSample() throws {
