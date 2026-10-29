@@ -135,15 +135,10 @@ final class StatusItemController: NSObject, NSPopoverDelegate {
         popover.delegate = self
         let hosting = NSHostingController(rootView: PopoverView(
             model: model, closePopover: { [weak self] in self?.close() },
-            onTotalHeight: { [weak self] height in
-                PopoverHeightCache.total = height
-                self?.popover.contentSize = NSSize(width: 380, height: height)
-            },
             visibleScreenHeight: { [weak self] in
                 (self?.statusItem.button?.window?.screen ?? NSScreen.main)?.visibleFrame.height ?? 800
             }))
-        // The popover is sized explicitly from the measured height (`PopoverView.onTotalHeight`).
-        hosting.sizingOptions = []
+        hosting.sizingOptions = .preferredContentSize
         popover.contentViewController = hosting
         model.reopen = { [weak self] in self?.show() }
 
@@ -257,7 +252,11 @@ final class StatusItemController: NSObject, NSPopoverDelegate {
         model.refreshPermissions()
         model.setSettingsUnreadable(settingsStatus() == .unreadable)
         model.setAutoContinue(loadSettings().autoContinue)
-        popover.contentSize = NSSize(width: 380, height: PopoverHeightCache.total > 0 ? PopoverHeightCache.total : 360)
+        // Fixed-height layout: the hosting view's fitting size is the popover's size.
+        if let view = popover.contentViewController?.view {
+            view.layoutSubtreeIfNeeded()
+            popover.contentSize = view.fittingSize
+        }
         // An accessory app must be active for the popover to take keyboard focus.
         NSApp.activate(ignoringOtherApps: true)
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
