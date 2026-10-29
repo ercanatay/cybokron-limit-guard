@@ -12,24 +12,36 @@ struct GuardedTabsView: View {
     let palette: PanelPalette
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: PanelMetrics.s) {
             SectionHeader(title: L10n.Popover.Sessions.title, palette: palette)
             let rows = SessionsPresentation.rows(tabs: engine.tabs, sessions: engine.sessions, snapshot: engine.snapshot, now: Date())
-            if rows.isEmpty {
-                Text(L10n.Popover.Sessions.none)
-                    .font(.caption)
-                    .foregroundStyle(palette.secondaryText)
-            } else {
-                ForEach(rows) { row in
-                    SessionRowView(
-                        row: row, model: model, palette: palette,
-                        canContinue: !isReadOnly && engine.snapshot?.ordinaryUsageAllowed == true,
-                        setGuarded: { engine.setGuarded(row.ref, $0) })
+            PanelCard(palette: palette) {
+                if rows.isEmpty {
+                    VStack(alignment: .leading, spacing: PanelMetrics.xs) {
+                        Text(L10n.Popover.Sessions.empty)
+                            .font(.callout.weight(.medium))
+                            .foregroundStyle(palette.primaryText)
+                        Text(L10n.Popover.Sessions.none)
+                            .font(.caption)
+                            .foregroundStyle(palette.secondaryText)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                } else {
+                    VStack(alignment: .leading, spacing: PanelMetrics.m) {
+                        ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
+                            if index > 0 { Divider().overlay(palette.hairline) }
+                            SessionRowView(
+                                row: row, model: model, palette: palette,
+                                canContinue: !isReadOnly && engine.snapshot?.ordinaryUsageAllowed == true,
+                                setGuarded: { engine.setGuarded(row.ref, $0) })
+                        }
+                        Text(L10n.Popover.Sessions.guardHelp)
+                            .font(.caption2)
+                            .foregroundStyle(palette.secondaryText)
+                            .lineLimit(2)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
-                Text(L10n.Popover.Sessions.guardHelp)
-                    .font(.caption2)
-                    .foregroundStyle(palette.secondaryText)
-                    .fixedSize(horizontal: false, vertical: true)
             }
         }
     }
@@ -43,25 +55,30 @@ private struct SessionRowView: View {
     let setGuarded: (Bool) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Toggle(isOn: Binding(get: { row.isGuarded }, set: setGuarded)) {
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(row.title)
-                        .font(.callout.weight(.medium))
-                        .foregroundStyle(palette.primaryText)
-                    Text(details)
-                        .font(.caption.monospacedDigit())
-                        .foregroundStyle(palette.secondaryText)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
+        VStack(alignment: .leading, spacing: PanelMetrics.xs) {
+            HStack(alignment: .top, spacing: PanelMetrics.s) {
+                Toggle(isOn: Binding(get: { row.isGuarded }, set: setGuarded)) {
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(row.title)
+                            .font(.callout.weight(.semibold))
+                            .foregroundStyle(palette.primaryText)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                        Text(details)
+                            .font(.caption.monospacedDigit())
+                            .foregroundStyle(palette.secondaryText)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                    }
                 }
+                .toggleStyle(.checkbox)
+                .accessibilityLabel(row.title)
+                Spacer(minLength: PanelMetrics.xs)
+                pill
             }
-            .toggleStyle(.checkbox)
-            state
-                .padding(.leading, 20)
+            detail
+                .padding(.leading, 22)
         }
-        .padding(8)
-        .background(RoundedRectangle(cornerRadius: 8).fill(palette.hairline))
     }
 
     /// "~/project · ttys003 · <thread title>", or "Thread 019a2b3c" without a title.
@@ -77,50 +94,68 @@ private struct SessionRowView: View {
         return parts.joined(separator: " · ")
     }
 
-    @ViewBuilder private var state: some View {
+    @ViewBuilder private var pill: some View {
+        switch row.state {
+        case .idle:
+            if row.isGuarded { Pill(text: L10n.Popover.Sessions.pillGuarded, tint: .green) }
+        case .waitingGuarded:
+            Pill(text: L10n.Popover.Sessions.pillGuarded, tint: .green)
+        case .waitingNotGuarded, .settled:
+            Pill(text: L10n.Popover.Sessions.pillWaiting, tint: .orange)
+        case .confirming:
+            Pill(text: L10n.Popover.Sessions.pillSending, tint: .gray)
+        case .unconfirmed:
+            Pill(text: L10n.Popover.Sessions.pillNotSent, tint: .orange)
+        case .ambiguous:
+            Pill(text: L10n.Popover.Sessions.pillUnclear, tint: .gray)
+        }
+    }
+
+    /// The one-line hint, with the button that continues by hand where there is one.
+    @ViewBuilder private var detail: some View {
         switch row.state {
         case .idle:
             EmptyView()
         case .waitingGuarded:
-            Label(L10n.Popover.Sessions.waitingGuarded, systemImage: "hourglass")
-                .font(.caption)
-                .foregroundStyle(PanelPalette.teal)
+            hint(L10n.Popover.Sessions.waitingGuarded)
         case .waitingNotGuarded:
-            byHand(L10n.Popover.Sessions.waitingNotGuarded, systemImage: "hourglass", button: L10n.Popover.Sessions.continueNow)
+            byHand(L10n.Popover.Sessions.waitingNotGuarded, button: L10n.Popover.Sessions.continueNow)
         case .confirming:
-            Label(L10n.Popover.Sessions.confirming, systemImage: "paperplane")
-                .font(.caption)
-                .foregroundStyle(palette.secondaryText)
-                .fixedSize(horizontal: false, vertical: true)
+            hint(L10n.Popover.Sessions.confirming)
         case .unconfirmed:
-            byHand(L10n.Popover.Sessions.unconfirmed, systemImage: "exclamationmark.bubble", button: L10n.Popover.Sessions.sendAgain)
+            byHand(L10n.Popover.Sessions.unconfirmed, button: L10n.Popover.Sessions.sendAgain)
         case .settled:
-            byHand(L10n.Popover.Sessions.settled, systemImage: "hand.raised", button: L10n.Popover.Sessions.continueNow)
+            byHand(L10n.Popover.Sessions.settled, button: L10n.Popover.Sessions.continueNow)
         case .ambiguous:
-            Label(L10n.Popover.Sessions.ambiguous, systemImage: "questionmark.circle")
-                .font(.caption)
-                .foregroundStyle(Color.orange)
-                .fixedSize(horizontal: false, vertical: true)
+            hint(L10n.Popover.Sessions.ambiguous)
         }
+    }
+
+    private func hint(_ text: String) -> some View {
+        Text(text)
+            .font(.caption)
+            .foregroundStyle(palette.secondaryText)
+            .fixedSize(horizontal: false, vertical: true)
     }
 
     /// A state that needs the owner, with the button that continues the mapped thread by hand
     /// (`Engine.continueNow`, which also sends an unconfirmed continue again with the same message id).
-    private func byHand(_ text: String, systemImage: String, button: String) -> some View {
-        HStack(spacing: 8) {
-            Label(text, systemImage: systemImage)
-                .font(.caption)
-                .foregroundStyle(Color.orange)
-                .fixedSize(horizontal: false, vertical: true)
-            Spacer(minLength: 4)
+    private func byHand(_ text: String, button: String) -> some View {
+        HStack(spacing: PanelMetrics.s) {
+            hint(text)
+            Spacer(minLength: PanelMetrics.xs)
             if let threadId = row.threadId {
                 if model.continuing.contains(threadId) {
                     ProgressView().controlSize(.small)
                 } else {
                     Button(button) { model.continueNow(threadId: threadId) }
+                        .buttonStyle(.bordered)
                         .controlSize(.small)
+                        .lineLimit(1)
+                        .fixedSize()
                         .disabled(!canContinue)
                         .help(canContinue ? "" : L10n.Popover.Sessions.continueNeedsLimit)
+                        .accessibilityLabel("\(button): \(row.title)")
                 }
             }
         }

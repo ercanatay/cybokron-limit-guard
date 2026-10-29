@@ -79,6 +79,15 @@ extension L10n {
             static var expiresToday: String { tr("popover.resets.expiresToday", "expires today") }
             static var expiresTomorrow: String { tr("popover.resets.expiresTomorrow", "expires tomorrow") }
             static var use: String { tr("popover.resets.use", "Use Reset") }
+            /// The backend's title; the one known title is translated, any other is shown as sent.
+            static func displayTitle(_ title: String?) -> String {
+                guard let title else { return untitled }
+                // The key is spelled out so the source/table check sees it; `localizationKey` decides the match.
+                if CreditPresentation.localizationKey(forTitle: title) != nil {
+                    return tr("popover.resets.title.fullReset", "Full reset (Weekly + 5 hr)")
+                }
+                return title
+            }
             static var redeeming: String { tr("popover.resets.redeeming", "Being used…") }
             static var redeemed: String { tr("popover.resets.redeemed", "Used") }
             static var confirmTitle: String { tr("popover.resets.confirmTitle", "Use this reset now?") }
@@ -128,11 +137,19 @@ extension L10n {
             static var ambiguous: String {
                 tr("popover.sessions.ambiguous", "Can’t tell which conversation — continue by hand")
             }
+            static var pillGuarded: String { tr("popover.sessions.pill.guarded", "Guarded") }
+            static var pillWaiting: String { tr("popover.sessions.pill.waiting", "Waiting") }
+            static var pillUnclear: String { tr("popover.sessions.pill.unclear", "Unclear") }
+            static var pillNotSent: String { tr("popover.sessions.pill.notSent", "Not sent") }
+            static var pillSending: String { tr("popover.sessions.pill.sending", "Sending") }
+            static var empty: String { tr("popover.sessions.empty", "No open Codex session") }
             static var continueNow: String { tr("popover.sessions.continueNow", "Continue now") }
             static var continueNeedsLimit: String {
                 tr("popover.sessions.continueNeedsLimit", "Available once the limit is back.")
             }
         }
+
+        static var pausedBanner: String { tr("popover.paused.banner", "Paused — automatic actions are off") }
 
         enum Footer {
             static var pause: String { tr("popover.footer.pause", "Pause") }

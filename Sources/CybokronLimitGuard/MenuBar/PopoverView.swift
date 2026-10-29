@@ -39,7 +39,7 @@ struct PopoverView: View {
             EngineSections(engine: engine, model: model, palette: palette, closePopover: closePopover)
         } else {
             StatusLine(text: L10n.EngineStatus.starting, symbol: "hourglass", tint: palette.secondaryText, palette: palette)
-                .padding(14)
+                .padding(PanelMetrics.l)
         }
     }
 }
@@ -62,27 +62,42 @@ private struct EngineSections: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: PanelMetrics.m) {
             statusSection
             LimitBarView(
                 title: L10n.Popover.Limit.fiveHour, window: engine.snapshot?.fiveHour,
                 forecast: engine.forecast.fiveHour, forecastText: L10n.Popover.Limit.fiveHourForecast,
-                clockTemplate: "jmm", palette: palette)
+                clockTemplate: "jmm", gateClosed: gateClosed, palette: palette)
             LimitBarView(
                 title: L10n.Popover.Limit.weekly, window: engine.snapshot?.weekly,
                 forecast: engine.forecast.weekly, forecastText: L10n.Chart.forecast,
-                clockTemplate: "EEEdMMMjmm", palette: palette)
+                clockTemplate: "EEEdMMMjmm", gateClosed: gateClosed, palette: palette)
             if let next = engine.nextAction {
                 NextActionView(action: next, tabs: engine.tabs, palette: palette) { engine.cancelNextAction() }
             }
             ResetCreditsView(engine: engine, model: model, isReadOnly: isReadOnly, palette: palette)
             GuardedTabsView(engine: engine, model: model, isReadOnly: isReadOnly, palette: palette)
         }
-        .padding(14)
+        .padding(PanelMetrics.l)
     }
 
+    /// Ordinary usage is blocked: the bars read red.
+    private var gateClosed: Bool { engine.snapshot?.ordinaryUsageAllowed == false }
+
     @ViewBuilder private var statusSection: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: PanelMetrics.s) {
+            HStack(spacing: 6) {
+                Image(systemName: "gauge.with.needle")
+                    .foregroundStyle(PanelPalette.teal)
+                    .accessibilityHidden(true)
+                Text(L10n.App.name)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(palette.secondaryText)
+                    .lineLimit(1)
+            }
+            if engine.isPaused {
+                pausedBanner
+            }
             status
             if case let .readOnly(reason) = engine.health {
                 StatusLine(text: L10n.Popover.Status.readOnly, symbol: "lock.fill", tint: .orange, palette: palette)
@@ -119,6 +134,25 @@ private struct EngineSections: View {
         }
     }
 
+    private var pausedBanner: some View {
+        PanelCard(palette: palette, tint: .orange) {
+            HStack(spacing: PanelMetrics.s) {
+                Image(systemName: "pause.circle.fill").foregroundStyle(Color.orange)
+                    .accessibilityHidden(true)
+                Text(L10n.Popover.pausedBanner)
+                    .font(.callout.weight(.medium))
+                    .foregroundStyle(palette.primaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: PanelMetrics.xs)
+                Button(L10n.Popover.Footer.resume) { engine.pause(false) }
+                    .buttonStyle(.borderedProminent)
+                    .tint(PanelPalette.teal)
+                    .controlSize(.small)
+                    .accessibilityLabel(L10n.Popover.Footer.resume)
+            }
+        }
+    }
+
     @ViewBuilder private var status: some View {
         let state = PopoverStatus.make(
             engineRunning: true, codexFound: model.codexFound, hasSnapshot: engine.snapshot != nil,
@@ -144,7 +178,7 @@ private struct EngineSections: View {
         case .reading:
             StatusLine(text: L10n.EngineStatus.reading, symbol: "arrow.triangle.2.circlepath", tint: palette.secondaryText, palette: palette)
         case .paused:
-            StatusLine(text: L10n.EngineStatus.paused, symbol: "pause.circle.fill", tint: .orange, palette: palette)
+            EmptyView()  // the banner above says it
         case .noCodexTab:
             StatusLine(text: L10n.Popover.Status.noCodexTab, symbol: "terminal", tint: palette.secondaryText, palette: palette)
         case let .watching(guarded) where guarded == 0:
@@ -183,9 +217,12 @@ struct SectionHeader<Trailing: View>: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline) {
             Text(title)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(palette.primaryText)
-            Spacer(minLength: 8)
+                .font(.caption.weight(.semibold))
+                .textCase(.uppercase)
+                .tracking(0.4)
+                .foregroundStyle(palette.secondaryText)
+                .lineLimit(1)
+            Spacer(minLength: PanelMetrics.s)
             trailing
         }
     }
@@ -205,7 +242,7 @@ private struct PopoverFooter: View {
     let closePopover: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: PanelMetrics.s) {
             HStack(spacing: 6) {
                 if let engine {
                     PauseButton(engine: engine)
@@ -215,7 +252,7 @@ private struct PopoverFooter: View {
                     PlanLabel(engine: engine, palette: palette)
                 }
             }
-            HStack(spacing: 6) {
+            HStack(spacing: PanelMetrics.xs) {
                 footerButton(L10n.Popover.Footer.activity, help: L10n.Activity.menuItem) { model.actions.showActivity() }
                 footerButton(L10n.Popover.Footer.chart, help: L10n.Chart.menuItem) { model.actions.showChart() }
                 footerButton(L10n.Popover.Footer.settings, help: L10n.Settings.menuItem) { model.actions.showSettings() }
@@ -232,10 +269,11 @@ private struct PopoverFooter: View {
                 .controlSize(.small)
                 .tint(.red)
                 .help(L10n.Menu.quit(L10n.App.name))
+                .accessibilityLabel(L10n.Menu.quit(L10n.App.name))
             }
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
+        .padding(.horizontal, PanelMetrics.l)
+        .padding(.vertical, PanelMetrics.m)
     }
 
     private func footerButton(_ title: String, help: String, action: @escaping () -> Void) -> some View {
@@ -251,6 +289,7 @@ private struct PopoverFooter: View {
         .buttonStyle(.bordered)
         .controlSize(.small)
         .help(help)
+        .accessibilityLabel(help)
     }
 }
 

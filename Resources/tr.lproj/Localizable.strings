@@ -461,5 +461,13 @@
 "popover.footer.settings" = "Ayarlar";
 "popover.footer.about" = "Hakkında";
 "popover.footer.quit" = "Çık";
+"popover.paused.banner" = "Duraklatıldı — otomatik işlemler kapalı";
+"popover.resets.title.fullReset" = "Tam sıfırlama (Haftalık + 5 saatlik)";
+"popover.sessions.pill.guarded" = "Korunuyor";
+"popover.sessions.pill.waiting" = "Bekliyor";
+"popover.sessions.pill.unclear" = "Belirsiz";
+"popover.sessions.pill.notSent" = "Gönderilemedi";
+"popover.sessions.pill.sending" = "Gönderiliyor";
+"popover.sessions.empty" = "Açık Codex oturumu yok";
 "popover.status.notSignedIn" = "Codex'te oturum açılmamış — Terminal'de `codex login` komutunu çalıştırın";
 "popover.resets.noLongerAvailable" = "Bu sıfırlama artık kullanılamıyor";

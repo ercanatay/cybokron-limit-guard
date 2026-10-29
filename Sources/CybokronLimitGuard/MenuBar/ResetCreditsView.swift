@@ -11,15 +11,17 @@ struct ResetCreditsView: View {
     let palette: PanelPalette
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: PanelMetrics.s) {
             SectionHeader(title: L10n.Popover.Resets.title, palette: palette) {
                 if let snapshot = engine.snapshot {
                     Text(L10n.Popover.Resets.available(snapshot.availableCreditCount))
-                        .font(.caption.weight(.semibold))
-                        .padding(.horizontal, 8)
+                        .font(.caption2.weight(.semibold))
+                        .lineLimit(1)
+                        .fixedSize()
+                        .padding(.horizontal, PanelMetrics.s)
                         .padding(.vertical, 2)
                         .background(Capsule().fill(PanelPalette.teal.opacity(0.18)))
-                        .foregroundStyle(palette.primaryText)
+                        .foregroundStyle(PanelPalette.teal)
                 }
             }
             if let snapshot = engine.snapshot {
@@ -37,9 +39,12 @@ struct ResetCreditsView: View {
                             .font(.caption)
                             .foregroundStyle(palette.secondaryText)
                     } else {
-                        VStack(alignment: .leading, spacing: 6) {
-                            ForEach(rows) { row in
-                                CreditRowView(row: row, model: model, isReadOnly: isReadOnly, palette: palette)
+                        PanelCard(palette: palette) {
+                            VStack(alignment: .leading, spacing: PanelMetrics.m) {
+                                ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
+                                    if index > 0 { Divider().overlay(palette.hairline) }
+                                    CreditRowView(row: row, model: model, isReadOnly: isReadOnly, palette: palette)
+                                }
                             }
                         }
                     }
@@ -61,16 +66,16 @@ private struct CreditRowView: View {
     let palette: PanelPalette
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 3) {
-            HStack(alignment: .center, spacing: 8) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(row.title ?? L10n.Popover.Resets.untitled)
+        VStack(alignment: .leading, spacing: PanelMetrics.xs) {
+            HStack(alignment: .center, spacing: PanelMetrics.s) {
+                VStack(alignment: .leading, spacing: PanelMetrics.xs) {
+                    Text(L10n.Popover.Resets.displayTitle(row.title))
                         .font(.callout.weight(.medium))
                         .foregroundStyle(palette.primaryText)
                         .fixedSize(horizontal: false, vertical: true)
                     expiry
                 }
-                Spacer(minLength: 6)
+                Spacer(minLength: PanelMetrics.s)
                 trailing
             }
             if model.spendingCreditId == row.id {
@@ -82,16 +87,20 @@ private struct CreditRowView: View {
                 FeedbackText(feedback: feedback, palette: palette)
             }
         }
-        .padding(8)
-        .background(RoundedRectangle(cornerRadius: 8).fill(row.isExpiringSoon ? Color.orange.opacity(0.14) : palette.hairline))
     }
 
     @ViewBuilder private var expiry: some View {
         if let date = row.expiryText, let zone = row.timeZoneLabel {
-            let day = row.expiryDay.map { $0 == .today ? L10n.Popover.Resets.expiresToday : L10n.Popover.Resets.expiresTomorrow }
-            Text([L10n.Popover.Resets.expires(date, zone), day].compactMap { $0 }.joined(separator: " · "))
-                .font(.caption.monospacedDigit())
-                .foregroundStyle(row.isExpiringSoon ? Color.orange : palette.secondaryText)
+            HStack(spacing: 6) {
+                Text(L10n.Popover.Resets.expires(date, zone))
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(palette.secondaryText)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                if let day = row.expiryDay {
+                    Pill(text: day == .today ? L10n.Popover.Resets.expiresToday : L10n.Popover.Resets.expiresTomorrow, tint: .orange)
+                }
+            }
         } else {
             Text(L10n.Popover.Resets.neverExpires)
                 .font(.caption)
@@ -103,7 +112,12 @@ private struct CreditRowView: View {
         switch row.status {
         case .available:
             Button(L10n.Popover.Resets.use) { model.useReset(row) }
+                .buttonStyle(.bordered)
+                .tint(PanelPalette.teal)
                 .controlSize(.small)
+                .lineLimit(1)
+                .fixedSize()
+                .accessibilityLabel("\(L10n.Popover.Resets.use): \(L10n.Popover.Resets.displayTitle(row.title))")
                 .disabled(isReadOnly || model.spendingCreditId != nil)
         case .redeeming:
             Text(L10n.Popover.Resets.redeeming).font(.caption).foregroundStyle(palette.secondaryText)

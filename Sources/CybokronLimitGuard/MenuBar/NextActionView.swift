@@ -11,9 +11,10 @@ struct NextActionView: View {
     let cancel: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: PanelMetrics.s) {
             SectionHeader(title: L10n.Popover.Next.title, palette: palette)
-            HStack(alignment: .center, spacing: 8) {
+            PanelCard(palette: palette, tint: PanelPalette.teal) {
+            HStack(alignment: .center, spacing: PanelMetrics.s) {
                 switch action.kind {
                 case let .continueAt(date, threadId, text):
                     line(L10n.Popover.Next.continueAt(PopoverFormat.date(date, template: Calendar.current.isDateInToday(date) ? "jmm" : "EEEjmm"), text, target(threadId)),
@@ -29,13 +30,13 @@ struct NextActionView: View {
                     line(L10n.Popover.Next.autoSpend(PopoverFormat.percent(Double(threshold))), symbol: "arrow.counterclockwise.circle")
                 }
             }
-            .padding(8)
-            .background(RoundedRectangle(cornerRadius: 8).fill(palette.hover))
+            }
         }
     }
 
     private var cancelButton: some View {
         Button(L10n.Common.cancel, action: cancel)
+            .buttonStyle(.bordered)
             .controlSize(.small)
     }
 

@@ -467,5 +467,13 @@
 "popover.footer.settings" = "Settings";
 "popover.footer.about" = "About";
 "popover.footer.quit" = "Quit";
+"popover.paused.banner" = "Paused — automatic actions are off";
+"popover.resets.title.fullReset" = "Full reset (Weekly + 5 hr)";
+"popover.sessions.pill.guarded" = "Guarded";
+"popover.sessions.pill.waiting" = "Waiting";
+"popover.sessions.pill.unclear" = "Unclear";
+"popover.sessions.pill.notSent" = "Not sent";
+"popover.sessions.pill.sending" = "Sending";
+"popover.sessions.empty" = "No open Codex session";
 "popover.status.notSignedIn" = "Codex isn't signed in — run `codex login` in Terminal";
 "popover.resets.noLongerAvailable" = "This reset is no longer available";

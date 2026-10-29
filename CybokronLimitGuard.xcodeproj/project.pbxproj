@@ -21,6 +21,7 @@
 		105622DFD2E6445ABF8EBD00 /* AutoUpdater.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17AAC3C8751B63AC5AF89AB6 /* AutoUpdater.swift */; };
 		125306F6836F5A0DC26CB947 /* DiagnosticsCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C503DF80344D97BC20DFF45A /* DiagnosticsCoreTests.swift */; };
 		12D0C961506FA901DEA787BA /* ContinueTextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48A7DB67EA8499F38E3CF1B5 /* ContinueTextTests.swift */; };
+		14754292C834341407817AA6 /* PanelCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D15BEE6E881F8FB41E4DE186 /* PanelCard.swift */; };
 		18BAC8200314D6AD9AF27A8D /* CodexLocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42EF2FD21E8FA2AE43227DFC /* CodexLocator.swift */; };
 		1BA88C675794529F6B2833D1 /* CybokronLimitGuardApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C588758D3C1F8A25EED039CF /* CybokronLimitGuardApp.swift */; };
 		1C4B7CF48C16B4FE4C318398 /* AppEngineEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6543C7C688A4EAE3DCB5A98 /* AppEngineEnvironment.swift */; };
@@ -327,6 +328,7 @@
 		CE6A8CB53BF516751FFD161A /* SemanticVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticVersion.swift; sourceTree = "<group>"; };
 		CEA7AD158F47224A673C92FB /* StatusItemController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusItemController.swift; sourceTree = "<group>"; };
 		CF475C8EB3704AF9B24D6045 /* LimitsReadFailure.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LimitsReadFailure.swift; sourceTree = "<group>"; };
+		D15BEE6E881F8FB41E4DE186 /* PanelCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelCard.swift; sourceTree = "<group>"; };
 		D215AC3CEB3D8E672D9EF520 /* rate-limits-unknown-enum.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "rate-limits-unknown-enum.json"; sourceTree = "<group>"; };
 		D645DF8CC7D80312FD3CD062 /* ProcessTransportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessTransportTests.swift; sourceTree = "<group>"; };
 		D70103E7FA2437C49CB0624E /* UpdateCheck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCheck.swift; sourceTree = "<group>"; };
@@ -724,6 +726,7 @@
 				D76353B85F75C042D28A9910 /* GuardedTabsView.swift */,
 				439A7FAA02AEAB67238CB05C /* LimitBarView.swift */,
 				654747176AE3D2FC37AE52B1 /* NextActionView.swift */,
+				D15BEE6E881F8FB41E4DE186 /* PanelCard.swift */,
 				521E709536B161321798A0BC /* PopoverView.swift */,
 				875E718DFB7A3CA05CE3984A /* ResetCreditsView.swift */,
 				CEA7AD158F47224A673C92FB /* StatusItemController.swift */,
@@ -1039,6 +1042,7 @@
 				DBE4E7B9E5497995E3010A73 /* NotificationsSettingsView.swift in Sources */,
 				A533D4AF5A3CFAB5E6BD676E /* Notifier.swift in Sources */,
 				5F704895B98D9AD3628BEF83 /* OtherVersionsView.swift in Sources */,
+				14754292C834341407817AA6 /* PanelCard.swift in Sources */,
 				5000F0BD0CA15545A136474F /* PanelPalette.swift in Sources */,
 				105621ABBC33825FB29BB714 /* PopoverView.swift in Sources */,
 				1EB44E63572041FED741B61D /* ResetCreditsView.swift in Sources */,
