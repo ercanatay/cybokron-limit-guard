@@ -15,11 +15,14 @@ public enum ResetPolicy {
     static let inUseWindow: TimeInterval = 30 * 60
     static let resetsSoonWindow: TimeInterval = 12 * 3600
     static let expiryReminderWindow: TimeInterval = 24 * 3600
+    /// One automatic spend per account per this period (D9). Keyed by time, not `resetsAt`, because
+    /// the weekly window moves after a reset and must never open a second spend.
+    static let markerLifetime: TimeInterval = 7 * 86_400
 
     /// `hasPendingConsume`: the reset ledger holds an entry without an outcome.
     public static func decideAuto(
         snapshot: AccountSnapshot, health: ProtocolHealth, settings: Settings, state: AppState,
-        sessions: [SessionState], paused: Bool, now: Date, hasPendingConsume: Bool = false
+        sessions: [SessionState], paused: Bool, now: Date, hasPendingConsume: Bool
     ) -> AutoSpendDecision {
         if !settings.autoSpendEnabled { return .skip(.disabled) }
         if Notice.mustShow(settings: settings) { return .skip(.noticeNotAccepted) }
@@ -27,9 +30,12 @@ public enum ResetPolicy {
         if case .readOnly = health { return .skip(.readOnly) }
         if hasPendingConsume { return .skip(.pendingConsume) }
 
-        guard let weekly = snapshot.weekly, let resetsAt = weekly.resetsAt else { return .skip(.unknownWindow) }
+        // Without an account id the one-spend marker cannot be checked or written.
+        guard let accountId = snapshot.accountId,
+              let weekly = snapshot.weekly, let resetsAt = weekly.resetsAt
+        else { return .skip(.unknownWindow) }
         if weekly.usedPercent < Double(settings.autoSpendThreshold) { return .skip(.belowThreshold) }
-        if alreadySpent(in: resetsAt, accountId: snapshot.accountId, state: state) {
+        if alreadySpent(accountId: accountId, marker: state.autoSpend, now: now) {
             return .skip(.alreadySpentThisWindow)
         }
         if resetsAt.timeIntervalSince(now) < resetsSoonWindow { return .skip(.windowResetsSoon) }
@@ -60,11 +66,14 @@ public enum ResetPolicy {
         })
     }
 
-    /// The window marker only counts for the account that spent in it; a nil account id on both
-    /// sides counts as the same account (the safe reading). Compared in whole seconds because
-    /// `AppState` stores dates as ISO 8601 without fractions.
-    static func alreadySpent(in resetsAt: Date, accountId: String?, state: AppState) -> Bool {
-        guard let key = state.autoSpendWindowKey, state.autoSpendAccountId == accountId else { return false }
-        return key.timeIntervalSince1970.rounded(.down) == resetsAt.timeIntervalSince1970.rounded(.down)
+    /// The marker to persist before an automatic spend; nil without an account id (then no spend happens).
+    public static func marker(for snapshot: AccountSnapshot, now: Date) -> AutoSpendMarker? {
+        snapshot.accountId.map { AutoSpendMarker(accountId: $0, spentAt: now) }
+    }
+
+    /// The marker only counts for the account that spent; another (non-nil) account may spend.
+    static func alreadySpent(accountId: String, marker: AutoSpendMarker?, now: Date) -> Bool {
+        guard let marker, marker.accountId == accountId else { return false }
+        return now.timeIntervalSince(marker.spentAt) < markerLifetime
     }
 }

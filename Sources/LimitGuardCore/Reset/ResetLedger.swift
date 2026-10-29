@@ -41,10 +41,10 @@ public enum LedgerError: Error, Equatable {
     case unknownEntry
 }
 
-/// Holds at most one pending consume. Every change is saved before it returns.
+/// Holds at most one pending consume. Every change is saved before it returns. Nothing is cached:
+/// each call reads the file, so a second instance on the same file sees the other's entry.
 public actor ResetLedger {
     private let store: JSONStore<LedgerFile>
-    private var file: LedgerFile?
 
     public init(store: JSONStore<LedgerFile>) {
         self.store = store
@@ -60,9 +60,9 @@ public actor ResetLedger {
         return entry
     }
 
-    /// The oldest entry without an outcome. An unreadable file reads as nothing pending.
-    public func pending() -> LedgerEntry? {
-        (try? loaded())?.entries.first
+    /// The oldest entry without an outcome.
+    public func pending() throws -> LedgerEntry? {
+        try loaded().entries.first
     }
 
     /// Counts one more consume call for the entry; saved before the call is sent.
@@ -93,14 +93,10 @@ public actor ResetLedger {
     }
 
     private func loaded() throws -> LedgerFile {
-        if let file { return file }
-        let value = try store.load() ?? LedgerFile()
-        file = value
-        return value
+        try store.load() ?? LedgerFile()
     }
 
     private func save(_ value: LedgerFile) throws {
         try store.save(value)
-        file = value
     }
 }

@@ -67,12 +67,22 @@ public struct LoopRecord: Codable, Equatable {
     }
 }
 
+/// The last automatic reset-credit spend. Written before the consume call and kept whatever the outcome.
+public struct AutoSpendMarker: Codable, Equatable, Sendable {
+    public var accountId: String
+    public var spentAt: Date
+
+    public init(accountId: String, spentAt: Date) {
+        self.accountId = accountId
+        self.spentAt = spentAt
+    }
+}
+
 public struct AppState: Codable, Equatable {
     /// Keyed by thread id.
     public var loop: [String: LoopRecord] = [:]
-    /// `secondary.resetsAt` of the window already spent in.
-    public var autoSpendWindowKey: Date?
-    public var autoSpendAccountId: String?
+    /// Blocks a second automatic spend for the same account within 7 days.
+    public var autoSpend: AutoSpendMarker?
     public var scheduled: ScheduledContinue?
     public var pendingDeliveries: [PendingDelivery] = []
     public var guardedTabs: [GuardedTab] = []
@@ -85,8 +95,7 @@ public struct AppState: Codable, Equatable {
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         loop = try c.decodeIfPresent([String: LoopRecord].self, forKey: .loop) ?? [:]
-        autoSpendWindowKey = try c.decodeIfPresent(Date.self, forKey: .autoSpendWindowKey)
-        autoSpendAccountId = try c.decodeIfPresent(String.self, forKey: .autoSpendAccountId)
+        autoSpend = try c.decodeIfPresent(AutoSpendMarker.self, forKey: .autoSpend)
         scheduled = try c.decodeIfPresent(ScheduledContinue.self, forKey: .scheduled)
         pendingDeliveries = try c.decodeIfPresent([PendingDelivery].self, forKey: .pendingDeliveries) ?? []
         guardedTabs = try c.decodeIfPresent([GuardedTab].self, forKey: .guardedTabs) ?? []

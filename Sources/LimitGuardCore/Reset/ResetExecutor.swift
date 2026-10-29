@@ -40,11 +40,19 @@ public actor ResetExecutor {
     }
 
     /// Spends `creditId` with a fresh ledger entry. `.busy` while another spend runs or an entry is pending.
+    ///
+    /// For `.auto`, the caller must first persist `ResetPolicy.marker(for:now:)` as `AppState.autoSpend`
+    /// and keep it whatever the result: the marker, not the outcome, limits automatic spends to one per week.
     public func spend(creditId: String, reason: SpendReason) async -> SpendResult {
         guard !inFlight else { return .busy }
         inFlight = true
         defer { inFlight = false }
-        if await ledger.pending() != nil { return .busy }
+        do {
+            if try await ledger.pending() != nil { return .busy }
+        } catch {
+            log("reset ledger unreadable, consume not sent: \(error)")
+            return .unknown
+        }
         let entry: LedgerEntry
         do {
             entry = try await ledger.begin(creditId: creditId, reason: reason, now: now())
@@ -58,12 +66,20 @@ public actor ResetExecutor {
         return await run(entry)
     }
 
-    /// Retries the pending ledger entry with its stored key and credit (on launch). Nil when none is pending.
+    /// Retries the pending ledger entry with its stored key and credit (on launch). Nil when none is
+    /// pending; `.unknown` when the ledger cannot be read (an entry may exist that we cannot see).
     public func resumePending() async -> SpendResult? {
         guard !inFlight else { return .busy }
         inFlight = true
         defer { inFlight = false }
-        guard let entry = await ledger.pending() else { return nil }
+        let entry: LedgerEntry?
+        do {
+            entry = try await ledger.pending()
+        } catch {
+            log("reset ledger unreadable, pending consume not resumed: \(error)")
+            return .unknown
+        }
+        guard let entry else { return nil }
         return await run(entry)
     }
 

@@ -65,20 +65,39 @@ struct ResetPolicyTests {
         #expect(decide(snapshot(fiveHourUsed: 10)) == .spend(creditId: "c1"))
     }
 
-    @Test func alreadySpentThisWindowSkips() {
-        let snap = snapshot()
+    private func state(markerAccount: String, spentAgo: TimeInterval) -> AppState {
         var state = AppState()
-        state.autoSpendWindowKey = snap.weekly?.resetsAt
-        state.autoSpendAccountId = "a"
-        #expect(decide(snap, state: state) == .skip(.alreadySpentThisWindow))
+        state.autoSpend = AutoSpendMarker(accountId: markerAccount, spentAt: now.addingTimeInterval(-spentAgo))
+        return state
+    }
+
+    @Test func alreadySpentThisWindowSkips() {
+        #expect(decide(snapshot(), state: state(markerAccount: "a", spentAgo: 6 * 86_400)) == .skip(.alreadySpentThisWindow))
+    }
+
+    @Test func markerOlderThanAWeekAllowsSpend() {
+        #expect(decide(snapshot(), state: state(markerAccount: "a", spentAgo: 7 * 86_400 + 1)) == .spend(creditId: "c1"))
+        #expect(decide(snapshot(), state: state(markerAccount: "a", spentAgo: 7 * 86_400)) == .spend(creditId: "c1"))
     }
 
     @Test func accountChangeIgnoresOldWindowMarker() {
-        let snap = snapshot(accountId: "b")
-        var state = AppState()
-        state.autoSpendWindowKey = snap.weekly?.resetsAt
-        state.autoSpendAccountId = "a"
-        #expect(decide(snap, state: state) == .spend(creditId: "c1"))
+        #expect(decide(snapshot(accountId: "b"), state: state(markerAccount: "a", spentAgo: 3600)) == .spend(creditId: "c1"))
+    }
+
+    @Test func nilAccountIdSkips() {
+        #expect(decide(snapshot(accountId: nil)) == .skip(.unknownWindow))
+        #expect(decide(snapshot(accountId: nil), state: state(markerAccount: "a", spentAgo: 3600)) == .skip(.unknownWindow))
+    }
+
+    @Test func markerSurvivesWindowMove() {
+        // After a reset the weekly window moved a week ahead and filled up again within the hour.
+        let moved = snapshot(weeklyUsed: 98, resetsIn: 7 * 86_400)
+        #expect(decide(moved, state: state(markerAccount: "a", spentAgo: 3600)) == .skip(.alreadySpentThisWindow))
+    }
+
+    @Test func markerForSnapshot() {
+        #expect(ResetPolicy.marker(for: snapshot(accountId: "a"), now: now) == AutoSpendMarker(accountId: "a", spentAt: now))
+        #expect(ResetPolicy.marker(for: snapshot(accountId: nil), now: now) == nil)
     }
 
     @Test func codexIdleSkips() {

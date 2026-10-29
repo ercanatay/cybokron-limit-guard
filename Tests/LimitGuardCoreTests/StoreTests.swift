@@ -66,8 +66,7 @@ struct StoreTests {
 
         var state = AppState()
         state.loop["t1"] = LoopRecord(consecutive: 2, lastSentAt: Date(timeIntervalSince1970: 1_700_000_000), shortTurnsInARow: 1)
-        state.autoSpendWindowKey = Date(timeIntervalSince1970: 1_700_100_000)
-        state.autoSpendAccountId = "acct"
+        state.autoSpend = AutoSpendMarker(accountId: "acct", spentAt: Date(timeIntervalSince1970: 1_700_100_000))
         let ref = TabRef(windowId: 3, tabIndex: 1, tty: "/dev/ttys004")
         state.guardedTabs = [GuardedTab(ref: ref, addedAt: Date(timeIntervalSince1970: 1_700_000_100))]
         state.scheduled = ScheduledContinue(threadId: "t1", text: "continue", fireAt: Date(timeIntervalSince1970: 1_700_000_200))

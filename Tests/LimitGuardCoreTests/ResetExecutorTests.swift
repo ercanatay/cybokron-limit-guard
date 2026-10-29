@@ -80,7 +80,7 @@ struct ResetExecutorTests {
         let ledger = ResetLedger(store: ledgerStore(dir))
         let result = await makeExecutor([fake], ledger: ledger).spend(creditId: "c1", reason: .manual)
         #expect(result == .outcome(outcome))
-        #expect(await ledger.pending() == nil)
+        #expect(try await ledger.pending() == nil)
         #expect(try ledgerStore(dir).load()?.entries == [])
         #expect(consumeRequests(fake).count == 1)
     }
@@ -99,7 +99,7 @@ struct ResetExecutorTests {
         #expect(Set(requests.map(\.params)).count == 1)
         #expect(requests.first?.params["creditId"] == "c1")
         #expect(delays.value == [.seconds(10), .seconds(60)])
-        #expect(await ledger.pending() == nil)
+        #expect(try await ledger.pending() == nil)
     }
 
     @Test func exhaustedRetriesKeepEntry() async throws {
@@ -114,7 +114,7 @@ struct ResetExecutorTests {
         #expect(consumeRequests(fake).count == 4)
         #expect(Set(consumeRequests(fake).map(\.params)).count == 1)
         #expect(delays.value == [.seconds(10), .seconds(60), .seconds(240)])
-        let entry = try #require(await ledger.pending())
+        let entry = try #require(try await ledger.pending())
         #expect(entry.attempts == 4)
         #expect(entry.creditId == "c1")
     }
@@ -135,7 +135,7 @@ struct ResetExecutorTests {
         let a = try #require(consumeRequests(first).first)
         let b = try #require(consumeRequests(second).first)
         #expect(a.params == b.params)
-        #expect(await ledger.pending() == nil)
+        #expect(try await ledger.pending() == nil)
     }
 
     @Test func unknownOutcomeKeepsEntry() async throws {
@@ -147,7 +147,7 @@ struct ResetExecutorTests {
         let result = await makeExecutor([fake], ledger: ledger).spend(creditId: "c1", reason: .auto)
         #expect(result == .unknown)
         #expect(consumeRequests(fake).count == 1)
-        #expect(await ledger.pending()?.creditId == "c1")
+        #expect(try await ledger.pending()?.creditId == "c1")
     }
 
     @Test func rpcErrorClearsEntryWithoutRetry() async throws {
@@ -159,7 +159,7 @@ struct ResetExecutorTests {
         let result = await makeExecutor([fake], ledger: ledger).spend(creditId: "c1", reason: .auto)
         #expect(result == .unknown)
         #expect(consumeRequests(fake).count == 1)
-        #expect(await ledger.pending() == nil)
+        #expect(try await ledger.pending() == nil)
     }
 
     @Test func pendingLedgerEntryIsRetriedWithSameKey() async throws {
@@ -180,7 +180,7 @@ struct ResetExecutorTests {
         #expect(resumed == .outcome(.alreadyRedeemed))
         let request = try #require(consumeRequests(fake).first)
         #expect(request.params == ["idempotencyKey": stored.idempotencyKey.uuidString.lowercased(), "creditId": "c1"])
-        #expect(await ledger.pending() == nil)
+        #expect(try await ledger.pending() == nil)
     }
 
     @Test func resumeWithoutPendingReturnsNil() async throws {
@@ -201,7 +201,7 @@ struct ResetExecutorTests {
         let idle = FakeAppServer()
         #expect(await makeExecutor([idle], ledger: ledger).spend(creditId: "c2", reason: .manual) == .busy)
         #expect(consumeRequests(idle).isEmpty)
-        #expect(await ledger.pending()?.creditId == "old")
+        #expect(try await ledger.pending()?.creditId == "old")
     }
 
     @Test func concurrentSpendIsBusy() async throws {
@@ -224,11 +224,36 @@ struct ResetExecutorTests {
         let ledger = ResetLedger(store: ledgerStore(dir))
         let entry = try await ledger.begin(creditId: "c1", reason: .auto, now: fixedNow)
         #expect(try await ledger.expireOlderThan(24 * 3600, now: fixedNow.addingTimeInterval(24 * 3600)) == [])
-        #expect(await ledger.pending() == entry)
+        #expect(try await ledger.pending() == entry)
         let expired = try await ledger.expireOlderThan(24 * 3600, now: fixedNow.addingTimeInterval(24 * 3600 + 1))
         #expect(expired == [entry])
-        #expect(await ledger.pending() == nil)
+        #expect(try await ledger.pending() == nil)
         #expect(try ledgerStore(dir).load()?.entries == [])
+    }
+
+    @Test func twoLedgersOnOneFileNeverHoldTwoKeys() async throws {
+        let dir = try TemporaryDirectory()
+        defer { dir.remove() }
+        let a = ResetLedger(store: ledgerStore(dir))
+        let b = ResetLedger(store: ledgerStore(dir))
+        #expect(try await a.pending() == nil)
+        let entryB = try await b.begin(creditId: "c1", reason: .auto, now: fixedNow)
+        await #expect(throws: LedgerError.entryPending) {
+            _ = try await a.begin(creditId: "c2", reason: .manual, now: fixedNow)
+        }
+        #expect(try await a.pending() == entryB)
+        #expect(try ledgerStore(dir).load()?.entries == [entryB])
+    }
+
+    @Test func unreadableLedgerSendsNothing() async throws {
+        let dir = try TemporaryDirectory()
+        defer { dir.remove() }
+        try Data(#"{"schemaVersion":2,"entries":[]}"#.utf8).write(to: dir.url.appending(path: "reset-ledger.json"))
+        let fake = FakeAppServer()
+        let executor = makeExecutor([fake], ledger: ResetLedger(store: ledgerStore(dir)))
+        #expect(await executor.resumePending() == .unknown)
+        #expect(await executor.spend(creditId: "c1", reason: .auto) == .unknown)
+        #expect(consumeRequests(fake).isEmpty)
     }
 
     @Test func beginRefusesSecondEntry() async throws {
