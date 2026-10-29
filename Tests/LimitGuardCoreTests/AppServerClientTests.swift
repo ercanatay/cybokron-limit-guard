@@ -162,7 +162,10 @@ struct AppServerClientTests {
         let fake = FakeAppServer()
         fake.script("slow", result: #"{"who":"slow"}"#, delay: .milliseconds(200))
         fake.script("fast", result: #"{"who":"fast"}"#)
-        let (client, _) = makeClient([fake])
+        let (client, factory) = makeClient([fake])
+        // Complete the handshake first: under load it could otherwise eat the short timeout below,
+        // tearing the transport down and sending "fast" to an unscripted replacement.
+        _ = try await client.request("fast", timeout: .seconds(5))
         await #expect(throws: AppServerError.timeout) {
             _ = try await client.request("slow", timeout: .milliseconds(50))
         }
@@ -172,6 +175,7 @@ struct AppServerClientTests {
         #expect(await client.isConnected)
         let again = try await client.request("fast", timeout: .seconds(2))
         #expect(json(again)["who"] as? String == "fast")
+        #expect(factory.created.count == 1)
     }
 
     @Test func staleTimeoutAfterRestartDoesNotHitNewRequests() async throws {
