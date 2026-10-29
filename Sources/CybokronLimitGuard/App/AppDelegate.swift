@@ -10,6 +10,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private lazy var updateWindow = UpdateWindowController(updater: updater)
     private lazy var aboutWindow = AboutWindowController()
     private lazy var diagnosticsWindow = DiagnosticsWindowController()
+    private lazy var activityWindow = ActivityWindowController(
+        load: { (try? ActivityLog(url: AppPaths.activityURL).entries()) ?? [] },
+        clear: { try? ActivityLog(url: AppPaths.activityURL).clear() }
+    )
+    private lazy var chartWindow = UsageChartWindowController(load: { await StoredChartFeed.load() })
     private let settingsStore = JSONStore<Settings>(url: AppPaths.settingsURL, schemaVersion: 1)
     private lazy var settingsWindow = SettingsWindowController(
         store: settingsStore,
@@ -32,6 +37,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             action: #selector(showSettings(_:)),
             keyEquivalent: ","
         ))
+        // Temporary: the engine will feed these windows with live data.
+        menu.addItem(NSMenuItem(title: L10n.Activity.menuItem, action: #selector(showActivity(_:)), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: L10n.Chart.menuItem, action: #selector(showChart(_:)), keyEquivalent: ""))
         menu.addItem(NSMenuItem(
             title: L10n.Common.about(L10n.App.name),
             action: #selector(showAbout(_:)),
@@ -57,6 +65,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func showSettings(_ sender: Any?) {
         settingsWindow.show()
+    }
+
+    @objc private func showActivity(_ sender: Any?) {
+        activityWindow.show()
+    }
+
+    @objc private func showChart(_ sender: Any?) {
+        chartWindow.show()
     }
 
     @objc private func showAbout(_ sender: Any?) {

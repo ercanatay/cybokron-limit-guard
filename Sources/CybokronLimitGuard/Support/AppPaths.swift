@@ -8,4 +8,6 @@ enum AppPaths {
     }
 
     static var settingsURL: URL { dataDirectory.appending(path: "settings.json") }
+    static var activityURL: URL { dataDirectory.appending(path: "activity.json") }
+    static var usageHistoryURL: URL { dataDirectory.appending(path: "usage-history.json") }
 }
