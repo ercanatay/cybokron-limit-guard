@@ -147,6 +147,11 @@ struct PresentationTests {
         // The date itself follows the locale; the day and the time are in it.
         let text = try #require(rows[0].expiryText)
         #expect(text.contains("29") && text.contains("Oct") && text.contains("22:29"))
+        // A 12-hour locale gets a 12-hour time, as the popover's other times.
+        let us = CreditPresentation.rows(credits: [today], now: morning, timeZone: istanbul, locale: Locale(identifier: "en_US"))
+        let usText = try #require(us.first?.expiryText)
+        #expect(usText.contains("Oct") && usText.contains("29") && usText.contains("10:29") && usText.contains("PM"))
+        #expect(!usText.contains("22:29"))
     }
 
     @Test func gmtLabels() throws {
