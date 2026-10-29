@@ -337,6 +337,27 @@ struct SessionTests {
         #expect(states.first { $0.threadId == "tui-finished" }?.lastStop == StopKind.none)
     }
 
+    @Test func subagentThreadsAreSkipped() async throws {
+        let dir = try TemporaryDirectory()
+        defer { dir.remove() }
+        let dbURL = dir.url.appending(path: "state_5.sqlite")
+        let limit = fixtureURL("rollout-usage-limit.jsonl").path
+        let now = Date(timeIntervalSince1970: 1_793_000_000)
+        let recent = Int64(now.timeIntervalSince1970) - 600
+        try makeDatabase(at: dbURL, rows: [
+            ("parent", limit, "/w", "codex-tui", recent, recent * 1000, 0, "P", "vscode"),
+            ("json-child", limit, "/w", "codex-tui", recent, recent * 1000, 0, "J",
+             #"{"subagent":{"thread_spawn":{"parent_thread_id":"parent","depth":1}}}"#),
+            ("text-child", limit, "/w", "codex-tui", recent, recent * 1000, 0, "T", "subagent"),
+        ])
+        let index = ThreadIndex(databaseURL: dbURL)
+        let rows = try index.recentThreads(updatedSince: .distantPast)
+        #expect(Dictionary(uniqueKeysWithValues: rows.map { ($0.id, $0.isSubagent) })
+            == ["parent": false, "json-child": true, "text-child": true])
+        let states = await SessionScanner(index: index, reader: RolloutReader()).scan(now: now)
+        #expect(states.map(\.threadId) == ["parent"])
+    }
+
     @Test func scannerWithMissingDatabaseReturnsNothing() async {
         let scanner = SessionScanner(
             index: ThreadIndex(databaseURL: URL(fileURLWithPath: "/nonexistent/state_5.sqlite")), reader: RolloutReader()

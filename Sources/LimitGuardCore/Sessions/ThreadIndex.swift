@@ -10,8 +10,9 @@ public struct ThreadRow: Equatable {
     public var updatedAt: Date
     public var archived: Bool
     public var title: String
-    /// A thread spawned by another thread's agent (`source` is `{"subagent": …}`); it shares its
-    /// parent's Terminal tab and is never typed into.
+    /// A thread spawned by another thread's agent (`source` mentions "subagent", as JSON
+    /// `{"subagent": …}` or plain text); it shares its parent's Terminal tab and is never typed into.
+    /// The parent's own turn ends with the same error, so continuing the parent is enough.
     public var isSubagent: Bool
 
     public init(
@@ -94,7 +95,7 @@ public struct ThreadIndex {
                 updatedAt: Date(timeIntervalSince1970: Double(sqlite3_column_int64(statement, 4)) / 1000),
                 archived: sqlite3_column_int64(statement, 5) != 0,
                 title: text(statement, 6) ?? "",
-                isSubagent: text(statement, 7)?.contains(#""subagent""#) == true
+                isSubagent: text(statement, 7)?.localizedCaseInsensitiveContains("subagent") == true
             ))
         }
         return rows
