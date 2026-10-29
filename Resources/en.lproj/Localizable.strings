@@ -222,8 +222,13 @@
 "settings.tab.resets" = "Resets";
 "settings.tab.notifications" = "Notifications";
 "settings.readOnly.newer" = "The settings file was written by a newer version of the app. Settings are shown read-only and nothing is saved, so that file stays untouched.";
-"settings.readOnly.unreadable" = "The settings file can't be read. Settings are shown read-only and nothing is saved, so that file stays untouched.";
+"settings.readOnly.unreadable" = "The settings file can't be read. Settings are shown read-only and nothing is saved until you reset them.";
 "settings.saveFailed" = "The settings couldn't be saved.";
+"settings.reset.button" = "Reset settings…";
+"settings.reset.title" = "Reset settings?";
+"settings.reset.message" = "The unreadable settings file is kept next to the new one as settings.corrupt-<date>.json, and the default settings are written. You'll be asked to accept the legal notice again.";
+"settings.reset.confirm" = "Reset";
+"settings.reset.failed" = "The settings couldn't be reset: %@";
 "settings.general.launchAtLogin" = "Launch at login";
 "settings.general.launchNeedsApproval" = "Allow the app in System Settings → General → Login Items.";
 "settings.general.openLoginItems" = "Open Login Items…";
@@ -406,6 +411,7 @@
 "popover.status.readOnly" = "Read-only: Codex protocol changed";
 "popover.status.notificationsOff" = "Notifications are off. The popover still shows everything.";
 "popover.status.openNotificationSettings" = "Allow…";
+"popover.status.settingsUnreadable" = "The settings file can't be read, so nothing is saved.";
 "popover.limit.fiveHour" = "5-hour limit";
 "popover.limit.weekly" = "Weekly limit";
 "popover.limit.notReported" = "Not reported";

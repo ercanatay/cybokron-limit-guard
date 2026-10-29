@@ -60,6 +60,7 @@
 		5C1F7594B1FCAC0BE23D20D9 /* UpdateWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56C0B510D78BF7F8E60F07E3 /* UpdateWindowController.swift */; };
 		5CAB6F3FE800DE908F6A03D7 /* UpdateInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3E5E31E9359CBACE01D331B /* UpdateInstaller.swift */; };
 		5CEEE65BBD897133E3D9011E /* SupportSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECCBCD6723CDBD660DECB375 /* SupportSettingsView.swift */; };
+		5ECB78FD9DDF5F8CA053CBC0 /* SettingsReset.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5168EE7278C5F9DA80EC225 /* SettingsReset.swift */; };
 		5F704895B98D9AD3628BEF83 /* OtherVersionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73B36DCB4DD221AB5AF8804D /* OtherVersionsView.swift */; };
 		617088F8CF7E50C52A67BC30 /* libLimitGuardCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 763F3F23B0DB9A1DB5D84D9E /* libLimitGuardCore.a */; };
 		61A4783550E52BC974F24093 /* ReleaseInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAE10886770FCF19C513140E /* ReleaseInfo.swift */; };
@@ -153,6 +154,7 @@
 		ECEDDCF5AA0D80557226E0BB /* SVGPathData.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4479EA1A46C24CD2AEC124C /* SVGPathData.swift */; };
 		EF69EF537B7F90322B46C7D7 /* rate-limits-unknown-enum.json in Resources */ = {isa = PBXBuildFile; fileRef = D215AC3CEB3D8E672D9EF520 /* rate-limits-unknown-enum.json */; };
 		F226976C52B0E4C3B78B705C /* SessionScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D2AFD720BFB3348115143CA /* SessionScanner.swift */; };
+		F3377FCEA2623300BEA1FA08 /* SettingsRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 268D9A1DEA202F18AC0D501C /* SettingsRecovery.swift */; };
 		F46B127AFC5836C9D085B969 /* ChartData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A19631CA9C85405DF33AAD84 /* ChartData.swift */; };
 		F509E6376B1A01186E74A00C /* MenuBarText.swift in Sources */ = {isa = PBXBuildFile; fileRef = F844122DAA56ADF1DF92C2DA /* MenuBarText.swift */; };
 		F526516049FBE5EBFFD1F841 /* SessionState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 238A12140441D309DDC4D1B0 /* SessionState.swift */; };
@@ -211,6 +213,7 @@
 		238A12140441D309DDC4D1B0 /* SessionState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionState.swift; sourceTree = "<group>"; };
 		25B97BCFF3AB71DD119EA902 /* ReleaseNotesMarkdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReleaseNotesMarkdown.swift; sourceTree = "<group>"; };
 		266590BB052D858F24562162 /* ReleaseFixtures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReleaseFixtures.swift; sourceTree = "<group>"; };
+		268D9A1DEA202F18AC0D501C /* SettingsRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsRecovery.swift; sourceTree = "<group>"; };
 		29B3DE1C53A2982B4AD966CB /* ReleaseHistoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReleaseHistoryTests.swift; sourceTree = "<group>"; };
 		29FE6467A8E49579A2181722 /* Notifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notifier.swift; sourceTree = "<group>"; };
 		2C695B608468F86F5628EB5A /* L10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10n.swift; sourceTree = "<group>"; };
@@ -342,6 +345,7 @@
 		EEA0D556A68D7230989B0ABF /* ReleaseFeedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReleaseFeedTests.swift; sourceTree = "<group>"; };
 		F3E5E31E9359CBACE01D331B /* UpdateInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateInstaller.swift; sourceTree = "<group>"; };
 		F46C24ACFF280566D3B0EDA9 /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
+		F5168EE7278C5F9DA80EC225 /* SettingsReset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsReset.swift; sourceTree = "<group>"; };
 		F5B0EABE14D979C4B69D71F7 /* ThreadIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreadIndex.swift; sourceTree = "<group>"; };
 		F5B7A55381E9242B60C06160 /* SettingsLimits.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsLimits.swift; sourceTree = "<group>"; };
 		F844122DAA56ADF1DF92C2DA /* MenuBarText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarText.swift; sourceTree = "<group>"; };
@@ -421,6 +425,7 @@
 				4DEAD003D79738928D25149C /* ResetsSettingsView.swift */,
 				60A2825CAC7F3FB3CF1F38F0 /* SettingsModel.swift */,
 				7D62FF8DD240953D22BAEB14 /* SettingsPaneSupport.swift */,
+				F5168EE7278C5F9DA80EC225 /* SettingsReset.swift */,
 				F46C24ACFF280566D3B0EDA9 /* SettingsWindowController.swift */,
 				ECCBCD6723CDBD660DECB375 /* SupportSettingsView.swift */,
 				66867FC6FC834365B2C24476 /* UpdatesSettingsView.swift */,
@@ -674,6 +679,7 @@
 				FF08DE6920B90939F91737B1 /* Notice.swift */,
 				4A96B3C47D84D325F3ABF22E /* Settings.swift */,
 				F5B7A55381E9242B60C06160 /* SettingsLimits.swift */,
+				268D9A1DEA202F18AC0D501C /* SettingsRecovery.swift */,
 				9851C886439BD42BA379116C /* UsageHistory.swift */,
 			);
 			path = Store;
@@ -979,6 +985,7 @@
 				6B7C797BF4D4464000970945 /* SessionsPresentation.swift in Sources */,
 				5BF56C6C20D6151001D801CB /* Settings.swift in Sources */,
 				7020D2C04816648FF5E35AC0 /* SettingsLimits.swift in Sources */,
+				F3377FCEA2623300BEA1FA08 /* SettingsRecovery.swift in Sources */,
 				70512B7AE819A2FB7639D5F4 /* SocialIconPaths.swift in Sources */,
 				793A4EE42777E7C630E1B287 /* SocialProfile.swift in Sources */,
 				C447C96B840BAEF969F636BB /* SystemTools.swift in Sources */,
@@ -1034,6 +1041,7 @@
 				7A6A5A6009473951C72C95EB /* ResetsSettingsView.swift in Sources */,
 				C38B96693A63EF2162FBCF85 /* SettingsModel.swift in Sources */,
 				DF0EB95A6B0FD696983507D4 /* SettingsPaneSupport.swift in Sources */,
+				5ECB78FD9DDF5F8CA053CBC0 /* SettingsReset.swift in Sources */,
 				39C739E46F6C1317C3EA0493 /* SettingsWindowController.swift in Sources */,
 				0641AE5FD969C700F992E741 /* SocialIcons.swift in Sources */,
 				5230AFCA14BD76786435EE58 /* StatusItemController.swift in Sources */,

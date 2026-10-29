@@ -7,6 +7,11 @@ struct SettingsStatusBanner: View {
     var body: some View {
         if let reason = model.readOnlyReason {
             banner(reason == .newerSchema ? L10n.Settings.readOnlyNewer : L10n.Settings.readOnlyUnreadable)
+            if reason == .unreadable {
+                Button(L10n.Settings.Reset.button) { model.resetUnreadable() }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 20)
+            }
         } else if model.saveFailed {
             banner(L10n.Settings.saveFailed)
         }

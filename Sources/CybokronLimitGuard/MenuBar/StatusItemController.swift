@@ -8,6 +8,8 @@ struct PopoverActions {
     var showActivity: () -> Void
     var showChart: () -> Void
     var showAbout: () -> Void
+    /// "Reset settings…" for an unreadable settings file.
+    var resetSettings: () -> Void
 }
 
 /// What a credit row shows under itself after Use Reset.
@@ -31,6 +33,8 @@ final class PopoverModel: ObservableObject {
     /// The last result per credit, shown inline under its row.
     @Published private(set) var creditResults: [String: CreditFeedback] = [:]
     @Published private(set) var continuing: Set<String> = []
+    /// `settings.json` can't be read: nothing the owner changes is saved until it is reset.
+    @Published private(set) var settingsUnreadable = false
 
     let actions: PopoverActions
     /// Shows the popover again after an alert closed it.
@@ -45,6 +49,10 @@ final class PopoverModel: ObservableObject {
     func attach(engine: Engine?, codexFound: Bool) {
         if self.engine !== engine { self.engine = engine }
         if self.codexFound != codexFound { self.codexFound = codexFound }
+    }
+
+    func setSettingsUnreadable(_ unreadable: Bool) {
+        if settingsUnreadable != unreadable { settingsUnreadable = unreadable }
     }
 
     func refreshPermissions() {
@@ -100,13 +108,18 @@ final class StatusItemController: NSObject, NSPopoverDelegate {
     private let popover = NSPopover()
     let model: PopoverModel
     private let loadSettings: () -> LimitGuardCore.Settings
+    private let settingsStatus: () -> SettingsFileStatus
     /// "Show percentage in menu bar", read again only when the settings change.
     private var showPercent: Bool
 
-    init(actions: PopoverActions, notifier: Notifier, loadSettings: @escaping () -> LimitGuardCore.Settings) {
+    init(
+        actions: PopoverActions, notifier: Notifier, loadSettings: @escaping () -> LimitGuardCore.Settings,
+        settingsStatus: @escaping () -> SettingsFileStatus
+    ) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         model = PopoverModel(actions: actions, notifier: notifier)
         self.loadSettings = loadSettings
+        self.settingsStatus = settingsStatus
         showPercent = loadSettings().showPercentInMenuBar
         super.init()
 
@@ -136,6 +149,7 @@ final class StatusItemController: NSObject, NSPopoverDelegate {
     /// Reloads the settings the item uses; call on `.limitGuardSettingsChanged`.
     func settingsChanged() {
         showPercent = loadSettings().showPercentInMenuBar
+        model.setSettingsUnreadable(settingsStatus() == .unreadable)
         refresh()
     }
 
@@ -195,6 +209,7 @@ final class StatusItemController: NSObject, NSPopoverDelegate {
     func show() {
         guard let button = statusItem.button, !popover.isShown else { return }
         model.refreshPermissions()
+        model.setSettingsUnreadable(settingsStatus() == .unreadable)
         // An accessory app must be active for the popover to take keyboard focus.
         NSApp.activate(ignoringOtherApps: true)
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)

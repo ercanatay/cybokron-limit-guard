@@ -69,6 +69,17 @@ private struct EngineSections: View {
                     .lineLimit(2)
                     .textSelection(.enabled)
             }
+            if model.settingsUnreadable {
+                HStack(spacing: 6) {
+                    StatusLine(text: L10n.Popover.Status.settingsUnreadable, symbol: "exclamationmark.triangle.fill", tint: .orange, palette: palette)
+                    Spacer(minLength: 4)
+                    Button(L10n.Settings.Reset.button) {
+                        closePopover()
+                        model.actions.resetSettings()
+                    }
+                    .controlSize(.small)
+                }
+            }
             if model.notificationsAllowed == false {
                 HStack(spacing: 6) {
                     StatusLine(text: L10n.Popover.Status.notificationsOff, symbol: "bell.slash", tint: palette.secondaryText, palette: palette)

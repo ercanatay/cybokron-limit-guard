@@ -153,3 +153,65 @@ struct NoticeTests {
         #expect(!Notice.mustShow(settings: s))
     }
 }
+
+@Suite("SettingsRecovery")
+struct SettingsRecoveryTests {
+    private let now = Date(timeIntervalSince1970: 1_790_000_000)
+
+    private func store() throws -> (TemporaryDirectory, JSONStore<Settings>) {
+        let dir = try TemporaryDirectory()
+        return (dir, JSONStore<Settings>(url: dir.url.appending(path: "settings.json"), schemaVersion: 1))
+    }
+
+    @Test func statusTellsUsableNewerAndUnreadableApart() throws {
+        let (dir, store) = try store()
+        defer { dir.remove() }
+        #expect(SettingsRecovery.status(of: store) == .usable)
+        try store.save(Settings())
+        #expect(SettingsRecovery.status(of: store) == .usable)
+        try Data(#"{"schemaVersion":2}"#.utf8).write(to: store.url)
+        #expect(SettingsRecovery.status(of: store) == .newerSchema)
+        try Data("{not json".utf8).write(to: store.url)
+        #expect(SettingsRecovery.status(of: store) == .unreadable)
+        try Data(#"{"schemaVersion":1,"countdownSeconds":"ten"}"#.utf8).write(to: store.url)
+        #expect(SettingsRecovery.status(of: store) == .unreadable)
+    }
+
+    @Test func resetKeepsTheBrokenFileAndWritesDefaults() throws {
+        let (dir, store) = try store()
+        defer { dir.remove() }
+        let broken = Data("{not json".utf8)
+        try broken.write(to: store.url)
+        let backup = try SettingsRecovery.resetUnreadable(store: store, now: now)
+        #expect(backup.lastPathComponent.hasPrefix("settings.corrupt-"))
+        #expect(backup.pathExtension == "json")
+        #expect(!backup.lastPathComponent.contains(":"))
+        #expect(try Data(contentsOf: backup) == broken)
+        #expect(try store.load() == Settings())
+
+        // A second reset in the same second gets its own backup name.
+        try broken.write(to: store.url)
+        let second = try SettingsRecovery.resetUnreadable(store: store, now: now)
+        #expect(second != backup)
+        #expect(FileManager.default.fileExists(atPath: backup.path))
+    }
+
+    @Test func resetLeavesUsableAndNewerFilesAlone() throws {
+        let (dir, store) = try store()
+        defer { dir.remove() }
+        var settings = Settings()
+        settings.countdownSeconds = 30
+        try store.save(settings)
+        #expect(throws: SettingsRecoveryError.notUnreadable(.usable)) {
+            try SettingsRecovery.resetUnreadable(store: store, now: now)
+        }
+        #expect(try store.load()?.countdownSeconds == 30)
+        let newer = Data(#"{"schemaVersion":2}"#.utf8)
+        try newer.write(to: store.url)
+        #expect(throws: SettingsRecoveryError.notUnreadable(.newerSchema)) {
+            try SettingsRecovery.resetUnreadable(store: store, now: now)
+        }
+        #expect(try Data(contentsOf: store.url) == newer)
+        #expect(try FileManager.default.contentsOfDirectory(atPath: dir.url.path) == ["settings.json"])
+    }
+}

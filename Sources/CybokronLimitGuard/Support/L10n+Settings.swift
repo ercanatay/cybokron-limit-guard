@@ -20,10 +20,23 @@ extension L10n.Settings {
     static var readOnlyUnreadable: String {
         tr(
             "settings.readOnly.unreadable",
-            "The settings file can't be read. Settings are shown read-only and nothing is saved, so that file stays untouched."
+            "The settings file can't be read. Settings are shown read-only and nothing is saved until you reset them."
         )
     }
     static var saveFailed: String { tr("settings.saveFailed", "The settings couldn't be saved.") }
+
+    enum Reset {
+        static var button: String { tr("settings.reset.button", "Reset settings…") }
+        static var title: String { tr("settings.reset.title", "Reset settings?") }
+        static var message: String {
+            tr(
+                "settings.reset.message",
+                "The unreadable settings file is kept next to the new one as settings.corrupt-<date>.json, and the default settings are written. You'll be asked to accept the legal notice again."
+            )
+        }
+        static var confirm: String { tr("settings.reset.confirm", "Reset") }
+        static func failed(_ reason: String) -> String { tr("settings.reset.failed", "The settings couldn't be reset: %@", reason) }
+    }
 
     enum General {
         static var launchAtLogin: String { tr("settings.general.launchAtLogin", "Launch at login") }

@@ -1,9 +1,12 @@
 import AppKit
 import LimitGuardCore
+import OSLog
 
 /// The legal notice (spec §4.3.1), shown as a modal window.
 @MainActor
 enum LegalNoticeWindow {
+    private static let logger = Logger(subsystem: "com.cybokron.limitguard", category: "notice")
+
     enum Mode {
         /// Before anything automatic can run: the owner accepts or quits.
         case acceptance
@@ -45,8 +48,16 @@ enum LegalNoticeWindow {
         }
         settings.noticeAcceptedVersion = Notice.currentVersion
         settings.noticeAcceptedAt = Date()
-        // A settings file written by a newer app is left alone.
-        if case .success = loaded { try? store.save(settings) }
+        // A settings file written by a newer app (or an unreadable one) is left alone.
+        if case .success = loaded {
+            do {
+                try store.save(settings)
+            } catch {
+                logger.error("notice acceptance not saved: \(String(describing: error), privacy: .public)")
+            }
+        } else {
+            logger.error("notice accepted for this launch only: the settings file can't be read")
+        }
         return true
     }
 }

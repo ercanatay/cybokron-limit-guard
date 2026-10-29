@@ -25,6 +25,9 @@ extension L10n {
                 tr("popover.status.notificationsOff", "Notifications are off. The popover still shows everything.")
             }
             static var openNotificationSettings: String { tr("popover.status.openNotificationSettings", "Allow…") }
+            static var settingsUnreadable: String {
+                tr("popover.status.settingsUnreadable", "The settings file can't be read, so nothing is saved.")
+            }
         }
 
         enum Limit {

@@ -50,10 +50,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 showSettings: { [weak self] in self?.settingsWindow.show() },
                 showActivity: { [weak self] in self?.activityWindow.show() },
                 showChart: { [weak self] in self?.chartWindow.show() },
-                showAbout: { [weak self] in self?.aboutWindow.show() }
+                showAbout: { [weak self] in self?.aboutWindow.show() },
+                resetSettings: { SettingsReset.run(store: store) }
             ),
             notifier: engineHost.notifier,
-            loadSettings: { (try? store.load()?.clamped()) ?? Settings() }
+            loadSettings: { (try? store.load()?.clamped()) ?? Settings() },
+            settingsStatus: { SettingsRecovery.status(of: store) }
         )
         statusItem = item
         // The "Show percentage in menu bar" setting takes effect at once.

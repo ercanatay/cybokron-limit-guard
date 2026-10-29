@@ -219,6 +219,11 @@
 "settings.readOnly.newer" = "Ayarlar dosyası uygulamanın daha yeni bir sürümü tarafından yazılmış. Ayarlar salt okunur gösteriliyor ve hiçbir şey kaydedilmiyor, böylece dosya değiştirilmeden kalıyor.";
 "settings.readOnly.unreadable" = "Ayarlar dosyası okunamıyor. Ayarlar salt okunur gösteriliyor ve hiçbir şey kaydedilmiyor, böylece dosya değiştirilmeden kalıyor.";
 "settings.saveFailed" = "Ayarlar kaydedilemedi.";
+"settings.reset.button" = "Reset settings…";
+"settings.reset.title" = "Reset settings?";
+"settings.reset.message" = "The unreadable settings file is kept next to the new one as settings.corrupt-<date>.json, and the default settings are written. You'll be asked to accept the legal notice again.";
+"settings.reset.confirm" = "Reset";
+"settings.reset.failed" = "The settings couldn't be reset: %@";
 "settings.general.launchAtLogin" = "Oturum açıldığında başlat";
 "settings.general.launchNeedsApproval" = "Uygulamaya Sistem Ayarları → Genel → Oturum Açma Öğeleri bölümünden izin verin.";
 "settings.general.openLoginItems" = "Oturum Açma Öğelerini Aç…";
@@ -400,6 +405,7 @@
 "popover.status.readOnly" = "Salt okunur: Codex protokolü değişti";
 "popover.status.notificationsOff" = "Bildirimler kapalı. Açılır pencere yine de her şeyi gösterir.";
 "popover.status.openNotificationSettings" = "İzin ver…";
+"popover.status.settingsUnreadable" = "The settings file can't be read, so nothing is saved.";
 "popover.limit.fiveHour" = "5 saatlik limit";
 "popover.limit.weekly" = "Haftalık limit";
 "popover.limit.notReported" = "Bildirilmedi";

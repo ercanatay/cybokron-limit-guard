@@ -1,5 +1,6 @@
 import AppKit
 import LimitGuardCore
+import OSLog
 import SwiftUI
 
 /// The settings the window edits: loaded from `settings.json`, written back on every change.
@@ -19,6 +20,7 @@ final class SettingsModel: ObservableObject {
     @Published private(set) var loginItemState = LoginItem.state
     @Published private(set) var loginItemError: String?
 
+    private static let logger = Logger(subsystem: "com.cybokron.limitguard", category: "settings")
     private let store: JSONStore<LimitGuardCore.Settings>
 
     init(store: JSONStore<LimitGuardCore.Settings>) {
@@ -59,9 +61,17 @@ final class SettingsModel: ObservableObject {
             saveFailed = false
             NotificationCenter.default.post(name: .limitGuardSettingsChanged, object: nil)
         } catch {
+            Self.logger.error("settings not saved: \(String(describing: error), privacy: .public)")
             saveFailed = true
         }
         return !saveFailed
+    }
+
+    /// "Reset settings…" for an unreadable file, then shows what was written.
+    func resetUnreadable() {
+        guard readOnlyReason == .unreadable else { return }
+        SettingsReset.run(store: store)
+        reload()
     }
 
     func binding<Value>(_ keyPath: WritableKeyPath<LimitGuardCore.Settings, Value>) -> Binding<Value> {
