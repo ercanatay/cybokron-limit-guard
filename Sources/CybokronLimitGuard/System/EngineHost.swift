@@ -26,6 +26,7 @@ final class EngineHost {
         ((try? settingsStore.load()?.clamped()) ?? Settings()).keepAwake
     })
     private var subscriptions = Set<AnyCancellable>()
+    private var wakeTask: Task<Void, Never>?
 
     init(settingsStore: JSONStore<Settings>) {
         self.settingsStore = settingsStore
@@ -46,9 +47,12 @@ final class EngineHost {
             let override = (try? JSONStore<Settings>(url: url, schemaVersion: 1).load())?.codexPathOverride
             return locator.resolve(override: override) ?? URL(fileURLWithPath: "/nonexistent/codex")
         }
-        let initial = resolve()
+        // The login-shell lookup and `codex --version` run off the main thread and may take 5 s at most.
+        let initial = await Self.withTimeout(seconds: 5) { resolve() } ?? URL(fileURLWithPath: "/nonexistent/codex")
         codexFound = FileManager.default.isExecutableFile(atPath: initial.path)
-        let version = codexFound ? await locator.version(of: initial) : nil
+        let version: String? = codexFound
+            ? await Self.withTimeout(seconds: 5) { await locator.version(of: initial) } ?? nil
+            : nil
         if !codexFound { Self.logger.error("codex executable not found") }
 
         let clientVersion = AppInfo.version
@@ -84,26 +88,43 @@ final class EngineHost {
             .sink { [weak engine] _ in Task { @MainActor in engine?.wake() } }
             .store(in: &subscriptions)
         NotificationCenter.default.publisher(for: .limitGuardSettingsChanged)
-            .sink { [weak self] _ in
-                Task { @MainActor in
-                    self?.keepAwake.settingsChanged()
-                    self?.engine?.wake()
-                }
-            }
+            .sink { [weak self] _ in Task { @MainActor in self?.settingsChanged() } }
             .store(in: &subscriptions)
 
         engine.start()
         onChange?()
     }
 
+    /// Keep-awake follows at once; the Engine's extra tick waits until the changes stop for a second.
+    private func settingsChanged() {
+        keepAwake.settingsChanged()
+        wakeTask?.cancel()
+        wakeTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(1))
+            guard !Task.isCancelled else { return }
+            self?.engine?.wake()
+        }
+    }
+
     func stop() {
+        wakeTask?.cancel()
         engine?.stop()
         keepAwake.release()
     }
 
-    /// `SMAppService` follows `Settings.launchAtLogin` at startup. The first registration is tried
-    /// once; after that an owner who removed the item in System Settings is not fought.
+    /// `SMAppService` follows `Settings.launchAtLogin` at startup, but only for an installed copy
+    /// (never a debug build). The first registration is tried once; after that an owner who removed
+    /// the item in System Settings is not fought.
     private func syncLoginItem() {
+        #if DEBUG
+        let isDebug = true
+        #else
+        let isDebug = false
+        #endif
+        guard LoginItemPolicy.shouldSync(bundleURL: Bundle.main.bundleURL, isDebugBuild: isDebug) else {
+            Self.logger.notice("login item sync skipped (not an installed release copy)")
+            return
+        }
         let wanted = ((try? settingsStore.load()?.clamped()) ?? Settings()).launchAtLogin
         let defaults = UserDefaults.standard
         switch (wanted, LoginItem.state) {
@@ -124,5 +145,32 @@ final class EngineHost {
     /// Used only when no `state_*.sqlite` exists yet: the scanner then finds nothing.
     private static var fallbackIndexURL: URL {
         FileManager.default.homeDirectoryForCurrentUser.appending(path: ".codex/state_5.sqlite")
+    }
+
+    /// Runs `work` off the main thread and gives up after `seconds` (nil). The abandoned work finishes on its own.
+    private static func withTimeout<T: Sendable>(seconds: Double, _ work: @escaping @Sendable () async -> T) async -> T? {
+        await withCheckedContinuation { continuation in
+            let once = ResumeOnce(continuation)
+            Task.detached { once.resume(await work()) }
+            Task.detached {
+                try? await Task.sleep(for: .seconds(seconds))
+                once.resume(nil)
+            }
+        }
+    }
+}
+
+private final class ResumeOnce<T: Sendable>: @unchecked Sendable {
+    private let lock = NSLock()
+    private var continuation: CheckedContinuation<T?, Never>?
+
+    init(_ continuation: CheckedContinuation<T?, Never>) { self.continuation = continuation }
+
+    func resume(_ value: T?) {
+        let taken = lock.withLock { () -> CheckedContinuation<T?, Never>? in
+            defer { continuation = nil }
+            return continuation
+        }
+        taken?.resume(returning: value)
     }
 }

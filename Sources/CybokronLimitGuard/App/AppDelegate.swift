@@ -88,10 +88,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func handOffToRunningInstance() -> Bool {
         guard let id = Bundle.main.bundleIdentifier else { return true }
         let me = NSRunningApplication.current
+        // Earlier launch wins; equal or unknown launch dates fall back to the lower pid.
+        func wins(_ a: NSRunningApplication, over b: NSRunningApplication) -> Bool {
+            if let da = a.launchDate, let db = b.launchDate, da != db { return da < db }
+            return a.processIdentifier < b.processIdentifier
+        }
         func olderCopies() -> [NSRunningApplication] {
             NSRunningApplication.runningApplications(withBundleIdentifier: id).filter {
-                $0.processIdentifier != me.processIdentifier
-                    && ($0.launchDate ?? .distantFuture) < (me.launchDate ?? .distantPast)
+                $0.processIdentifier != me.processIdentifier && wins($0, over: me)
             }
         }
         // A copy that is just quitting (restart after a language change or an update) gets a moment to go.
@@ -130,6 +134,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if case .readOnly = engine.health { parts.append(L10n.EngineStatus.readOnly) }
         if engine.isPaused { parts.append(L10n.EngineStatus.paused) }
         return parts.joined(separator: " · ")
+    }
+
+    /// Pause does nothing until the Engine exists.
+    func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+        menuItem === pauseItem ? engineHost.engine != nil : true
     }
 
     @objc private func togglePause(_ sender: Any?) {

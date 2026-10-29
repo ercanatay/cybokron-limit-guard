@@ -110,10 +110,12 @@
 		C32809F653F9BC43B627D2F3 /* SVGPathDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D753F1C84D8FD95A3A4C0DD /* SVGPathDataTests.swift */; };
 		C38B96693A63EF2162FBCF85 /* SettingsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60A2825CAC7F3FB3CF1F38F0 /* SettingsModel.swift */; };
 		C447C96B840BAEF969F636BB /* SystemTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6603D6325D742F5EA306C468 /* SystemTools.swift */; };
+		C676C04EA8F6188F44BE6A67 /* LoginItemPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B39BD527551D922E6642F75 /* LoginItemPolicyTests.swift */; };
 		CB7A2669630D592407214029 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 901D6C70D1E0EFF47614FEDE /* Localizable.strings */; };
 		CE1B955976D308794C5F553D /* ChangelogFeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = A920F13CB9B2A535C58BE070 /* ChangelogFeed.swift */; };
 		D0265EEECEB485F31FBFA01C /* AppServerTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E41A078E7DA11CF7F2DFFAB /* AppServerTransport.swift */; };
 		D11E303D9E6B6139F61B3602 /* usage-live.json in Resources */ = {isa = PBXBuildFile; fileRef = C12E910A58545D3FF0949B99 /* usage-live.json */; };
+		D50869CC806091E819F0A82B /* LoginItemPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31ADE2C3AD65F0B50A6987C0 /* LoginItemPolicy.swift */; };
 		DBE4E7B9E5497995E3010A73 /* NotificationsSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20BA5562B68289BC73C00367 /* NotificationsSettingsView.swift */; };
 		DCF20008B1327F5D419E5480 /* ChangelogServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31ED7D71C04E0637D3D3D438 /* ChangelogServiceTests.swift */; };
 		DDA4E64E8A1ED49B5D4A04B5 /* ContinueText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09F764FDC273FA26B9FAEEE2 /* ContinueText.swift */; };
@@ -193,12 +195,14 @@
 		29FE6467A8E49579A2181722 /* Notifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notifier.swift; sourceTree = "<group>"; };
 		2C695B608468F86F5628EB5A /* L10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10n.swift; sourceTree = "<group>"; };
 		2E41A078E7DA11CF7F2DFFAB /* AppServerTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppServerTransport.swift; sourceTree = "<group>"; };
+		31ADE2C3AD65F0B50A6987C0 /* LoginItemPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginItemPolicy.swift; sourceTree = "<group>"; };
 		31DAABADA66186C2847BDEB9 /* rollout-limit-then-user.jsonl */ = {isa = PBXFileReference; path = "rollout-limit-then-user.jsonl"; sourceTree = "<group>"; };
 		31ED7D71C04E0637D3D3D438 /* ChangelogServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangelogServiceTests.swift; sourceTree = "<group>"; };
 		3585C463F32D914B0BEADDE0 /* EngineTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EngineTypes.swift; sourceTree = "<group>"; };
 		35A0596295F1713B78DA27A5 /* WebSocketFrame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebSocketFrame.swift; sourceTree = "<group>"; };
 		36C914B36DFD4B798D1FD8C7 /* rollout-boilerplate-user.jsonl */ = {isa = PBXFileReference; path = "rollout-boilerplate-user.jsonl"; sourceTree = "<group>"; };
 		3A6D39C71EAD8C7B268C05E0 /* DowngradeProtection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DowngradeProtection.swift; sourceTree = "<group>"; };
+		3B39BD527551D922E6642F75 /* LoginItemPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginItemPolicyTests.swift; sourceTree = "<group>"; };
 		3EB80053BF65EC5FC6536767 /* ContinuePolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinuePolicyTests.swift; sourceTree = "<group>"; };
 		3FF8D21CF728340A208F21BA /* SettingsLimitsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsLimitsTests.swift; sourceTree = "<group>"; };
 		416127CEA9CE887B64367BC9 /* TestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestSupport.swift; sourceTree = "<group>"; };
@@ -602,6 +606,7 @@
 				74650572E004E976C0F7D72E /* ActivityLog.swift */,
 				A747EC638E966EFDF4A52FC4 /* AppState.swift */,
 				C8751E83F9A22C71D996411D /* JSONStore.swift */,
+				31ADE2C3AD65F0B50A6987C0 /* LoginItemPolicy.swift */,
 				FF08DE6920B90939F91737B1 /* Notice.swift */,
 				4A96B3C47D84D325F3ABF22E /* Settings.swift */,
 				F5B7A55381E9242B60C06160 /* SettingsLimits.swift */,
@@ -669,6 +674,7 @@
 				5E9828F3042C0132724AC9BC /* FakeAppServer.swift */,
 				89C3B167F61BE18C87C8A0A3 /* ForecastTests.swift */,
 				FAAD0ABED822F52203247300 /* LocalizationTests.swift */,
+				3B39BD527551D922E6642F75 /* LoginItemPolicyTests.swift */,
 				01A9784FADB763FBC812DD1C /* NoticeTests.swift */,
 				D645DF8CC7D80312FD3CD062 /* ProcessTransportTests.swift */,
 				EEA0D556A68D7230989B0ABF /* ReleaseFeedTests.swift */,
@@ -866,6 +872,7 @@
 				2F7A1492DCDCBA675B354EDD /* LanguageSample.swift in Sources */,
 				F86BC7AB1814820845424B40 /* LinkPolicy.swift in Sources */,
 				5536156CFC6183F37ED3B542 /* Localization.swift in Sources */,
+				D50869CC806091E819F0A82B /* LoginItemPolicy.swift in Sources */,
 				7AFAE3C521A3B8CCDA3413DF /* Notice.swift in Sources */,
 				52FA8BFADB3C6980219B936D /* ProtocolGuard.swift in Sources */,
 				4D781D17FB735986FA7AB2B4 /* ReleaseFeed.swift in Sources */,
@@ -960,6 +967,7 @@
 				E608DD630A8B9E45D108B9C2 /* FakeAppServer.swift in Sources */,
 				73BD4C9B7BDE3ABAC1F85583 /* ForecastTests.swift in Sources */,
 				5826BAE45E8D6A349B1F1344 /* LocalizationTests.swift in Sources */,
+				C676C04EA8F6188F44BE6A67 /* LoginItemPolicyTests.swift in Sources */,
 				E0764D154881BF84C1AB7F91 /* NoticeTests.swift in Sources */,
 				B054ABF442973CB7D0A68281 /* ProcessTransportTests.swift in Sources */,
 				90E4FAF79504B7E3289B2ADA /* ReleaseFeedTests.swift in Sources */,
