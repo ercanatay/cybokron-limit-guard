@@ -846,6 +846,73 @@ struct EngineTests {
         #expect(h.turnStarts().count == 1)
     }
 
+    // MARK: Manual spend through the Engine (spec §8.2)
+
+    @Test func manualSpendConsumesOnceAndReadsAgain() async throws {
+        let h = try Harness()
+        h.account.scriptQueue(limitsMethod, [.result(limitsJSON(allowed: false, credits: [("c1", nil)]))])
+        h.limits(limitsJSON(allowed: true, five: 0))
+        h.account.script(consumeMethod, result: #"{"outcome":"reset"}"#)
+        let result = await h.engine.useReset(creditId: "c1")
+        #expect(result == .outcome(.reset))
+        #expect(h.consumes().map { $0.params["creditId"] } == ["c1"])
+        let methods = h.account.requests.map(\.method)
+        let consumeIndex = try #require(methods.firstIndex(of: consumeMethod))
+        #expect(methods[(consumeIndex + 1)...].contains(limitsMethod))
+        #expect(h.notes.contains(.resetUsed(.reset)))
+        #expect(try JSONStore<LedgerFile>(url: h.dir.url.appending(path: "reset-ledger.json"), schemaVersion: 1).load()?.entries.isEmpty == true)
+    }
+
+    @Test func manualSpendIsRefusedInReadOnlyMode() async throws {
+        let h = try Harness()
+        // An undecodable limits result puts the app in read-only mode.
+        h.limits("[]")
+        h.account.script(consumeMethod, result: #"{"outcome":"reset"}"#)
+        await h.engine.tick()
+        #expect(h.engine.health != .full)
+        #expect(await h.engine.useReset(creditId: "c1") == .busy)
+        #expect(h.consumes().isEmpty)
+    }
+
+    @Test func manualSpendIsRefusedWithAnUnusableStateFile() async throws {
+        let h = try Harness { dir in
+            try Data(#"{"schemaVersion":2}"#.utf8).write(to: dir.appending(path: "state.json"))
+        }
+        h.limits(limitsJSON(allowed: false, credits: [("c1", nil)]))
+        h.account.script(consumeMethod, result: #"{"outcome":"reset"}"#)
+        #expect(await h.engine.useReset(creditId: "c1") == .busy)
+        #expect(h.consumes().isEmpty)
+    }
+
+    @Test func manualSpendWithAPendingLedgerEntryIsBusy() async throws {
+        let h = try Harness()
+        h.limits(limitsJSON(allowed: false, credits: [("c1", nil)]))
+        h.account.script(consumeMethod, result: #"{"outcome":"reset"}"#)
+        // After the launch resume, so the entry stays pending (another copy of the app, say).
+        await h.engine.bootstrap()
+        try JSONStore<LedgerFile>(url: h.dir.url.appending(path: "reset-ledger.json"), schemaVersion: 1).save(LedgerFile(entries: [
+            LedgerEntry(idempotencyKey: UUID(), creditId: "c-other", reason: .manual, createdAt: t0, attempts: 1),
+        ]))
+        #expect(await h.engine.useReset(creditId: "c1") == .busy)
+        #expect(h.consumes().isEmpty)
+    }
+
+    /// A manual spend that waited behind an automatic one for the same credit sends nothing: the credit
+    /// is checked again against a fresh read once it is its turn.
+    @Test func manualSpendQueuedBehindAnAutoSpendIsNotSentTwice() async throws {
+        let h = try Harness(settings: acceptedSettings { $0.autoSpendEnabled = true })
+        h.standardWaitingSetup()
+        h.account.scriptQueue(limitsMethod, [.result(limitsJSON(allowed: false, five: 40, weekly: 98, reached: "weekly", credits: [("c1", nil)]))])
+        h.limits(limitsJSON(allowed: true, five: 0, weekly: 0))
+        h.account.script(consumeMethod, result: #"{"outcome":"reset"}"#, delay: .milliseconds(200))
+        let tick = Task { await h.engine.tick() }
+        try await waitUntil { h.consumes().count == 1 }
+        let manual = await h.engine.useReset(creditId: "c1")
+        await tick.value
+        #expect(manual == .busy)
+        #expect(h.consumes().count == 1)
+    }
+
     @Test func pauseIsSavedAndRestoredAtLaunch() async throws {
         let h = try Harness()
         h.engine.pause(true)

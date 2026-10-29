@@ -231,6 +231,81 @@ struct ResetExecutorTests {
         #expect(try ledgerStore(dir).load()?.entries == [])
     }
 
+    @Test func spendAndResumeTogetherSendOnlyThePendingKey() async throws {
+        let dir = try TemporaryDirectory()
+        defer { dir.remove() }
+        let stored = LedgerEntry(idempotencyKey: UUID(), creditId: "c-stored", reason: .auto, createdAt: fixedNow, attempts: 1)
+        try ledgerStore(dir).save(LedgerFile(entries: [stored]))
+        let fake = FakeAppServer()
+        fake.script(Self.consume, result: #"{"outcome":"reset"}"#, delay: .milliseconds(100))
+        let store = ledgerStore(dir)
+        let ledgerSizes = Box<[Int]>([])
+        fake.onRequest = { request in
+            if request.method == Self.consume { ledgerSizes.value.append((try? store.load())?.entries.count ?? -1) }
+        }
+        let executor = makeExecutor([fake], ledger: ResetLedger(store: store))
+        async let spent = executor.spend(creditId: "c-new", reason: .manual)
+        async let resumed = executor.resumePending()
+        let (spend, resume) = await (spent, resumed)
+        // The new spend never runs while an entry is pending; the resume either ran or found the executor busy.
+        #expect(spend == .busy)
+        #expect(resume == .outcome(.reset) || resume == .busy)
+        let requests = consumeRequests(fake)
+        #expect(requests.count <= 1)
+        #expect(requests.allSatisfy { $0.params == ["idempotencyKey": stored.idempotencyKey.uuidString.lowercased(), "creditId": "c-stored"] })
+        #expect(ledgerSizes.value.allSatisfy { $0 == 1 })
+    }
+
+    @Test func twoExecutorsOnOneLedgerSpendOnce() async throws {
+        let dir = try TemporaryDirectory()
+        defer { dir.remove() }
+        let store = ledgerStore(dir)
+        let ledger = ResetLedger(store: store)
+        let ledgerSizes = Box<[Int]>([])
+        let fakes = [FakeAppServer(), FakeAppServer()]
+        for fake in fakes {
+            fake.script(Self.consume, result: #"{"outcome":"reset"}"#, delay: .milliseconds(100))
+            fake.onRequest = { request in
+                if request.method == Self.consume { ledgerSizes.value.append((try? store.load())?.entries.count ?? -1) }
+            }
+        }
+        let a = makeExecutor([fakes[0]], ledger: ledger)
+        let b = makeExecutor([fakes[1]], ledger: ledger)
+        async let first = a.spend(creditId: "c1", reason: .auto)
+        async let second = b.spend(creditId: "c2", reason: .manual)
+        let results = await [first, second]
+        #expect(results.filter { $0 == .busy }.count == 1)
+        #expect(results.filter { $0 == .outcome(.reset) }.count == 1)
+        #expect(fakes.map { consumeRequests($0).count }.reduce(0, +) == 1)
+        #expect(ledgerSizes.value == [1])
+        #expect(try await ledger.pending() == nil)
+    }
+
+    @Test func secondExecutorResumingAnInFlightSpendUsesTheSameKey() async throws {
+        let dir = try TemporaryDirectory()
+        defer { dir.remove() }
+        let store = ledgerStore(dir)
+        let ledger = ResetLedger(store: store)
+        let ledgerSizes = Box<[Int]>([])
+        let fakes = [FakeAppServer(), FakeAppServer()]
+        for fake in fakes {
+            fake.script(Self.consume, result: #"{"outcome":"reset"}"#, delay: .milliseconds(100))
+            fake.onRequest = { request in
+                if request.method == Self.consume { ledgerSizes.value.append((try? store.load())?.entries.count ?? -1) }
+            }
+        }
+        let a = makeExecutor([fakes[0]], ledger: ledger)
+        let b = makeExecutor([fakes[1]], ledger: ledger)
+        async let spent = a.spend(creditId: "c1", reason: .manual)
+        async let resumed = b.resumePending()
+        _ = await (spent, resumed)
+        let keys = fakes.flatMap(consumeRequests).map { $0.params["idempotencyKey"] }
+        #expect(!keys.isEmpty)
+        #expect(Set(keys).count == 1)
+        #expect(fakes.flatMap(consumeRequests).allSatisfy { $0.params["creditId"] == "c1" })
+        #expect(ledgerSizes.value.allSatisfy { $0 == 1 })
+    }
+
     @Test func twoLedgersOnOneFileNeverHoldTwoKeys() async throws {
         let dir = try TemporaryDirectory()
         defer { dir.remove() }

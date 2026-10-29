@@ -543,9 +543,15 @@ public final class Engine: ObservableObject {
     private func runUseReset(_ creditId: String) async -> SpendResult {
         if !bootstrapped { await runBootstrap() }
         settings = dependencies.settings()
+        // This call may have waited behind an automatic spend: check the credit against a fresh read.
+        await readLimits()
         if case let .readOnly(reason) = effectiveHealth {
             // Read-only mode never spends (spec §6); `.busy` means nothing was sent.
             await note(.readOnly(reason))
+            return .busy
+        }
+        guard let read = snapshot, isFresh(read), CreditPresentation.stillAvailable(creditId: creditId, in: read) else {
+            Self.logger.notice("reset spend for \(creditId, privacy: .public) not sent: credit no longer available")
             return .busy
         }
         let result = await executor.spend(creditId: creditId, reason: .manual)
