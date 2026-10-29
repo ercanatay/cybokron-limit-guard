@@ -18,6 +18,7 @@ Cybokron Limit Guard is a small, open-source macOS menu-bar app that:
 3. If the owner allows it, spends **one** reset credit when the weekly limit is about to run out,
    so the task is not interrupted.
 4. Lets the owner spend a specific reset credit manually, right now, from the menu.
+5. Shows a legal notice on first run; nothing automatic happens until it is accepted.
 
 It must stay simple and understandable. It is built for the owner's own workflow first; later
 phases extend it to other terminals/IDEs and other agents (§14).
@@ -159,6 +160,32 @@ up to 60 min. Session scan: file-system events on `~/.codex/sessions` + `state_5
 (FSEvents), with a 30 s fallback timer. One long-lived `app-server` child; restart on crash with
 back-off; shut down on quit.
 
+### 4.3.1 First-run legal notice (D23)
+Before anything automatic can run, a modal window shows a notice the owner must accept
+("I understand" / "Quit"). Until accepted, the app only displays usage (read-only). Text
+(EN; TR translated by the normal i18n flow, reviewed):
+
+> **Before you use Cybokron Limit Guard**
+> This is an independent, open-source tool. It is not made, endorsed or supported by OpenAI or
+> any other AI platform. It acts on your behalf: it can send messages into your Codex sessions
+> and, only if you allow it, redeem your usage-limit reset credits. Automated use, or a fault in
+> this tool, may conflict with the usage policies of your AI platform account, which may then
+> apply restrictions, limits or suspensions to your account. You use this tool at your own
+> risk; the software is provided "as is", without warranty of any kind (MIT License). Review
+> your platform's terms before enabling automatic actions.
+
+The accepted notice version and date are stored in `settings.json`; if the text changes
+(`noticeVersion` bump) it is shown again. The notice is also reachable from About and from
+Settings → General, and is repeated in README.
+
+### 4.3.2 Diagnostics / Doctor (D26)
+Settings → General → **Run Diagnostics**, and automatically when something fails. Checks with
+✓/⚠/✗ and a one-line fix: codex found + version (and whether it is newer than the last tested
+version), signed in with ChatGPT, app-server daemon reachable, `rateLimits/read` decodes,
+Terminal automation permission (fallback path), notifications allowed, **approval policy**:
+warns when Codex's `approval_policy` is interactive ("an unattended continue will stop at the
+first approval prompt"), and Keep-awake assertion state. Copy-to-clipboard report (no secrets).
+
 ### 4.4 Empty and error states
 Shown in the popover status line with a one-line fix: Codex not found (link to set the path) ·
 Codex not signed in with ChatGPT (`codex login`) · app-server failed to start (retrying) ·
@@ -248,6 +275,8 @@ Mapping a guarded tab to its thread:
 - At least **2 min** between continues to the same thread.
 - A continue followed by another `usage_limit_exceeded` within 10 min counts against the limit.
 - Limit reached → stop for that thread, notify "Stopped after 3 tries", log it.
+- **Runaway brake (D25):** 3 auto-continued turns in a row that each finish in < 60 s also stop
+  the thread (likely a no-progress loop).
 
 ### 7.5 Continue text & language
 - Language sample: the last 3 real user messages in the thread, ignoring injected blocks
@@ -296,7 +325,30 @@ the ledger, still confirms.
 Credits with `expiresAt` < 24 h away: highlighted in the popover and one notification per
 credit ("A reset credit expires today at 22:29"). No automatic spending because of expiry.
 
-## 9. Typing into Terminal.app
+## 9. Delivering the continue message
+
+### 9.0 Preferred path: Codex's own app-server (Spike S5)
+The Terminal TUI is a client of the shared app-server daemon. `codex app-server proxy`
+connects to that same daemon over its control socket; `thread/loaded/list` lists the threads
+currently loaded by clients and `turn/start {threadId, input, clientUserMessageId}` starts a
+turn in a given thread. If S5 confirms that a turn started this way appears and runs in the
+owner's Terminal tab, this is the **primary delivery path**:
+- exact thread targeting by `threadId` (no tab guessing, no keystrokes, no draft clobbering,
+  no risk of hitting Enter on a picker);
+- no Automation / Accessibility permission needed;
+- the turn keeps the thread's model, effort, approval and sandbox settings — the app never
+  passes `model`/`effort`/`approvalPolicy`/`sandboxPolicy` overrides (D27).
+Guarded-tab selection (§7.3) still decides *which* sessions may be continued; the tab ↔ thread
+link then only needs to be known for display. Keystroke typing (§9.1) remains as fallback when
+S5 fails or the daemon isn't reachable.
+
+### 9.0.1 Delivery confirmation (D24)
+Every continue carries a fresh `clientUserMessageId` (UUID, stored in `state.json` before
+sending). The app confirms delivery by finding that id (path 9.0) or a new user message/turn
+(path 9.1) in the thread within 2 min. Unconfirmed → marked "unconfirmed" in Activity and
+**never re-sent automatically**; the owner gets a notification with a "Send again" button.
+
+## 9.1 Fallback: typing into Terminal.app
 
 Default mechanism (to be confirmed by Spike S1): Apple Events to Terminal —
 `do script "<text>" in <tab>` with the tab addressed explicitly (`do script` without `in` opens
@@ -354,6 +406,13 @@ Window with Swift Charts:
   (`usage-history.json`, one sample per poll, kept 30 days, ≤ 1 sample/min).
 If `dailyUsageBuckets` is null, only the limit-history chart is shown.
 
+**Forecast (D28):** from the last 2–6 h of samples the app estimates the burn rate of each window
+and shows "At this pace the weekly limit runs out ~Fri 14:00" (popover under the weekly bar and in
+the chart window). Shown only with ≥ 3 samples and a positive rate; hidden after a reset.
+
+**"Limit is back" (D29):** when `ordinaryUsageAllowed` flips from false to true, a notification
+fires (setting, default on) — also when auto-continue is off or no tab is guarded.
+
 ## 13. Data, files, release
 
 `~/Library/Application Support/Cybokron Limit Guard/`: `settings.json`, `state.json` (loop
@@ -384,8 +443,22 @@ P1.5 (right after v0.1.0 ships): landing page on cybokron.com (`/limit-guard/`, 
 in **English and Turkish only**, same pattern as the Dock Groups page (runbook: `cybokron-site`
 skill), download link to the latest GitHub release. Other languages later.
 P2: iTerm2 / Ghostty / VS Code & Cursor terminals (HostAdapter). P3: Codex desktop app.
-P4: Claude Code, OpenCode (AgentAdapter). P5: multiple accounts. P6: landing page in the other
+P4: Claude Code, OpenCode (AgentAdapter). P5: multiple accounts.
+Later candidates (from research, not scheduled): `/goal` threads in `usageLimited` state;
+phone notifications (ntfy / Pushover); optional continue after connection/overload errors
+(default off); task chains "until done" with a stop phrase. P6: landing page in the other
 cybokron.com languages.
+
+## 14.1 Prior art and research (2026-10-29)
+GitHub issues openai/codex #21073 (auto-resume), #34188, #28931 (goal), #28963/#29618 (reset
+credits in app), #21003/#31109 (reset countdown). Tools: Agent Auto-Continue (menu bar,
+app-server delivery, delivery ids, runaway pause), lutzkind/codex-auto-resume (`codex exec
+resume`, `usage_limit_exceeded` detection, 24 h cut-off), cirosantilli/codex-continue (expect
+wrapper), codex-reset (npm, credit list/redeem), LimitBreak (Claude), many read-only menu-bar
+monitors. X/Twitter (via Grok, unverified): biggest pains are mid-task cut-offs and typing
+"continue"; credits expiring unnoticed; credits redeemed right before a platform-wide reset
+being wasted; unattended loops doing damage; approvals blocking overnight runs; ToS worries.
+Our differentiators: auto-continue + credit management + loop guards in one native app.
 
 ## 15. Spikes before coding (throwaway, results go in `docs/design/limit-guard-spike.md`)
 - **S1 Typing**: in a real Codex TUI in Terminal, does `do script "x" in tab` submit, insert a
@@ -396,6 +469,10 @@ cybokron.com languages.
   which tab (cwd, tab history text, timing, app-server-control / ipc metadata, logs)?
 - **S3 Terminal scripting**: tab `tty`, `busy`, `processes`, `history` access under hardened
   runtime + Automation consent; cost of reading `history` for long sessions.
+- **S5 Delivery via app-server**: through `codex app-server proxy`, does `thread/loaded/list`
+  show the Terminal TUI's thread, and does `turn/start` on it run visibly in that Terminal tab
+  (no duplicate, TUI stays in sync)? Does it keep the thread's model/approval settings? What
+  happens if the TUI is mid-turn? (Harmless prompt, no limit needed.)
 - **S4 app-server lifetime**: one long-lived stdio child vs. per-poll spawn; memory/CPU; does it
   conflict with the shared daemon?
 
@@ -424,3 +501,11 @@ cybokron.com languages.
 | D20 | Never type when a Codex selection screen/prompt is open in the tab | builder |
 | D21 | Privacy: local only, no analytics, conversation text never stored by the app | builder |
 | D22 | cybokron.com landing page EN+TR after the app ships (P1.5); other languages later (P6) | owner |
+| D23 | First-run legal notice (independent tool, platform may restrict/suspend the account, as-is/MIT, own risk); must be accepted before any automatic action; re-shown on text change | owner |
+| D24 | Delivery confirmation via `clientUserMessageId`; unconfirmed is never auto-resent | owner |
+| D25 | Runaway brake: 3 auto-continued turns in a row each < 60 s → stop | owner |
+| D26 | Diagnostics/Doctor incl. approval-policy warning | owner |
+| D27 | Continue keeps the thread's model/effort/approval/sandbox — no overrides | owner |
+| D28 | Burn-rate forecast for 5-hour and weekly windows | owner |
+| D29 | "Limit is back" notification | owner |
+| D30 | Spike S5: deliver via app-server `turn/start`; if it works it is the primary path, typing is fallback | owner |
