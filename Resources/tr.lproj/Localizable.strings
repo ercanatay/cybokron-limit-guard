@@ -15,8 +15,8 @@
 "common.cancel" = "İptal";
 "common.ok" = "Tamam";
 "common.close" = "Kapat";
-"common.done" = "Tamamlandı";
-"common.install" = "Yükle";
+"common.done" = "Bitti";
+"common.install" = "Kur";
 "common.tryAgain" = "Tekrar Dene";
 "common.changelog" = "Değişiklik Günlüğü";
 "common.links" = "Bağlantılar";
@@ -37,7 +37,7 @@
 "settings.updates.otherVersions" = "Diğer Sürümler…";
 "settings.updates.footer" = "Uygulama, başlangıçta ve her 6 saatte bir projenin GitHub sürümlerini denetler; yalnızca uygulamanın sürüm numarası iletilir. Yeni bir sürüm, İndir ve Kur'u seçtikten sonra kurulur. Diğer Sürümler…, yayınlanmış her sürümü, eski ya da yenisini kurar; geri dönünce otomatik denetimler daha yenileri atlar.";
 "settings.updates.viewChangelog" = "Değişiklik Günlüğünü Görüntüle";
-"settings.updates.latestPath" = "En güncel yolda: her yeni sürüm teklif edilir";
+"settings.updates.latestPath" = "Güncel yoldasınız: her yeni sürüm önerilir";
 "settings.updates.skipped" = "Atlanan daha yeni sürümler: %@";
 "settings.updates.clear" = "Temizle";
 "settings.updates.clear.help" = "Otomatik denetimlerin bu sürümleri yeniden önermesine izin ver";
@@ -51,7 +51,7 @@
 "settings.otherVersions.intro" = "%@ uygulamasının yayınlanmış herhangi bir sürümünü, eski ya da yenisini kurar. Uygulama kapanır ve seçtiğiniz sürüm olarak yeniden açılır.";
 "settings.otherVersions.releasesLink" = "GitHub'daki Sürümler Sayfasını Aç";
 "settings.otherVersions.loading" = "Sürümler GitHub'dan yükleniyor…";
-"settings.otherVersions.none" = "GitHub'da yayınlanmış sürüm listede yok.";
+"settings.otherVersions.none" = "GitHub'da yayınlanmış sürüm listelenmiyor.";
 "settings.otherVersions.current" = "Güncel";
 "settings.otherVersions.noDownload" = "İndirme yok";
 "settings.otherVersions.install.help" = "%@ sürümünü kur";
@@ -62,13 +62,13 @@
 "settings.otherVersions.confirm.skips" = "Bundan sonra otomatik denetimler daha yeni sürümleri atlar (%@); Güncellemeleri Denetle… yine de onları önerir.";
 "settings.otherVersions.confirm.older" = "Daha eski bir sürüm, o sürümden sonra eklenen özellikleri bilmiyor olabilir.";
 "settings.otherVersions.busy.title" = "Bir güncelleme devam ediyor";
-"settings.otherVersions.busy.message" = "%@ şu anda bir güncelleme arıyor veya yüklüyor. Tamamlandıktan sonra tekrar deneyin.";
+"settings.otherVersions.busy.message" = "%@ şu anda bir güncelleme arıyor veya kuruyor. Tamamlandıktan sonra tekrar deneyin.";
 "settings.otherVersions.confirm.upgrade" = "Atlanan sürümler temizlenir; böylece otomatik denetimler her yeni sürümü yeniden önerir.";
 "settings.otherVersions.dataCopies" = "Kurulumdan önce veri dosyalarınızın kopyaları yanlarına kaydedilir; o sürüm daha yeni dosyaları okuyamazsa diye.";
 
 /* updates */
 "updates.otherVersions.preSafety.title" = "Bu sürümde güvenlik düzeltmeleri yok";
-"updates.otherVersions.preSafety.message" = "%@ sürümü, yüklediği güncellemelerin daha sıkı denetlenmesi gibi önemli güvenlik düzeltmelerinden önce yayımlandı. Yalnızca ihtiyacınız varsa yükleyin ve ardından en son sürüme tekrar güncelleyin.";
+"updates.otherVersions.preSafety.message" = "%@ sürümü, kurduğu güncellemelerin daha sıkı denetlenmesi gibi önemli güvenlik düzeltmelerinden önce yayımlandı. Yalnızca ihtiyacınız varsa kurun ve ardından en son sürüme tekrar güncelleyin.";
 
 /* changelog */
 "changelog.tab" = "Değişiklik Günlüğü";
@@ -86,7 +86,7 @@
 "changelog.unavailable" = "Sürüm notları kullanılamıyor";
 "changelog.error.cached" = "Sürüm notları yüklenemedi — önbellekteki kopya gösteriliyor.";
 "changelog.retry" = "Tekrar denemek için Yenile'ye tıklayın.";
-"changelog.openRelease" = "GitHub'da görüntüle";
+"changelog.openRelease" = "GitHub'da Görüntüle";
 
 /* updateWindow */
 "updateWindow.title" = "Yazılım Güncellemesi";
@@ -104,7 +104,7 @@
 "updateWindow.downloading" = "%@ sürümü indiriliyor…";
 "updateWindow.restartsWhenDone" = "%@, işi bitince yeniden başlar.";
 "updateWindow.reopening" = "%@ yeniden açılıyor.";
-"updateWindow.dryRun.title" = "Deneme koşusu tamamlandı";
+"updateWindow.dryRun.title" = "Deneme çalıştırması tamamlandı";
 "updateWindow.dryRun.message" = "%1$@ sürümü indirildi, doğrulandı ve %2$@ konumuna kopyalandı. Hiçbir şey değiştirilmedi.";
 "updateWindow.checkFailed" = "Güncellemeler denetlenemedi";
 "updateWindow.installFailed" = "%@ sürümü kurulamadı";
@@ -126,7 +126,7 @@
 "about.website" = "Web Sitesi";
 "about.sourceCode" = "Kaynak Kodu";
 "about.license" = "Lisans";
-"about.reportBug" = "Bir hata mı buldunuz? Issue açın";
+"about.reportBug" = "Bir hata mı buldunuz? Sorun kaydı açın";
 "about.project.limitGuard" = "Bu uygulama · macOS menü çubuğunda Codex kullanım limitleri";
 "about.project.dockGroups" = "macOS için Dock grupları";
 "about.project.intelComputerUse" = "Intel Mac'ler için MCP üzerinden yerel macOS masaüstü otomasyonu.";
@@ -134,12 +134,12 @@
 "about.project.backlinkChecker" = "Backlink'lerin ankrajlarını, dofollow/nofollow ve HTTP durumlarını denetler.";
 "about.project.consentManager" = "YOOtheme Pro 5 Consent Manager çeviri eklentisi (WordPress.org).";
 "about.project.antigravityUpdater" = "Antigravity Tools için hafif macOS güncelleyicisi, 21 dil.";
-"about.project.widgetVisibility" = "Alt eleman desteği olan, Jetpack'siz widget görünürlüğü WP eklentisi.";
+"about.project.widgetVisibility" = "Alt öğe desteğiyle widget görünürlüğü sağlayan, Jetpack gerektirmeyen WP eklentisi.";
 "about.project.forbiddenContent" = "Yazı başlıklarındaki yasak anahtar kelimeleri (örn. 'Casino') bulur — bir WP denetim aracı gibi.";
 
 /* core */
 "core.releaseNotes.truncated" = "Sürüm notları burada gösterilenden daha uzun; tüm notlar sürüm sayfasında bulunur.";
-"core.update.check.notHTTP" = "Yanıt HTTP değildi.";
+"core.update.check.notHTTP" = "Yanıt geçerli bir HTTP yanıtı değildi.";
 "core.update.check.malformed" = "GitHub'dan gelen sürüm bilgisi okunamadı.";
 "core.update.check.unsupportedTag" = "En yeni sürüm (“%@”) bir sürüm numarasıyla etiketlenmemiş.";
 "core.update.check.noRelease" = "Henüz yayınlanmış sürüm yok.";
@@ -154,8 +154,8 @@
 "core.update.install.mountFailed" = "Güncellemenin disk imajı açılamadı: %@";
 "core.update.install.appNotFound" = "Güncellemenin disk imajı uygulamayı içermiyor.";
 "core.update.install.wrongApp" = "Güncellemenin disk imajı başka bir uygulama içeriyor (%@).";
-"core.update.install.versionMismatch" = "İndirilen uygulama %1$@ sürümünde, ama sürüm %2$@.";
-"core.update.install.invalidSignature" = "İndirilen uygulamanın kod imzası geçerli değil, bu yüzden yüklenmedi: %@";
+"core.update.install.versionMismatch" = "İndirilen uygulamanın sürümü %1$@, ancak yayınlanan sürüm %2$@.";
+"core.update.install.invalidSignature" = "İndirilen uygulamanın kod imzası geçerli değil, bu yüzden kurulmadı: %@";
 "core.update.install.wrongSigner" = "İndirilen uygulama başka bir geliştirici tarafından imzalanmış (%2$@ yerine ekip %1$@), bu yüzden yüklenmedi.";
 "core.update.install.replaceFailed" = "Yeni sürüm yerine konulamadı; bu yüzden mevcut olan korundu: %@";
 "core.update.install.rollbackFailed" = "Güncelleme başarısız oldu ve önceki sürüm yerine konulamadı. %@ konumunda tutuluyor.";
@@ -180,7 +180,7 @@
 "diagnostics.signedIn.ok" = "ChatGPT ile oturum açıldı";
 "diagnostics.signedIn.failed" = "ChatGPT ile oturum açılmadı";
 "diagnostics.signedIn.failed.fix" = "Terminal'de “codex login” komutunu çalıştırın ve ChatGPT ile oturum açın.";
-"diagnostics.signedIn.unknown" = "Oturum durumu kontrol edilemedi";
+"diagnostics.signedIn.unknown" = "Oturum açma durumu kontrol edilemedi";
 "diagnostics.signedIn.unknown.fix" = "Önce yukarıdaki kontrolleri düzeltin.";
 "diagnostics.decode.ok" = "Kullanım limitleri doğru okunuyor";
 "diagnostics.decode.readOnly" = "Codex kullanımı raporlama biçimini değiştirdi";
@@ -224,7 +224,7 @@
 "settings.general.openLoginItems" = "Oturum Açma Öğelerini Aç…";
 "settings.general.showPercent" = "Menü çubuğunda yüzdeyi göster";
 "settings.general.keepAwake" = "Beklerken Mac'i uyanık tut";
-"settings.general.keepAwakeHelp" = "Yalnızca kullanım sınırında durma ile devam arasında. Ekran yine de uyku moduna geçebilir.";
+"settings.general.keepAwakeHelp" = "Yalnızca kullanım limiti nedeniyle duran bir oturum ile devam mesajı arasında.";
 "settings.general.guardNewTabs" = "Yeni Codex sekmelerini otomatik olarak koru";
 "settings.general.guardNewTabsHelp" = "Kapalıyken hangi sekmelerin korunacağını menüden siz seçersiniz.";
 "settings.general.codex.header" = "Codex";
@@ -249,8 +249,8 @@
 "settings.general.runDiagnostics" = "Tanılamayı çalıştır";
 "settings.continue.auto" = "Sınır yeniden açılınca otomatik olarak devam et";
 "settings.continue.countdown" = "Yazmadan önce geri sayım: %ld sn";
-"settings.continue.maxTries" = "Üst üste en fazla devam sayısı: %ld";
-"settings.continue.minGap" = "Devamlar arasındaki en kısa süre: %ld dk";
+"settings.continue.maxTries" = "Art arda en fazla devam mesajı: %ld";
+"settings.continue.minGap" = "Devam mesajları arasındaki en kısa süre: %ld dk";
 "settings.continue.texts.header" = "Dile göre yazılacak metin";
 "settings.continue.texts.footer" = "Uygulama konuşmanın dilini tanır ve eşleşen metni yazar. Diğer diller yedek metni alır.";
 "settings.continue.texts.code" = "Dil kodu";
@@ -258,15 +258,15 @@
 "settings.continue.texts.add" = "Ekle";
 "settings.continue.texts.remove" = "%@ için metni kaldır";
 "settings.continue.fallback" = "Yedek metin";
-"settings.resets.autoUse" = "Haftalık sınır neredeyse tükendiğinde bir sıfırlama hakkı kullan";
+"settings.resets.autoUse" = "Haftalık limit neredeyse tükendiğinde bir sıfırlama hakkı kullan";
 "settings.resets.autoUseCaption" = "Hesap başına 7 günde en fazla bir otomatik sıfırlama. Yalnızca Codex kullanılırken.";
-"settings.resets.threshold" = "Haftalık sınırın %@ kullanıldığında";
+"settings.resets.threshold" = "Haftalık limitin %@ kadarı kullanıldığında";
 "settings.resets.expiryReminders" = "Bir sıfırlama hakkının süresi dolmadan önce bana hatırlat";
 "settings.notifications.header" = "Şu durumlarda bana bildir";
-"settings.notifications.limitReached" = "Bir kullanım sınırına ulaşıldığında";
-"settings.notifications.limitIsBack" = "Sınır yeniden açıldığında";
-"settings.notifications.continueSent" = "Devam isteği gönderildiğinde";
-"settings.notifications.continueSkipped" = "Devam atlandığında veya durdurulduğunda";
+"settings.notifications.limitReached" = "Bir kullanım limitine ulaşıldığında";
+"settings.notifications.limitIsBack" = "Limit yeniden açıldığında";
+"settings.notifications.continueSent" = "Devam mesajı gönderildiğinde";
+"settings.notifications.continueSkipped" = "Devam mesajı atlandığında veya durdurulduğunda";
 "settings.notifications.resetUsed" = "Bir sıfırlama hakkı kullanıldığında";
 "settings.notifications.resetExpiring" = "Bir sıfırlama hakkının süresi dolmak üzereyken";
 "settings.notifications.readOnly" = "Uygulama salt okunur moda geçtiğinde";
@@ -288,15 +288,15 @@
 "activity.empty" = "Henüz etkinlik yok.";
 "activity.kind.limitReached" = "Limite ulaşıldı";
 "activity.kind.limitIsBack" = "Limit yenilendi";
-"activity.kind.continueScheduled" = "Devam planlandı";
-"activity.kind.continueSent" = "Devam gönderildi";
-"activity.kind.continueCancelled" = "Devam iptal edildi";
-"activity.kind.continueSkipped" = "Devam atlandı";
-"activity.kind.unconfirmed" = "Devam onaylanmadı";
+"activity.kind.continueScheduled" = "Devam mesajı planlandı";
+"activity.kind.continueSent" = "Devam mesajı gönderildi";
+"activity.kind.continueCancelled" = "Devam mesajı iptal edildi";
+"activity.kind.continueSkipped" = "Devam mesajı atlandı";
+"activity.kind.unconfirmed" = "Devam mesajı onaylanmadı";
 "activity.kind.loopGuardStop" = "Döngü koruyucusu tarafından durduruldu";
 "activity.kind.runawayStop" = "Kontrolsüz çalışma freni tarafından durduruldu";
-"activity.kind.resetUsed" = "Sıfırlama kredisi kullanıldı";
-"activity.kind.resetExpiring" = "Sıfırlama kredisinin süresi doluyor";
+"activity.kind.resetUsed" = "Sıfırlama hakkı kullanıldı";
+"activity.kind.resetExpiring" = "Sıfırlama hakkının süresi doluyor";
 "activity.kind.readOnly" = "Salt okunur mod";
 "activity.kind.permissionDenied" = "İzin reddedildi";
 "activity.kind.error" = "Hata";
@@ -314,7 +314,7 @@
 "chart.peak" = "En yoğun gün: %@ token";
 "chart.streak.one" = "Seri: %ld gün";
 "chart.streak.other" = "Seri: %ld gün";
-"chart.forecast" = "Bu hızla haftalık limit yaklaşık %@ tarihinde tükenir";
+"chart.forecast" = "Bu hızla haftalık limit yaklaşık %@ civarında tükenir";
 "chart.timedOut" = "Kullanım verileri zamanında yüklenemedi. Yenile'yi deneyin.";
 "chart.axis.tokens" = "Token";
 "chart.axis.time" = "Zaman";
@@ -331,9 +331,9 @@
 "engine.skip.notWaiting" = "Bu oturum kullanım limitini beklemiyor.";
 "engine.skip.confirming" = "Son devam mesajı hâlâ onaylanıyor.";
 "engine.skip.stateNotSaved" = "Uygulamanın durumu kaydedilemedi, bu yüzden hiçbir şey gönderilmedi.";
-"engine.skip.finished" = "Oturumun son turu normal şekilde bitti.";
+"engine.skip.finished" = "Oturumun son turu bitti.";
 "engine.skip.otherError" = "Oturum başka bir hatayla durdu.";
-"engine.skip.userActed" = "Limit duraklamasından sonra oturuma siz yazdınız.";
+"engine.skip.userActed" = "Duraklamadan sonra oturuma siz yazdınız.";
 "engine.skip.tooOld" = "Duraklama devam ettirilemeyecek kadar eski.";
 "engine.skip.notGuarded" = "Sekme korunmuyor.";
 "engine.skip.paused" = "Limit Guard duraklatıldı.";
@@ -360,8 +360,8 @@
 "notify.countdown.body" = "Limit Guard, bekleyen bir Codex oturumunu birazdan devam ettirecek. Durdurmak için iptal edin.";
 "notify.continueSent.title" = "Devam mesajı gönderildi";
 "notify.continueSent.body" = "Limit Guard, bekleyen bir Codex oturumunu devam ettirdi.";
-"notify.continueSkipped.title" = "Devam atlandı";
-"notify.unconfirmed.title" = "Devam onaylanmadı";
+"notify.continueSkipped.title" = "Devam mesajı atlandı";
+"notify.unconfirmed.title" = "Devam mesajı onaylanmadı";
 "notify.unconfirmed.body" = "Codex mesajı onaylamadı. Hiçbir şey yeniden gönderilmedi; oturumu kontrol edin.";
 "notify.loopStopped.title" = "Devam etme durduruldu";
 "notify.loopStopped.body" = "Bir oturum, otomatik devam etme sayısının üst sınırına ulaştı.";
@@ -404,11 +404,11 @@
 "popover.limit.notReported" = "Bildirilmedi";
 "popover.limit.used" = "%@ kullanıldı";
 "popover.limit.resetsIn" = "%1$@ içinde sıfırlanır (%2$@)";
-"popover.limit.forecastFiveHour" = "Bu hızla 5 saatlik limit yaklaşık %@ tarihinde tükenir";
+"popover.limit.forecastFiveHour" = "Bu hızla 5 saatlik limit yaklaşık %@ civarında tükenir";
 "popover.next.title" = "Sonraki işlem";
 "popover.next.continueAt" = "Saat %1$@: “%2$@” gönderilecek — %3$@";
 "popover.next.countdown" = "“%1$@” %2$ld sn içinde gönderilecek — %3$@";
-"popover.next.autoSpend" = "Haftalık kullanım %@ olduğunda 1 sıfırlama kullanılacak";
+"popover.next.autoSpend" = "Haftalık kullanım %@ olduğunda 1 sıfırlama hakkı kullanılacak";
 "popover.next.unknownTarget" = "bir Codex oturumu";
 "popover.resets.title" = "Kullanım limiti sıfırlamaları";
 "popover.resets.available.one" = "%ld tane kullanılabilir";
@@ -416,9 +416,9 @@
 "popover.resets.none" = "Şu anda sıfırlama yok.";
 "popover.resets.untitled" = "Tam sıfırlama";
 "popover.resets.expires" = "Bitiş %1$@ %2$@";
-"popover.resets.neverExpires" = "Sona ermez";
-"popover.resets.expiresToday" = "bugün sona erer";
-"popover.resets.expiresTomorrow" = "yarın sona erer";
+"popover.resets.neverExpires" = "Bitiş yok";
+"popover.resets.expiresToday" = "bugün bitiyor";
+"popover.resets.expiresTomorrow" = "yarın bitiyor";
 "popover.resets.use" = "Sıfırlamayı kullan";
 "popover.resets.redeeming" = "Kullanılıyor…";
 "popover.resets.redeemed" = "Kullanıldı";
@@ -435,7 +435,7 @@
 "popover.sessions.title" = "Codex oturumları";
 "popover.sessions.none" = "Korumak için Terminal sekmesinde Codex'i açın.";
 "popover.sessions.guardHelp" = "Korunan sekmeler, limit sıfırlanınca otomatik olarak devam ettirilir.";
-"popover.sessions.thread" = "Sohbet %@";
+"popover.sessions.thread" = "Konuşma %@";
 "popover.sessions.waitingGuarded" = "Limit bekleniyor. Kendiliğinden devam edecek.";
 "popover.sessions.waitingNotGuarded" = "bekliyor (korunmuyor)";
 "popover.sessions.ambiguous" = "Hangi konuşma olduğu anlaşılamıyor — elle devam edin";
