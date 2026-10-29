@@ -28,11 +28,8 @@ struct ResetCreditsView: View {
                     let listed = Set(rows.map(\.id))
                     // A used credit can drop out of the list after the re-read; its result stays visible here.
                     ForEach(model.creditResults.keys.filter { !listed.contains($0) }.sorted(), id: \.self) { id in
-                        if let result = model.creditResults[id] {
-                            Text(L10n.Popover.Resets.result(result))
-                                .font(.caption.weight(.medium))
-                                .foregroundStyle(result == .outcome(.reset) ? PanelPalette.teal : palette.primaryText)
-                                .fixedSize(horizontal: false, vertical: true)
+                        if let feedback = model.creditResults[id] {
+                            FeedbackText(feedback: feedback, palette: palette)
                         }
                     }
                     if rows.isEmpty {
@@ -81,11 +78,8 @@ private struct CreditRowView: View {
                     ProgressView().controlSize(.small)
                     Text(L10n.Popover.Resets.inFlight).font(.caption).foregroundStyle(palette.secondaryText)
                 }
-            } else if let result = model.creditResults[row.id] {
-                Text(L10n.Popover.Resets.result(result))
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(resultTint(result))
-                    .fixedSize(horizontal: false, vertical: true)
+            } else if let feedback = model.creditResults[row.id] {
+                FeedbackText(feedback: feedback, palette: palette)
             }
         }
         .padding(8)
@@ -120,12 +114,32 @@ private struct CreditRowView: View {
             Text(status).font(.caption).foregroundStyle(palette.secondaryText)
         }
     }
+}
 
-    private func resultTint(_ result: SpendResult) -> Color {
-        switch result {
-        case .outcome(.reset): return PanelPalette.teal
-        case .outcome: return palette.primaryText
-        case .unknown, .busy: return .orange
+/// The inline text after Use Reset.
+private struct FeedbackText: View {
+    let feedback: CreditFeedback
+    let palette: PanelPalette
+
+    var body: some View {
+        Text(text)
+            .font(.caption.weight(.medium))
+            .foregroundStyle(tint)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private var text: String {
+        switch feedback {
+        case let .spent(result): return L10n.Popover.Resets.result(result)
+        case .noLongerAvailable: return L10n.Popover.Resets.noLongerAvailable
+        }
+    }
+
+    private var tint: Color {
+        switch feedback {
+        case .spent(.outcome(.reset)): return PanelPalette.teal
+        case .spent(.outcome): return palette.primaryText
+        case .spent(.unknown), .spent(.busy), .noLongerAvailable: return .orange
         }
     }
 }

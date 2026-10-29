@@ -76,10 +76,22 @@ enum PopoverFormat {
     }
 
     /// `date` in the system locale and time zone from a `DateFormatter` template.
+    @MainActor
     static func date(_ date: Date, template: String) -> String {
+        formatter(template).string(from: date)
+    }
+
+    @MainActor private static var formatters: [String: DateFormatter] = [:]
+
+    /// One formatter per template, locale and time zone (a changed locale or zone gets new ones).
+    @MainActor
+    private static func formatter(_ template: String) -> DateFormatter {
+        let key = "\(template)|\(Locale.current.identifier)|\(TimeZone.current.identifier)"
+        if let cached = formatters[key] { return cached }
         let formatter = DateFormatter()
         formatter.setLocalizedDateFormatFromTemplate(template)
-        return formatter.string(from: date)
+        formatters[key] = formatter
+        return formatter
     }
 
     /// Teal, orange from 80 %, red from 95 % (the menu-bar thresholds).

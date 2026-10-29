@@ -71,6 +71,8 @@ public final class Engine: ObservableObject {
     @Published public private(set) var isPaused = false
     /// Why the last limits read failed; the snapshot shown is then older and closes the gate.
     @Published public private(set) var readError: String?
+    /// The same failure by kind (not signed in, unreachable, other); nil after a successful read.
+    @Published public private(set) var readFailure: LimitsReadFailure?
 
     private struct Countdown {
         var threadId: String
@@ -323,6 +325,7 @@ public final class Engine: ObservableObject {
             snapshot = read
             health = readHealth
             readError = nil
+            readFailure = nil
             switch readHealth {
             case .full:
                 readOnlyReason = nil
@@ -340,6 +343,7 @@ public final class Engine: ObservableObject {
         } catch {
             // The snapshot kept here ages past 30 s, which closes the gate on its own.
             readError = AppServerDelivery.describe(error)
+            readFailure = LimitsReadFailure.classify(error)
         }
     }
 

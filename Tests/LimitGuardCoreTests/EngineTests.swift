@@ -254,6 +254,21 @@ private final class Harness {
 @Suite("Engine")
 @MainActor
 struct EngineTests {
+    /// The last limits read's failure is published by kind, so the popover can say "not signed in".
+    @Test func readFailureIsPublishedByKind() async throws {
+        let h = try Harness()
+        h.account.scriptError(limitsMethod, code: -32600, message: "Unauthorized: please run codex login")
+        await h.engine.tick()
+        #expect(h.engine.readFailure == .notSignedIn)
+        #expect(h.engine.readError != nil)
+
+        h.limits(limitsJSON(allowed: true, five: 10))
+        h.clock.advance(by: 600)
+        await h.engine.tick()
+        #expect(h.engine.readFailure == nil)
+        #expect(h.engine.readError == nil)
+    }
+
     @Test func happyPathContinues() async throws {
         let h = try Harness()
         h.standardWaitingSetup()

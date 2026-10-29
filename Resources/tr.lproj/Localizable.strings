@@ -454,3 +454,5 @@
 "popover.footer.resume" = "Sürdür";
 "popover.footer.pauseHelp" = "Otomatik devam ettirmeyi ve harcamayı duraklat";
 "popover.footer.plan" = "Plan: %@";
+"popover.status.notSignedIn" = "Codex'te oturum açılmamış — Terminal'de `codex login` komutunu çalıştırın";
+"popover.resets.noLongerAvailable" = "Bu sıfırlama artık kullanılamıyor";

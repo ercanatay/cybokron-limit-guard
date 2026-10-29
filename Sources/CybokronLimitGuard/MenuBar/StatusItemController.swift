@@ -10,6 +10,13 @@ struct PopoverActions {
     var showAbout: () -> Void
 }
 
+/// What a credit row shows under itself after Use Reset.
+enum CreditFeedback: Equatable {
+    case spent(SpendResult)
+    /// The credit was used or expired while the confirmation was open: nothing was sent.
+    case noLongerAvailable
+}
+
 /// The popover's state that outlives the popover: the Engine once it runs, and the manual actions in
 /// flight with their results. A transient popover closes for the confirmation alert, so nothing of
 /// this may live in a view's `@State`.
@@ -22,7 +29,7 @@ final class PopoverModel: ObservableObject {
     /// The credit whose "Use Reset" runs; every Use Reset button waits for it.
     @Published private(set) var spendingCreditId: String?
     /// The last result per credit, shown inline under its row.
-    @Published private(set) var creditResults: [String: SpendResult] = [:]
+    @Published private(set) var creditResults: [String: CreditFeedback] = [:]
     @Published private(set) var continuing: Set<String> = []
 
     let actions: PopoverActions
@@ -61,12 +68,17 @@ final class PopoverModel: ObservableObject {
         let confirmed = alert.runModal() == .alertFirstButtonReturn
         reopen()
         guard confirmed else { return }
+        // The snapshot may have changed while the alert was open.
+        guard CreditPresentation.stillAvailable(creditId: row.id, in: engine.snapshot) else {
+            creditResults[row.id] = .noLongerAvailable
+            return
+        }
         spendingCreditId = row.id
         creditResults[row.id] = nil
         let creditId = row.id
         Task {
             let result = await engine.useReset(creditId: creditId)
-            creditResults[creditId] = result
+            creditResults[creditId] = .spent(result)
             spendingCreditId = nil
         }
     }
@@ -88,11 +100,14 @@ final class StatusItemController: NSObject, NSPopoverDelegate {
     private let popover = NSPopover()
     let model: PopoverModel
     private let loadSettings: () -> LimitGuardCore.Settings
+    /// "Show percentage in menu bar", read again only when the settings change.
+    private var showPercent: Bool
 
     init(actions: PopoverActions, notifier: Notifier, loadSettings: @escaping () -> LimitGuardCore.Settings) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         model = PopoverModel(actions: actions, notifier: notifier)
         self.loadSettings = loadSettings
+        showPercent = loadSettings().showPercentInMenuBar
         super.init()
 
         popover.behavior = .transient
@@ -118,11 +133,17 @@ final class StatusItemController: NSObject, NSPopoverDelegate {
         refresh()
     }
 
+    /// Reloads the settings the item uses; call on `.limitGuardSettingsChanged`.
+    func settingsChanged() {
+        showPercent = loadSettings().showPercentInMenuBar
+        refresh()
+    }
+
     func refresh() {
         guard let button = statusItem.button else { return }
         let engine = model.engine
         let paused = engine?.isPaused ?? false
-        let result = MenuBarText.make(snapshot: engine?.snapshot, showPercent: loadSettings().showPercentInMenuBar)
+        let result = MenuBarText.make(snapshot: engine?.snapshot, showPercent: showPercent)
         button.image = Self.icon(paused: paused)
         if let text = result.text {
             var attributes: [NSAttributedString.Key: Any] = [

@@ -59,7 +59,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // The "Show percentage in menu bar" setting takes effect at once.
         NotificationCenter.default.publisher(for: .limitGuardSettingsChanged)
             .receive(on: DispatchQueue.main)
-            .sink { [weak item] _ in item?.refresh() }
+            .sink { [weak item] _ in item?.settingsChanged() }
             .store(in: &subscriptions)
 
         // After launch has finished, so the modal notice doesn't hold it up.

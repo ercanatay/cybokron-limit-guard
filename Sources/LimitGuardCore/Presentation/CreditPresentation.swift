@@ -32,10 +32,7 @@ public enum CreditPresentation {
     public static func rows(credits: [ResetCredit], now: Date, timeZone: TimeZone = .current, locale: Locale = .current) -> [CreditRow] {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = timeZone
-        let formatter = DateFormatter()
-        formatter.locale = locale
-        formatter.timeZone = timeZone
-        formatter.setLocalizedDateFormatFromTemplate("dMMMHHmm")
+        let formatter = expiryFormatter(locale: locale, timeZone: timeZone)
 
         let rows = credits.map { credit -> CreditRow in
             let left = credit.expiresAt.map { $0.timeIntervalSince(now) }
@@ -57,6 +54,12 @@ public enum CreditPresentation {
         return stableSorted(soon, by: order) + stableSorted(rest, by: order)
     }
 
+    /// Whether `creditId` can still be spent in `snapshot`: checked again after the confirmation alert,
+    /// since the credit may have been used or have expired while the alert was open.
+    public static func stillAvailable(creditId: String, in snapshot: AccountSnapshot?) -> Bool {
+        snapshot?.credits.contains { $0.id == creditId && $0.status == .available } ?? false
+    }
+
     /// The offset from GMT at `date` (summer time included): "GMT+3", "GMT-4", "GMT+5:30", "GMT".
     public static func gmtLabel(for timeZone: TimeZone, at date: Date) -> String {
         let seconds = timeZone.secondsFromGMT(for: date)
@@ -66,6 +69,24 @@ public enum CreditPresentation {
         let hours = minutes / 60
         let rest = minutes % 60
         return rest == 0 ? "GMT\(sign)\(hours)" : "GMT\(sign)\(hours):\(String(format: "%02d", rest))"
+    }
+
+    private static let formatterLock = NSLock()
+    nonisolated(unsafe) private static var formatters: [String: DateFormatter] = [:]
+
+    /// One formatter per locale and time zone. `DateFormatter` is thread-safe for formatting; the
+    /// lock guards the cache.
+    static func expiryFormatter(locale: Locale, timeZone: TimeZone) -> DateFormatter {
+        let key = "\(locale.identifier)|\(timeZone.identifier)"
+        return formatterLock.withLock {
+            if let cached = formatters[key] { return cached }
+            let formatter = DateFormatter()
+            formatter.locale = locale
+            formatter.timeZone = timeZone
+            formatter.setLocalizedDateFormatFromTemplate("dMMMHHmm")
+            formatters[key] = formatter
+            return formatter
+        }
     }
 
     private static func stableSorted(_ rows: [CreditRow], by key: (CreditRow) -> Date) -> [CreditRow] {

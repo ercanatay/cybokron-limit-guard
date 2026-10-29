@@ -7,6 +7,9 @@ extension L10n {
     enum Popover {
         enum Status {
             static var codexMissing: String { tr("popover.status.codexMissing", "Codex not found. Set its path in Settings.") }
+            static var notSignedIn: String {
+                tr("popover.status.notSignedIn", "Codex isn't signed in — run `codex login` in Terminal")
+            }
             static var readFailed: String {
                 tr("popover.status.readFailed", "Codex app-server didn't answer. Trying again…")
             }
@@ -78,6 +81,9 @@ extension L10n {
             static var confirmTitle: String { tr("popover.resets.confirmTitle", "Use this reset now?") }
             static var confirmMessage: String { tr("popover.resets.confirmMessage", "This can't be undone.") }
             static var inFlight: String { tr("popover.resets.inFlight", "Using the reset…") }
+            static var noLongerAvailable: String {
+                tr("popover.resets.noLongerAvailable", "This reset is no longer available")
+            }
             static var readOnlyHint: String {
                 tr("popover.resets.readOnlyHint", "Resets can't be used in read-only mode.")
             }

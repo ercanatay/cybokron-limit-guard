@@ -460,3 +460,5 @@
 "popover.footer.resume" = "Resume";
 "popover.footer.pauseHelp" = "Pause automatic continuing and spending";
 "popover.footer.plan" = "Plan: %@";
+"popover.status.notSignedIn" = "Codex isn't signed in — run `codex login` in Terminal";
+"popover.resets.noLongerAvailable" = "This reset is no longer available";

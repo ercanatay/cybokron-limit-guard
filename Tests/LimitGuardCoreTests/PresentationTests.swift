@@ -223,18 +223,56 @@ struct PresentationTests {
     // MARK: - Status line
 
     @Test func statusLineOrder() {
-        func status(engine: Bool = true, codex: Bool = true, snapshot: Bool = true, error: String? = nil,
+        func status(engine: Bool = true, codex: Bool = true, snapshot: Bool = true, error: LimitsReadFailure? = nil,
                     paused: Bool = false, tabs: Int = 1, guarded: Int = 1) -> PopoverStatus {
-            PopoverStatus.make(engineRunning: engine, codexFound: codex, hasSnapshot: snapshot, readError: error,
+            PopoverStatus.make(engineRunning: engine, codexFound: codex, hasSnapshot: snapshot, readFailure: error,
                                isPaused: paused, tabCount: tabs, guardedCount: guarded)
         }
         #expect(status(engine: false, codex: false) == .starting)
-        #expect(status(codex: false, error: "timeout") == .codexMissing)
-        #expect(status(error: "transport exited (1)") == .readFailed)
+        #expect(status(codex: false, error: .unreachable) == .codexMissing)
+        #expect(status(error: .notSignedIn) == .notSignedIn)
+        #expect(status(snapshot: false, error: .notSignedIn) == .notSignedIn)
+        #expect(status(error: .unreachable) == .readFailed)
+        #expect(status(error: .other("rpc error 1: boom")) == .readFailed)
         #expect(status(snapshot: false) == .reading)
         #expect(status(paused: true, tabs: 0) == .paused)
         #expect(status(tabs: 0, guarded: 0) == .noCodexTab)
         #expect(status(tabs: 3, guarded: 2) == .watching(guarded: 2))
         #expect(status(tabs: 2, guarded: 0) == .watching(guarded: 0))
+    }
+
+    // MARK: - Read failures
+
+    @Test(arguments: [
+        "Unauthorized", "not logged in, run codex login", "Please sign in with ChatGPT", "auth token expired",
+        "HTTP 401 from backend", "AUTHENTICATION REQUIRED",
+    ])
+    func authRPCErrorsMeanNotSignedIn(message: String) {
+        #expect(LimitsReadFailure.classify(AppServerError.rpcError(code: -32000, message: message)) == .notSignedIn)
+    }
+
+    @Test func authByCode() {
+        #expect(LimitsReadFailure.classify(AppServerError.rpcError(code: 401, message: "denied")) == .notSignedIn)
+    }
+
+    @Test func otherFailures() {
+        #expect(LimitsReadFailure.classify(AppServerError.timeout) == .unreachable)
+        #expect(LimitsReadFailure.classify(AppServerError.transportExited(1)) == .unreachable)
+        #expect(LimitsReadFailure.classify(AppServerError.notStarted) == .unreachable)
+        #expect(LimitsReadFailure.classify(AppServerError.rpcError(code: -32601, message: "method not found"))
+            == .other("rpc error -32601: method not found"))
+        #expect(LimitsReadFailure.classify(ProtocolDecodingError(message: "bad frame")) == .other("bad frame"))
+    }
+
+    // MARK: - Use Reset after the confirmation
+
+    @Test func creditIsCheckedAgainAfterConfirmation() {
+        let current = snapshot(fiveHour: 100, weekly: 40, credits: [
+            credit("a", expiresIn: 3600), credit("b", expiresIn: 7200, status: .redeemed),
+        ])
+        #expect(CreditPresentation.stillAvailable(creditId: "a", in: current))
+        #expect(!CreditPresentation.stillAvailable(creditId: "b", in: current))
+        #expect(!CreditPresentation.stillAvailable(creditId: "gone", in: current))
+        #expect(!CreditPresentation.stillAvailable(creditId: "a", in: nil))
     }
 }

@@ -6,6 +6,8 @@ public enum PopoverStatus: Equatable, Sendable {
     /// The Engine does not run yet (legal notice open, or still starting).
     case starting
     case codexMissing
+    /// Codex is not signed in with ChatGPT: `codex login`.
+    case notSignedIn
     /// The last limits read failed; the app-server is tried again on the next poll.
     case readFailed
     case reading
@@ -15,12 +17,16 @@ public enum PopoverStatus: Equatable, Sendable {
     case watching(guarded: Int)
 
     public static func make(
-        engineRunning: Bool, codexFound: Bool, hasSnapshot: Bool, readError: String?,
+        engineRunning: Bool, codexFound: Bool, hasSnapshot: Bool, readFailure: LimitsReadFailure?,
         isPaused: Bool, tabCount: Int, guardedCount: Int
     ) -> PopoverStatus {
         guard engineRunning else { return .starting }
         guard codexFound else { return .codexMissing }
-        if readError != nil { return .readFailed }
+        switch readFailure {
+        case .notSignedIn?: return .notSignedIn
+        case .unreachable?, .other?: return .readFailed
+        case nil: break
+        }
         guard hasSnapshot else { return .reading }
         if isPaused { return .paused }
         guard tabCount > 0 else { return .noCodexTab }

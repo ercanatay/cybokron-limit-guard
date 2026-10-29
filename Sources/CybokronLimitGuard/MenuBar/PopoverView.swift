@@ -88,7 +88,7 @@ private struct EngineSections: View {
     @ViewBuilder private var status: some View {
         let state = PopoverStatus.make(
             engineRunning: true, codexFound: model.codexFound, hasSnapshot: engine.snapshot != nil,
-            readError: engine.readError, isPaused: engine.isPaused, tabCount: engine.tabs.count,
+            readFailure: engine.readFailure, isPaused: engine.isPaused, tabCount: engine.tabs.count,
             guardedCount: engine.tabs.filter(\.isGuarded).count)
         switch state {
         case .starting:
@@ -103,6 +103,8 @@ private struct EngineSections: View {
                 }
                 .controlSize(.small)
             }
+        case .notSignedIn:
+            StatusLine(text: L10n.Popover.Status.notSignedIn, symbol: "person.crop.circle.badge.exclamationmark", tint: .red, palette: palette)
         case .readFailed:
             StatusLine(text: L10n.Popover.Status.readFailed, symbol: "exclamationmark.triangle.fill", tint: .orange, palette: palette)
         case .reading:
