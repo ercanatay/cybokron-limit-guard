@@ -5,7 +5,7 @@ public enum SettingsLimits {
     public static let countdownSeconds = 0...60
     public static let maxContinues = 1...10
     public static let minGapMinutes = 1...60
-    public static let autoSpendThreshold = 80...99
+    public static let autoSpendThreshold = 50...99
 
     public static func clamp(_ value: Int, to range: ClosedRange<Int>) -> Int {
         min(max(value, range.lowerBound), range.upperBound)

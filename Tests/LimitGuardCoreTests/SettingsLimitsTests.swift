@@ -10,7 +10,7 @@ struct SettingsLimitsTests {
         #expect(SettingsLimits.clamp(10, to: SettingsLimits.countdownSeconds) == 10)
         #expect(SettingsLimits.clamp(0, to: SettingsLimits.maxContinues) == 1)
         #expect(SettingsLimits.clamp(11, to: SettingsLimits.maxContinues) == 10)
-        #expect(SettingsLimits.clamp(79, to: SettingsLimits.autoSpendThreshold) == 80)
+        #expect(SettingsLimits.clamp(49, to: SettingsLimits.autoSpendThreshold) == 50)
         #expect(SettingsLimits.clamp(100, to: SettingsLimits.autoSpendThreshold) == 99)
     }
 

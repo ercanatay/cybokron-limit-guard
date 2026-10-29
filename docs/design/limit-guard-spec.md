@@ -299,7 +299,7 @@ Mapping a guarded tab to its thread:
 
 ### 8.1 Automatic (off by default)
 Setting **"Use a reset credit when the weekly limit is almost used up"** (default **off**),
-threshold **97 % used** (= 3 % left; editable 80–99).
+threshold **97 % used** (= 3 % left; editable 50–99).
 Spend one credit only when all hold:
 - setting on, not paused, not read-only;
 - fresh read shows `secondary.usedPercent ≥ threshold`, `availableCount ≥ 1`, at least one
