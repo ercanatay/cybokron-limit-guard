@@ -18,6 +18,7 @@ public struct CodexProcess: Equatable, Sendable {
 public struct CodexProcessLister: Sendable {
     static let ps = URL(fileURLWithPath: "/bin/ps")
     static let lsof = URL(fileURLWithPath: "/usr/sbin/lsof")
+    static let env = URL(fileURLWithPath: "/usr/bin/env")
 
     private let tools: ToolRunning
 
@@ -61,10 +62,12 @@ public struct CodexProcessLister: Sendable {
         return Self.parseProcessList(result.output)
     }
 
-    /// pid → start time (`ps -o lstart=`); nil when `ps` failed.
+    /// pid → start time (`ps -o lstart=`); nil when `ps` failed. Run with a fixed locale and time zone,
+    /// so the same process gives the same text across launches, locales and time-zone changes.
     public func startTimes(of pids: [Int32]) async -> [Int32: String]? {
         let list = pids.map(String.init).joined(separator: ",")
-        guard let result = try? await tools.run(Self.ps, arguments: ["-o", "pid=,lstart=", "-p", list]) else { return nil }
+        let arguments = ["LC_ALL=C", "TZ=UTC0", Self.ps.path, "-o", "pid=,lstart=", "-p", list]
+        guard let result = try? await tools.run(Self.env, arguments: arguments) else { return nil }
         let starts = Self.parseStartTimes(result.output)
         // `ps -p` exits 1 when one of the processes is gone; the lines of the others are still valid.
         // A failure without any line counts as a failed listing, so no guard is pruned on it.

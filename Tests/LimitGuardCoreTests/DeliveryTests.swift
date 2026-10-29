@@ -251,7 +251,7 @@ struct CodexProcessListerTests {
     @Test func buildsTabsFromProcessesAndTheirCwd() async {
         let tools = ScriptedTools(outputs: [
             "/bin/ps -axo pid=,tty=,comm=": Self.psOutput,
-            "/bin/ps -o pid=,lstart= -p 8963,94848": " 8963 Wed Oct 29 10:00:01 2026\n94848 Çar 29 Eki 11:30:00 2026",
+            "/usr/bin/env LC_ALL=C TZ=UTC0 /bin/ps -o pid=,lstart= -p 8963,94848": " 8963 Wed Oct 29 10:00:01 2026\n94848 Çar 29 Eki 11:30:00 2026",
             "/usr/sbin/lsof -a -p 8963 -d cwd -Fn": "p8963\nfcwd\nn/Users/me/limit-guard",
         ])
         let tabs = await CodexProcessLister(tools: tools).tabs()
@@ -267,7 +267,7 @@ struct CodexProcessListerTests {
         // 94848 exited between the two `ps` calls: `ps -p` exits 1 and lists only 8963.
         let tools = ScriptedTools(outputs: [
             "/bin/ps -axo pid=,tty=,comm=": Self.psOutput,
-            "/bin/ps -o pid=,lstart= -p 8963,94848": " 8963 Wed Oct 29 10:00:01 2026",
+            "/usr/bin/env LC_ALL=C TZ=UTC0 /bin/ps -o pid=,lstart= -p 8963,94848": " 8963 Wed Oct 29 10:00:01 2026",
         ])
         let tabs = await CodexProcessLister(tools: tools).listTabs()
         #expect(tabs?.map(\.ref.pid) == [8963])
