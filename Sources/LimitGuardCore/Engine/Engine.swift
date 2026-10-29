@@ -152,6 +152,7 @@ public final class Engine: ObservableObject {
             state.guardedTabs.removeAll { $0.ref.pid == nil }
             state.untickedTabs.removeAll { $0.pid == nil }
             legacyTabsDropped = state != loaded
+            isPaused = state.paused
         } catch {
             Self.logger.error("state.json unusable: \(String(describing: error), privacy: .public)")
             stateUnusable = true
@@ -246,9 +247,12 @@ public final class Engine: ObservableObject {
         publishTabs()
     }
 
-    /// Pauses all automatic continuing and spending; reading goes on.
+    /// Pauses all automatic continuing and spending; reading goes on. Kept in `state.json`, so a
+    /// relaunch (reboot, update) stays paused.
     public func pause(_ on: Bool) {
         isPaused = on
+        state.paused = on
+        saveState()
         if on {
             countdown = nil
             nextContinue = nil

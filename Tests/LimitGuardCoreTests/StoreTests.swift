@@ -70,6 +70,7 @@ struct StoreTests {
         let store = JSONStore<AppState>(url: url, schemaVersion: 1)
         try Data(#"{"schemaVersion":1}"#.utf8).write(to: url)
         #expect(try store.load() == AppState())
+        #expect(try store.load()?.paused == false)
 
         var state = AppState()
         state.loop["t1"] = LoopRecord(consecutive: 2, lastSentAt: Date(timeIntervalSince1970: 1_700_000_000), shortTurnsInARow: 1)
@@ -79,6 +80,7 @@ struct StoreTests {
         state.scheduled = ScheduledContinue(threadId: "t1", text: "continue", fireAt: Date(timeIntervalSince1970: 1_700_000_200))
         state.pendingDeliveries = [PendingDelivery(threadId: "t1", clientMessageId: UUID(), text: "continue", sentAt: Date(timeIntervalSince1970: 1_700_000_300))]
         state.expiryNotified = ["credit-1"]
+        state.paused = true
         state.stops["t1"] = StopInfo(turnId: "u1", isWeekly: true, resetsAt: Date(timeIntervalSince1970: 1_700_200_000))
         try store.save(state)
         #expect(try store.load() == state)

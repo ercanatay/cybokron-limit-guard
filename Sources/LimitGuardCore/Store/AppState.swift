@@ -102,6 +102,8 @@ public struct AppState: Codable, Equatable {
     public var settledStops: [String: String] = [:]
     /// Tabs the owner unticked; never guarded automatically while the tab lives.
     public var untickedTabs: [TabRef] = []
+    /// Pause (automatic continues and spends) survives a relaunch.
+    public var paused = false
 
     public init() {}
 
@@ -116,5 +118,6 @@ public struct AppState: Codable, Equatable {
         stops = try c.decodeIfPresent([String: StopInfo].self, forKey: .stops) ?? [:]
         settledStops = try c.decodeIfPresent([String: String].self, forKey: .settledStops) ?? [:]
         untickedTabs = try c.decodeIfPresent([TabRef].self, forKey: .untickedTabs) ?? []
+        paused = try c.decodeIfPresent(Bool.self, forKey: .paused) ?? false
     }
 }

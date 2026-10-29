@@ -846,6 +846,29 @@ struct EngineTests {
         #expect(h.turnStarts().count == 1)
     }
 
+    @Test func pauseIsSavedAndRestoredAtLaunch() async throws {
+        let h = try Harness()
+        h.engine.pause(true)
+        #expect(try h.storedState().paused)
+        h.engine.pause(false)
+        #expect(try h.storedState().paused == false)
+
+        let relaunched = try Harness { dir in
+            var state = AppState()
+            state.paused = true
+            try JSONStore<AppState>(url: dir.appending(path: "state.json"), schemaVersion: 1).save(state)
+        }
+        #expect(relaunched.engine.isPaused)
+        relaunched.standardWaitingSetup()
+        relaunched.limits(limitsJSON(allowed: true, five: 0))
+        await relaunched.engine.tick()
+        await relaunched.run(for: 600)
+        #expect(relaunched.turnStarts().isEmpty)
+        relaunched.engine.pause(false)
+        await relaunched.run(for: 60, step: 10)
+        #expect(relaunched.turnStarts().count == 1)
+    }
+
     @Test func guardNewTabsAutomatically() async throws {
         let h = try Harness(settings: acceptedSettings { $0.guardNewTabsAutomatically = true })
         h.standardWaitingSetup(guarded: false)
