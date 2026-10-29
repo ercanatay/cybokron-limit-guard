@@ -1,0 +1,41 @@
+name: Feature request
+description: Suggest an idea or improvement for Cybokron Limit Guard.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For open-ended ideas you'd like to discuss first, the [Ideas category in Discussions](https://github.com/ercanatay/cybokron-limit-guard/discussions/categories/ideas) is a great place to start.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What are you trying to do, and what makes it hard today?
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: How should it work? Mockups and examples are welcome.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      multiple: true
+      options:
+        - Menu bar / usage bars
+        - Auto-continue
+        - Reset credits
+        - Usage chart and forecasting
+        - Notifications
+        - Settings and localisation
+        - Updates and releases
+        - Another agent or terminal (roadmap)
+        - Other
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
