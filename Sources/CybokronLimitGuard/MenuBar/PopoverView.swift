@@ -7,12 +7,14 @@ import SwiftUI
 struct PopoverView: View {
     @ObservedObject var model: PopoverModel
     let closePopover: () -> Void
+    /// Called with the popover's whole height whenever it changes.
+    let onTotalHeight: (CGFloat) -> Void
     /// The visible height of the screen the popover opens on.
     let visibleScreenHeight: () -> CGFloat
     @Environment(\.colorScheme) private var colorScheme
 
     /// Starts from the last measured height so the popover doesn't open tall and then shrink.
-    @State private var contentHeight: CGFloat = PopoverHeightCache.last
+    @State private var contentHeight: CGFloat = PopoverHeightCache.content
 
     var body: some View {
         let palette = PanelPalette.forScheme(colorScheme)
@@ -28,15 +30,21 @@ struct PopoverView: View {
                         })
             }
             .scrollBounceBehavior(.basedOnSize)
-            .frame(height: contentHeight > 0 ? min(contentHeight, maxHeight) : maxHeight)
+            .frame(height: contentHeight > 0 ? min(contentHeight, maxHeight) : 240)
             .onPreferenceChange(ContentHeightKey.self) {
                 contentHeight = $0
-                if $0 > 0 { PopoverHeightCache.last = $0 }
+                if $0 > 0 { PopoverHeightCache.content = $0 }
             }
             Divider().overlay(palette.hairline)
             PopoverFooter(engine: model.engine, model: model, palette: palette, closePopover: closePopover)
         }
         .frame(width: 380)
+        .fixedSize(horizontal: false, vertical: true)
+        .background(
+            GeometryReader { proxy in
+                Color.clear.preference(key: TotalHeightKey.self, value: proxy.size.height)
+            })
+        .onPreferenceChange(TotalHeightKey.self) { if $0 > 0 { onTotalHeight($0) } }
         .background(palette.glassTint)
     }
 
@@ -50,9 +58,16 @@ struct PopoverView: View {
     }
 }
 
+/// Last measured heights, so the next opening starts at the right size.
 @MainActor
-private enum PopoverHeightCache {
-    static var last: CGFloat = 0
+enum PopoverHeightCache {
+    static var content: CGFloat = 0
+    static var total: CGFloat = 0
+}
+
+private struct TotalHeightKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
 }
 
 private struct ContentHeightKey: PreferenceKey {

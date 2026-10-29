@@ -123,6 +123,10 @@ extension L10n {
             static var waitingGuarded: String {
                 tr("popover.sessions.waitingGuarded", "Waiting on the limit. Continues automatically.")
             }
+            static var pausedResume: String {
+                tr("popover.sessions.pausedResume", "Paused — continues after you press Resume")
+            }
+            static var autoContinueOff: String { tr("popover.sessions.autoContinueOff", "Auto-continue is off") }
             static var waitingNotGuarded: String { tr("popover.sessions.waitingNotGuarded", "waiting (not guarded)") }
             static var confirming: String {
                 tr("popover.sessions.confirming", "Continue sent. Waiting for Codex to confirm it.")

@@ -36,6 +36,9 @@ final class PopoverModel: ObservableObject {
     /// `settings.json` can't be read: nothing the owner changes is saved until it is reset.
     @Published private(set) var settingsUnreadable = false
 
+    /// "Continue automatically" from the settings, for the sessions' status text.
+    @Published private(set) var autoContinue = true
+
     let actions: PopoverActions
     /// Shows the popover again after an alert closed it.
     var reopen: () -> Void = {}
@@ -53,6 +56,10 @@ final class PopoverModel: ObservableObject {
 
     func setSettingsUnreadable(_ unreadable: Bool) {
         if settingsUnreadable != unreadable { settingsUnreadable = unreadable }
+    }
+
+    func setAutoContinue(_ on: Bool) {
+        if autoContinue != on { autoContinue = on }
     }
 
     func refreshPermissions() {
@@ -128,10 +135,15 @@ final class StatusItemController: NSObject, NSPopoverDelegate {
         popover.delegate = self
         let hosting = NSHostingController(rootView: PopoverView(
             model: model, closePopover: { [weak self] in self?.close() },
+            onTotalHeight: { [weak self] height in
+                PopoverHeightCache.total = height
+                self?.popover.contentSize = NSSize(width: 380, height: height)
+            },
             visibleScreenHeight: { [weak self] in
                 (self?.statusItem.button?.window?.screen ?? NSScreen.main)?.visibleFrame.height ?? 800
             }))
-        hosting.sizingOptions = .preferredContentSize
+        // The popover is sized explicitly from the measured height (`PopoverView.onTotalHeight`).
+        hosting.sizingOptions = []
         popover.contentViewController = hosting
         model.reopen = { [weak self] in self?.show() }
 
@@ -155,6 +167,7 @@ final class StatusItemController: NSObject, NSPopoverDelegate {
     func settingsChanged() {
         showPercent = loadSettings().showPercentInMenuBar
         model.setSettingsUnreadable(settingsStatus() == .unreadable)
+        model.setAutoContinue(loadSettings().autoContinue)
         refresh()
     }
 
@@ -243,6 +256,8 @@ final class StatusItemController: NSObject, NSPopoverDelegate {
         guard let button = statusItem.button, !popover.isShown else { return }
         model.refreshPermissions()
         model.setSettingsUnreadable(settingsStatus() == .unreadable)
+        model.setAutoContinue(loadSettings().autoContinue)
+        popover.contentSize = NSSize(width: 380, height: max(PopoverHeightCache.total, 120))
         // An accessory app must be active for the popover to take keyboard focus.
         NSApp.activate(ignoringOtherApps: true)
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)

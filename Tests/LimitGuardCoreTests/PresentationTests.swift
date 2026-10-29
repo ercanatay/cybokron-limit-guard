@@ -305,4 +305,24 @@ struct PresentationTests {
         #expect(CreditPresentation.localizationKey(forTitle: "Bonus reset") == nil)
         #expect(CreditPresentation.localizationKey(forTitle: nil) == nil)
     }
+
+    @Test func onlyShortSingleLineThreadNamesAreShown() {
+        #expect(SessionsPresentation.displayName("Fix the parser") == "Fix the parser")
+        #expect(SessionsPresentation.displayName("line one\nline two") == nil)
+        #expect(SessionsPresentation.displayName(String(repeating: "a", count: 41)) == nil)
+        #expect(SessionsPresentation.displayName(String(repeating: "a", count: 40)) != nil)
+        #expect(SessionsPresentation.displayName("   ") == nil)
+        #expect(SessionsPresentation.displayName("bir şey yapacak…") == nil)
+    }
+
+    @Test func sessionNoteDependsOnPauseAndAutoContinue() {
+        typealias P = SessionsPresentation
+        #expect(P.note(state: .waitingGuarded, paused: false, autoContinue: true) == .continuesAutomatically)
+        #expect(P.note(state: .waitingGuarded, paused: true, autoContinue: true) == .pausedResumeContinues)
+        #expect(P.note(state: .waitingGuarded, paused: true, autoContinue: false) == .pausedResumeContinues)
+        #expect(P.note(state: .waitingGuarded, paused: false, autoContinue: false) == .autoContinueOff)
+        #expect(P.note(state: .waitingNotGuarded, paused: true, autoContinue: false) == .waitingNotGuarded)
+        #expect(P.note(state: .idle, paused: true, autoContinue: true) == .none)
+        #expect(P.note(state: .ambiguous, paused: false, autoContinue: true) == .ambiguous)
+    }
 }

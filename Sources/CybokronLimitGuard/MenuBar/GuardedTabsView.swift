@@ -33,6 +33,7 @@ struct GuardedTabsView: View {
                             SessionRowView(
                                 row: row, model: model, palette: palette,
                                 canContinue: !isReadOnly && engine.snapshot?.ordinaryUsageAllowed == true,
+                                paused: engine.isPaused, autoContinue: model.autoContinue,
                                 setGuarded: { engine.setGuarded(row.ref, $0) })
                         }
                         Text(L10n.Popover.Sessions.guardHelp)
@@ -52,6 +53,8 @@ private struct SessionRowView: View {
     @ObservedObject var model: PopoverModel
     let palette: PanelPalette
     let canContinue: Bool
+    let paused: Bool
+    let autoContinue: Bool
     let setGuarded: (Bool) -> Void
 
     var body: some View {
@@ -64,6 +67,13 @@ private struct SessionRowView: View {
                             .foregroundStyle(palette.primaryText)
                             .lineLimit(1)
                             .truncationMode(.middle)
+                        if let name = row.threadTitle {
+                            Text(name)
+                                .font(.caption)
+                                .foregroundStyle(palette.primaryText.opacity(0.8))
+                                .lineLimit(1)
+                                .truncationMode(.tail)
+                        }
                         Text(details)
                             .font(.caption.monospacedDigit())
                             .foregroundStyle(palette.secondaryText)
@@ -81,16 +91,11 @@ private struct SessionRowView: View {
         }
     }
 
-    /// "~/project · ttys003 · <thread title>", or "Thread 019a2b3c" without a title.
+    /// "~/project · ttys003".
     private var details: String {
         var parts: [String] = []
         if let cwd = row.cwd { parts.append((cwd as NSString).abbreviatingWithTildeInPath) }
-        parts.append(row.tty)
-        if let title = row.threadTitle {
-            parts.append(title)
-        } else if let short = row.shortThreadId {
-            parts.append(L10n.Popover.Sessions.thread(short))
-        }
+        parts.append(row.tty.replacingOccurrences(of: "/dev/", with: ""))
         return parts.joined(separator: " · ")
     }
 
@@ -117,7 +122,11 @@ private struct SessionRowView: View {
         case .idle:
             EmptyView()
         case .waitingGuarded:
-            hint(L10n.Popover.Sessions.waitingGuarded)
+            switch SessionsPresentation.note(state: row.state, paused: paused, autoContinue: autoContinue) {
+            case .pausedResumeContinues: hint(L10n.Popover.Sessions.pausedResume)
+            case .autoContinueOff: hint(L10n.Popover.Sessions.autoContinueOff)
+            default: hint(L10n.Popover.Sessions.waitingGuarded)
+            }
         case .waitingNotGuarded:
             byHand(L10n.Popover.Sessions.waitingNotGuarded, button: L10n.Popover.Sessions.continueNow)
         case .confirming:

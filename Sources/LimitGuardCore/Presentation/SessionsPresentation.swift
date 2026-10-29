@@ -70,7 +70,47 @@ public enum SessionsPresentation {
             return SessionRow(
                 ref: tab.ref, title: tab.title, cwd: tab.cwd, tty: tab.ref.tty, isGuarded: entry.isGuarded,
                 threadId: entry.threadId, shortThreadId: entry.threadId.map { String($0.prefix(shortIdLength)) },
-                threadTitle: entry.threadId.flatMap { titles[$0] }, state: state)
+                threadTitle: entry.threadId.flatMap { titles[$0] }.flatMap(displayName), state: state)
+        }
+    }
+
+    static let maxNameLength = 40
+
+    /// A thread title worth showing on a row: a real short name. A long or multi-line title is the
+    /// preview of the first message, which is never shown.
+    public static func displayName(_ title: String) -> String? {
+        let trimmed = title.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty, trimmed.count <= maxNameLength,
+              !trimmed.contains(where: \.isNewline), !trimmed.hasSuffix("…") else { return nil }
+        return trimmed
+    }
+
+    /// The one line of text under a row.
+    public enum Note: Equatable, Sendable {
+        case none
+        case continuesAutomatically
+        case pausedResumeContinues
+        case autoContinueOff
+        case confirming
+        case unconfirmed
+        case settled
+        case waitingNotGuarded
+        case ambiguous
+    }
+
+    /// What a row says about itself. Only a guarded row that waits for the app to act depends on
+    /// whether the app is paused or auto-continue is off.
+    public static func note(state: SessionRow.State, paused: Bool, autoContinue: Bool) -> Note {
+        switch state {
+        case .idle: return .none
+        case .waitingGuarded:
+            if paused { return .pausedResumeContinues }
+            return autoContinue ? .continuesAutomatically : .autoContinueOff
+        case .confirming: return .confirming
+        case .unconfirmed: return .unconfirmed
+        case .settled: return .settled
+        case .waitingNotGuarded: return .waitingNotGuarded
+        case .ambiguous: return .ambiguous
         }
     }
 }
