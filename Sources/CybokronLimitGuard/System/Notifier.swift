@@ -12,9 +12,14 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
     private static let countdownCategory = "limitguard.countdown"
     private nonisolated static let cancelAction = "limitguard.countdown.cancel"
     private static let countdownIdentifier = "limitguard.countdown"
+    private static let unconfirmedCategory = "limitguard.unconfirmed"
+    private nonisolated static let sendAgainAction = "limitguard.unconfirmed.sendAgain"
+    private nonisolated static let threadIdKey = "threadId"
 
     /// Called when the owner presses "Cancel" on the countdown notification.
     var onCancelCountdown: (() -> Void)?
+    /// Called with the thread id when the owner presses "Send again" on an unconfirmed continue (D24).
+    var onSendAgain: ((String) -> Void)?
 
     /// Notifications need an app bundle (a bare `swift run` binary has none).
     private var center: UNUserNotificationCenter? {
@@ -27,8 +32,11 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
         guard let center else { return }
         center.delegate = self
         let cancel = UNNotificationAction(identifier: Self.cancelAction, title: L10n.Notify.cancelAction, options: [])
+        let sendAgain = UNNotificationAction(identifier: Self.sendAgainAction, title: L10n.Notify.sendAgainAction, options: [])
+        // One call: it replaces every category registered before.
         center.setNotificationCategories([
-            UNNotificationCategory(identifier: Self.countdownCategory, actions: [cancel], intentIdentifiers: [])
+            UNNotificationCategory(identifier: Self.countdownCategory, actions: [cancel], intentIdentifiers: []),
+            UNNotificationCategory(identifier: Self.unconfirmedCategory, actions: [sendAgain], intentIdentifiers: []),
         ])
         center.getNotificationSettings { settings in
             guard settings.authorizationStatus == .notDetermined else { return }
@@ -76,6 +84,10 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
             identifier = Self.countdownIdentifier
             content.categoryIdentifier = Self.countdownCategory
         } else {
+            if case let .unconfirmed(threadId) = note {
+                content.categoryIdentifier = Self.unconfirmedCategory
+                content.userInfo = [Self.threadIdKey: threadId]
+            }
             // The countdown is over once the continue is sent, skipped or stopped.
             switch note {
             case .continueSent, .continueSkipped, .unconfirmed, .loopStopped, .runawayStopped:
@@ -121,7 +133,15 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
     nonisolated func userNotificationCenter(
         _ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse
     ) async {
-        guard response.actionIdentifier == Self.cancelAction else { return }
-        await MainActor.run { onCancelCountdown?() }
+        switch response.actionIdentifier {
+        case Self.cancelAction:
+            await MainActor.run { onCancelCountdown?() }
+        case Self.sendAgainAction:
+            // `userInfo` isn't Sendable: take the id out before going to the main actor.
+            guard let threadId = response.notification.request.content.userInfo[Self.threadIdKey] as? String else { return }
+            await MainActor.run { onSendAgain?(threadId) }
+        default:
+            break
+        }
     }
 }

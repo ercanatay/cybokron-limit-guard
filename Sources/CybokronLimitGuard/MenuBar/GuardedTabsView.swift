@@ -3,7 +3,8 @@ import LimitGuardCore
 import SwiftUI
 
 /// "Codex sessions" (spec §7.3 "Guarded tabs", D19): every Terminal tab running Codex with a
-/// checkbox; an unticked waiting tab offers Continue now, an unclear one says to continue by hand.
+/// checkbox; an unticked or settled waiting tab offers Continue now, an unconfirmed continue offers
+/// Send again, an unclear one says to continue by hand.
 struct GuardedTabsView: View {
     @ObservedObject var engine: Engine
     @ObservedObject var model: PopoverModel
@@ -85,27 +86,43 @@ private struct SessionRowView: View {
                 .font(.caption)
                 .foregroundStyle(PanelPalette.teal)
         case .waitingNotGuarded:
-            HStack(spacing: 8) {
-                Label(L10n.Popover.Sessions.waitingNotGuarded, systemImage: "hourglass")
-                    .font(.caption)
-                    .foregroundStyle(Color.orange)
-                Spacer(minLength: 4)
-                if let threadId = row.threadId {
-                    if model.continuing.contains(threadId) {
-                        ProgressView().controlSize(.small)
-                    } else {
-                        Button(L10n.Popover.Sessions.continueNow) { model.continueNow(threadId: threadId) }
-                            .controlSize(.small)
-                            .disabled(!canContinue)
-                            .help(canContinue ? "" : L10n.Popover.Sessions.continueNeedsLimit)
-                    }
-                }
-            }
+            byHand(L10n.Popover.Sessions.waitingNotGuarded, systemImage: "hourglass", button: L10n.Popover.Sessions.continueNow)
+        case .confirming:
+            Label(L10n.Popover.Sessions.confirming, systemImage: "paperplane")
+                .font(.caption)
+                .foregroundStyle(palette.secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
+        case .unconfirmed:
+            byHand(L10n.Popover.Sessions.unconfirmed, systemImage: "exclamationmark.bubble", button: L10n.Popover.Sessions.sendAgain)
+        case .settled:
+            byHand(L10n.Popover.Sessions.settled, systemImage: "hand.raised", button: L10n.Popover.Sessions.continueNow)
         case .ambiguous:
             Label(L10n.Popover.Sessions.ambiguous, systemImage: "questionmark.circle")
                 .font(.caption)
                 .foregroundStyle(Color.orange)
                 .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    /// A state that needs the owner, with the button that continues the mapped thread by hand
+    /// (`Engine.continueNow`, which also sends an unconfirmed continue again with the same message id).
+    private func byHand(_ text: String, systemImage: String, button: String) -> some View {
+        HStack(spacing: 8) {
+            Label(text, systemImage: systemImage)
+                .font(.caption)
+                .foregroundStyle(Color.orange)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 4)
+            if let threadId = row.threadId {
+                if model.continuing.contains(threadId) {
+                    ProgressView().controlSize(.small)
+                } else {
+                    Button(button) { model.continueNow(threadId: threadId) }
+                        .controlSize(.small)
+                        .disabled(!canContinue)
+                        .help(canContinue ? "" : L10n.Popover.Sessions.continueNeedsLimit)
+                }
+            }
         }
     }
 }

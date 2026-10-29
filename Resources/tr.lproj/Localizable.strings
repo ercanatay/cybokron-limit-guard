@@ -350,6 +350,7 @@
 "notify.permission.message" = "Limit Guard, Codex limitinize ulaşıldığında veya limit yenilendiğinde ve bir oturumu sizin için devam ettirdiğinde size haber verebilir. Ardından macOS izin isteyecek.";
 "notify.permission.continue" = "Devam et";
 "notify.action.cancel" = "İptal";
+"notify.action.sendAgain" = "Send again";
 "notify.limitReached.title" = "Codex limitine ulaşıldı";
 "notify.limitReached.body" = "Korunan oturumlar, limit sıfırlandıktan sonra devam eder.";
 "notify.limitStillReached.title" = "Codex limitine hâlâ ulaşılmış";
@@ -438,6 +439,10 @@
 "popover.sessions.thread" = "Konuşma %@";
 "popover.sessions.waitingGuarded" = "Limit bekleniyor. Kendiliğinden devam edecek.";
 "popover.sessions.waitingNotGuarded" = "bekliyor (korunmuyor)";
+"popover.sessions.confirming" = "Continue sent. Waiting for Codex to confirm it.";
+"popover.sessions.unconfirmed" = "Codex didn’t confirm the continue. It isn’t sent again on its own.";
+"popover.sessions.sendAgain" = "Send again";
+"popover.sessions.settled" = "Won’t continue on its own after this stop.";
 "popover.sessions.ambiguous" = "Hangi konuşma olduğu anlaşılamıyor — elle devam edin";
 "popover.sessions.continueNow" = "Şimdi devam et";
 "popover.sessions.continueNeedsLimit" = "Limit yeniden açıldığında kullanılabilir.";

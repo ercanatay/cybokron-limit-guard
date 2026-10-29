@@ -832,6 +832,37 @@ struct EngineTests {
         #expect(Set(ids).count == 1)
     }
 
+    /// The tab row follows the continue: confirming, then unconfirmed ("Send again"), and "Send again" works.
+    @Test func tabShowsUnconfirmedContinueAndSendAgainWorks() async throws {
+        let h = try Harness()
+        h.standardWaitingSetup()
+        h.limits(limitsJSON(allowed: true, five: 0))
+        await h.engine.tick()
+        #expect(h.engine.tabs.map(\.continueStatus) == [nil])
+        h.clock.advance(by: 10)
+        await h.engine.tick()
+        #expect(h.turnStarts().count == 1)
+        #expect(h.engine.tabs.map(\.continueStatus) == [.confirming])
+        await h.run(for: 150)
+        #expect(h.engine.tabs.map(\.continueStatus) == [.unconfirmed])
+        #expect(h.engine.tabs.map(\.isGuarded) == [true])
+        await h.engine.continueNow(threadId: "th1")
+        #expect(h.turnStarts().count == 2)
+        #expect(h.engine.tabs.map(\.continueStatus) == [.confirming])
+    }
+
+    @Test func cancelledStopShowsAsSettled() async throws {
+        let h = try Harness()
+        h.standardWaitingSetup()
+        h.limits(limitsJSON(allowed: true, five: 0))
+        await h.engine.tick()
+        h.engine.cancelNextAction()
+        #expect(h.engine.tabs.map(\.continueStatus) == [.settled])
+        await h.run(for: 60)
+        #expect(h.engine.tabs.map(\.continueStatus) == [.settled])
+        #expect(h.turnStarts().isEmpty)
+    }
+
     @Test func pauseBlocksContinues() async throws {
         let h = try Harness()
         h.standardWaitingSetup()

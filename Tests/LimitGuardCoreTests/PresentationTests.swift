@@ -200,6 +200,24 @@ struct PresentationTests {
         #expect(rows[2].threadId == nil)
     }
 
+    /// A guarded row says "continues automatically" only while the Engine will still continue it.
+    @Test func sessionRowContinueStatuses() {
+        func row(guarded: Bool, _ status: ContinueStatus?) -> SessionRow.State? {
+            let tabs = [EngineTab(tab: tab("ttys001", cwd: "/Users/me/alpha"), isGuarded: guarded, threadId: "019a0000-aaaa",
+                                  isWaiting: true, continueStatus: status)]
+            let sessions = [session("019a0000-aaaa", cwd: "/Users/me/alpha", waiting: true)]
+            return SessionsPresentation.rows(tabs: tabs, sessions: sessions, snapshot: snapshot(fiveHour: 0, weekly: 1), now: now).first?.state
+        }
+        #expect(row(guarded: true, nil) == .waitingGuarded)
+        #expect(row(guarded: true, .confirming) == .confirming)
+        #expect(row(guarded: true, .unconfirmed) == .unconfirmed)
+        #expect(row(guarded: true, .settled) == .settled)
+        #expect(row(guarded: false, .unconfirmed) == .unconfirmed)
+        #expect(row(guarded: false, .confirming) == .confirming)
+        #expect(row(guarded: false, .settled) == .waitingNotGuarded)
+        #expect(row(guarded: false, nil) == .waitingNotGuarded)
+    }
+
     @Test func sessionRowsWithoutSnapshotAreNeverAmbiguous() {
         let tabs = [EngineTab(tab: tab("ttys003", cwd: "/Users/me/gamma"), isGuarded: false, threadId: nil, isWaiting: false)]
         let sessions = [session("019c0000-cccc", cwd: "/Users/me/gamma", waiting: true)]

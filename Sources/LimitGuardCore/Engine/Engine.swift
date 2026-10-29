@@ -220,6 +220,7 @@ public final class Engine: ObservableObject {
         nextAction = nil
         state.settledStops[target.threadId] = target.turnId
         saveState()
+        publishTabs()
         appendActivity(ActivityEntry(
             date: now, kind: .continueCancelled, threadId: target.threadId, text: target.text,
             codexVersion: dependencies.codexVersion))
@@ -620,8 +621,20 @@ public final class Engine: ObservableObject {
     private func publishTabs() {
         tabs = currentTabs.map { tab in
             let thread = mapping[tab.ref]
-            return EngineTab(tab: tab, isGuarded: isGuarded(tab.ref), threadId: thread, isWaiting: thread != nil)
+            return EngineTab(
+                tab: tab, isGuarded: isGuarded(tab.ref), threadId: thread, isWaiting: thread != nil,
+                continueStatus: thread.flatMap(continueStatus))
         }
+    }
+
+    /// Uses the same threshold as "Send again" in `runContinueNow`, so the button never meets "still being confirmed".
+    private func continueStatus(of threadId: String) -> ContinueStatus? {
+        if let pending = state.pendingDeliveries.first(where: { $0.threadId == threadId }) {
+            return now.timeIntervalSince(pending.sentAt) > Self.confirmWindow ? .unconfirmed : .confirming
+        }
+        guard let session = sessions.first(where: { $0.threadId == threadId }),
+              case let .usageLimit(_, turn) = session.lastStop, state.settledStops[threadId] == turn else { return nil }
+        return .settled
     }
 
     // MARK: - Continues
@@ -690,6 +703,7 @@ public final class Engine: ObservableObject {
         }
         if countdown != nil { wantAwake = true }
         publishNextAction(earliestWait: earliestWait)
+        publishTabs()
     }
 
     private func publishNextAction(earliestWait: (date: Date, target: ContinueTarget)?) {
@@ -818,6 +832,7 @@ public final class Engine: ObservableObject {
         let tab = mapping.first { $0.value == threadId }?.key
         await send(threadId: threadId, turn: turn, text: reuse?.text ?? continueText(for: session), tab: tab, reuse: reuse)
         if nextContinue?.threadId == threadId { publishNextAction(earliestWait: nil) }
+        publishTabs()
     }
 
     /// Stores the pending delivery, then sends. Never sends when the state cannot be saved first (D24).
@@ -868,11 +883,13 @@ public final class Engine: ObservableObject {
                 date: now, kind: .error, threadId: threadId, tab: tab?.tty, text: pending.text,
                 detail: "delivery outcome unknown: \(reason)", codexVersion: dependencies.codexVersion))
         }
+        publishTabs()
     }
 
     private func settle(_ threadId: String, _ turn: String) {
         state.settledStops[threadId] = turn
         saveState()
+        publishTabs()
     }
 
     private func continueText(for session: SessionState) -> String {

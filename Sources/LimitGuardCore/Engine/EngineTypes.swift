@@ -88,6 +88,16 @@ public struct NextAction: Equatable, Sendable {
     public init(kind: Kind) { self.kind = kind }
 }
 
+/// Where the continue of a waiting thread stands, when it is not simply waiting for its turn.
+public enum ContinueStatus: Equatable, Sendable {
+    /// A continue was sent and Codex has not shown it yet (within the confirmation window).
+    case confirming
+    /// A continue was sent and not confirmed in time: it is never resent on its own ("Send again", D24).
+    case unconfirmed
+    /// This stop is never continued on its own again (cancelled, skipped, stopped by the loop guard).
+    case settled
+}
+
 /// A Terminal tab running Codex, as the popover lists it.
 public struct EngineTab: Equatable, Sendable {
     public var tab: TerminalTab
@@ -95,12 +105,15 @@ public struct EngineTab: Equatable, Sendable {
     /// The thread waiting on a usage-limit stop in this tab, when the mapping is unambiguous.
     public var threadId: String?
     public var isWaiting: Bool
+    /// Nil while the waiting thread's continue is still to come (or nothing waits).
+    public var continueStatus: ContinueStatus?
 
-    public init(tab: TerminalTab, isGuarded: Bool, threadId: String?, isWaiting: Bool) {
+    public init(tab: TerminalTab, isGuarded: Bool, threadId: String?, isWaiting: Bool, continueStatus: ContinueStatus? = nil) {
         self.tab = tab
         self.isGuarded = isGuarded
         self.threadId = threadId
         self.isWaiting = isWaiting
+        self.continueStatus = continueStatus
     }
 }
 

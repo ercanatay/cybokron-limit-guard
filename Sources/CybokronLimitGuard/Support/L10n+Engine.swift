@@ -13,6 +13,7 @@ extension L10n {
         }
         static var permissionContinue: String { tr("notify.permission.continue", "Continue") }
         static var cancelAction: String { tr("notify.action.cancel", "Cancel") }
+        static var sendAgainAction: String { tr("notify.action.sendAgain", "Send again") }
 
         static var limitReached: (title: String, body: String) {
             (
@@ -50,7 +51,7 @@ extension L10n {
         static var unconfirmed: (title: String, body: String) {
             (
                 tr("notify.unconfirmed.title", "Continue not confirmed"),
-                tr("notify.unconfirmed.body", "Codex did not confirm the message. Nothing was sent again; check the session.")
+                tr("notify.unconfirmed.body", "Codex did not confirm the message. It isn’t sent again on its own: choose Send again, or check the session.")
             )
         }
         static var loopStopped: (title: String, body: String) {

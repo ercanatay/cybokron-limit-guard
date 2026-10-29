@@ -79,6 +79,12 @@ final class EngineHost {
             codexVersion: version))
         self.engine = engine
         notifier.onCancelCountdown = { [weak engine] in engine?.cancelNextAction() }
+        // Only while that continue is still unconfirmed, so a late tap can't start a continue for a later stop.
+        notifier.onSendAgain = { [weak engine] threadId in
+            guard let engine, engine.tabs.contains(where: { $0.threadId == threadId && $0.continueStatus == .unconfirmed })
+            else { return }
+            Task { await engine.continueNow(threadId: threadId) }
+        }
 
         engine.objectWillChange
             .receive(on: DispatchQueue.main)

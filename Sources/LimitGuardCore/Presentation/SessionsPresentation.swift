@@ -7,6 +7,12 @@ public struct SessionRow: Equatable, Sendable, Identifiable {
         case idle
         /// Its conversation waits on the limit and continues on its own.
         case waitingGuarded
+        /// A continue was sent; Codex has not shown it yet.
+        case confirming
+        /// The continue was not confirmed in time and is never resent on its own: "Send again".
+        case unconfirmed
+        /// Guarded, but this stop is not continued on its own any more: "Continue now" only.
+        case settled
         /// Its conversation waits on the limit, but the tab is not ticked: "Continue now" only.
         case waitingNotGuarded
         /// A conversation waits on the limit and could be in this tab, but which one is unclear: by hand only.
@@ -50,7 +56,12 @@ public enum SessionsPresentation {
             let tab = entry.tab
             let state: SessionRow.State
             if entry.threadId != nil {
-                state = entry.isGuarded ? .waitingGuarded : .waitingNotGuarded
+                switch entry.continueStatus {
+                case .confirming: state = .confirming
+                case .unconfirmed: state = .unconfirmed
+                case .settled: state = entry.isGuarded ? .settled : .waitingNotGuarded
+                case nil: state = entry.isGuarded ? .waitingGuarded : .waitingNotGuarded
+                }
             } else if let cwd = tab.cwd {
                 state = unclaimedFolders.contains(TabMatcher.normalize(cwd)) ? .ambiguous : .idle
             } else {

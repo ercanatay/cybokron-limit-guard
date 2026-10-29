@@ -112,6 +112,16 @@ extension L10n {
                 tr("popover.sessions.waitingGuarded", "Waiting on the limit. Continues automatically.")
             }
             static var waitingNotGuarded: String { tr("popover.sessions.waitingNotGuarded", "waiting (not guarded)") }
+            static var confirming: String {
+                tr("popover.sessions.confirming", "Continue sent. Waiting for Codex to confirm it.")
+            }
+            static var unconfirmed: String {
+                tr("popover.sessions.unconfirmed", "Codex didn’t confirm the continue. It isn’t sent again on its own.")
+            }
+            static var sendAgain: String { tr("popover.sessions.sendAgain", "Send again") }
+            static var settled: String {
+                tr("popover.sessions.settled", "Won’t continue on its own after this stop.")
+            }
             static var ambiguous: String {
                 tr("popover.sessions.ambiguous", "Can’t tell which conversation — continue by hand")
             }

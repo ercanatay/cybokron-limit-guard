@@ -355,6 +355,7 @@
 "notify.permission.message" = "Limit Guard can tell you when your Codex limit is reached or back, and when it continues a session for you. macOS asks for permission next.";
 "notify.permission.continue" = "Continue";
 "notify.action.cancel" = "Cancel";
+"notify.action.sendAgain" = "Send again";
 "notify.limitReached.title" = "Codex limit reached";
 "notify.limitReached.body" = "Guarded sessions continue after the limit resets.";
 "notify.limitStillReached.title" = "Codex limit still reached";
@@ -367,7 +368,7 @@
 "notify.continueSent.body" = "Limit Guard continued a waiting Codex session.";
 "notify.continueSkipped.title" = "Continue skipped";
 "notify.unconfirmed.title" = "Continue not confirmed";
-"notify.unconfirmed.body" = "Codex did not confirm the message. Nothing was sent again; check the session.";
+"notify.unconfirmed.body" = "Codex did not confirm the message. It isn’t sent again on its own: choose Send again, or check the session.";
 "notify.loopStopped.title" = "Stopped continuing";
 "notify.loopStopped.body" = "A session reached the maximum number of automatic continues.";
 "notify.runawayStopped.title" = "Stopped continuing";
@@ -444,6 +445,10 @@
 "popover.sessions.thread" = "Thread %@";
 "popover.sessions.waitingGuarded" = "Waiting on the limit. Continues automatically.";
 "popover.sessions.waitingNotGuarded" = "waiting (not guarded)";
+"popover.sessions.confirming" = "Continue sent. Waiting for Codex to confirm it.";
+"popover.sessions.unconfirmed" = "Codex didn’t confirm the continue. It isn’t sent again on its own.";
+"popover.sessions.sendAgain" = "Send again";
+"popover.sessions.settled" = "Won’t continue on its own after this stop.";
 "popover.sessions.ambiguous" = "Can’t tell which conversation — continue by hand";
 "popover.sessions.continueNow" = "Continue now";
 "popover.sessions.continueNeedsLimit" = "Available once the limit is back.";
