@@ -323,3 +323,8 @@
 "chart.streak.one" = "Seri: %ld gün";
 "chart.streak.other" = "Seri: %ld gün";
 "chart.forecast" = "Bu hızla haftalık limit yaklaşık %@ tarihinde tükenir";
+"chart.timedOut" = "Kullanım verileri zamanında yüklenemedi. Yenile'yi deneyin.";
+"chart.axis.tokens" = "Token";
+"chart.axis.time" = "Zaman";
+"chart.axis.percent" = "Yüzde";
+"chart.axis.window" = "Pencere";

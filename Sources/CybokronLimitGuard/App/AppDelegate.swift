@@ -1,7 +1,7 @@
 import AppKit
 import LimitGuardCore
 
-/// Placeholder shell: a status item showing "LG" with Settings…, About and Quit, so the app
+/// Placeholder shell: a status item (gauge symbol) with Settings…, About and Quit, so the app
 /// launches. The popover comes later.
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
@@ -29,7 +29,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         updater.start()
 
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        item.button?.title = "LG"
+        let symbol = NSImage(systemSymbolName: "gauge.with.needle", accessibilityDescription: L10n.App.name)
+            ?? NSImage(systemSymbolName: "gauge.medium", accessibilityDescription: L10n.App.name)
+        symbol?.isTemplate = true
+        item.button?.image = symbol
         item.button?.toolTip = L10n.App.name
         let menu = NSMenu()
         menu.addItem(NSMenuItem(

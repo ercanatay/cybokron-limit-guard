@@ -51,4 +51,21 @@ struct ChartDataTests {
         #expect(ChartData.compactTokens(1_200_000_000) == "1.2 B")
         #expect(ChartData.compactTokens(3_000_000) == "3 M")
     }
+
+    @Test func compactTokensBoundaries() {
+        #expect(ChartData.compactTokens(999) == "999")
+        #expect(ChartData.compactTokens(1_000) == "1 K")
+        #expect(ChartData.compactTokens(999_999) == "1 M")
+        #expect(ChartData.compactTokens(999_499) == "999 K")
+        #expect(ChartData.compactTokens(999_950_000) == "1 B")
+        #expect(ChartData.compactTokens(999_999_999_999) == "1 T")
+    }
+
+    @Test func todayIsTheUTCDay() {
+        // 2026-10-30 00:30 in UTC+3 is still 2026-10-29 21:30 UTC.
+        var c = DateComponents(year: 2026, month: 10, day: 30, hour: 0, minute: 30)
+        c.timeZone = TimeZone(secondsFromGMT: 3 * 3600)
+        let local = Calendar(identifier: .gregorian).date(from: c)!
+        #expect(ChartData.today(local) == "2026-10-29")
+    }
 }

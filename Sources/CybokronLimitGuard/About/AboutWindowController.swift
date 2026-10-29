@@ -25,13 +25,11 @@ final class AboutWindowController: NSWindowController {
 
     /// Shows the window and brings the app to the front.
     func show() {
-        NSApp.activate()
         if let window, !window.isVisible {
             window.layoutIfNeeded()
             window.center()
         }
-        showWindow(nil)
-        window?.makeKeyAndOrderFront(nil)
+        bringToFront()
     }
 }
 

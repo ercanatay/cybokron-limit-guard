@@ -37,10 +37,8 @@ final class UsageChartWindowController: NSWindowController {
     }
 
     func show() {
-        NSApp.activate()
         if let window, !window.isVisible { window.center() }
-        showWindow(nil)
-        window?.makeKeyAndOrderFront(nil)
+        bringToFront()
         model.reload()
     }
 }
@@ -50,17 +48,39 @@ private final class UsageChartModel: ObservableObject {
     @Published var content: UsageChartContent?
     @Published var days = 30
     @Published var loading = false
+    @Published var timedOut = false
     private let load: () async -> UsageChartContent
+    private var generation = 0
+    private static let timeout: Duration = .seconds(20)
 
     init(load: @escaping () async -> UsageChartContent) { self.load = load }
 
+    /// Loads with an overall timeout; a result that arrives after the timeout, or after a newer
+    /// reload started, is dropped.
     func reload() {
         guard !loading else { return }
+        generation += 1
+        let generation = generation
         loading = true
-        Task {
-            content = await load()
-            loading = false
+        timedOut = false
+        let loadTask = Task { await load() }
+        let timeoutTask = Task { [weak self] in
+            try? await Task.sleep(for: Self.timeout)
+            guard !Task.isCancelled else { return }
+            loadTask.cancel()
+            self?.finish(generation, nil)
         }
+        Task { [weak self] in
+            let result = await loadTask.value
+            timeoutTask.cancel()
+            self?.finish(generation, result)
+        }
+    }
+
+    private func finish(_ generation: Int, _ result: UsageChartContent?) {
+        guard generation == self.generation, loading else { return }
+        loading = false
+        if let result { content = result } else { timedOut = true }
     }
 }
 
@@ -82,10 +102,13 @@ private struct UsageChartView: View {
         let palette = PanelPalette.forScheme(scheme)
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
+                if model.timedOut {
+                    Text(L10n.Chart.timedOut).foregroundStyle(PanelPalette.warning)
+                }
                 if let content = model.content {
                     if content.report?.daily != nil { dailySection(content, palette) }
                     historySection(content, palette)
-                } else {
+                } else if !model.timedOut {
                     HStack(spacing: 8) {
                         ProgressView().controlSize(.small)
                         Text(L10n.Chart.loading).foregroundStyle(palette.secondaryText)
@@ -109,7 +132,7 @@ private struct UsageChartView: View {
     @ViewBuilder
     private func dailySection(_ content: UsageChartContent, _ palette: PanelPalette) -> some View {
         let report = content.report ?? UsageReport(daily: nil, peakDailyTokens: nil, currentStreakDays: nil)
-        let today = localToday(content.now)
+        let today = ChartData.today(content.now)
         let bars = ChartData.daily(report, days: model.days, today: today)
         VStack(alignment: .leading, spacing: 8) {
             HStack {
@@ -124,7 +147,7 @@ private struct UsageChartView: View {
             }
             Text(summary(report, bars)).font(.callout).foregroundStyle(palette.secondaryText)
             Chart(bars, id: \.day) { bar in
-                BarMark(x: .value(L10n.Chart.dailyHeader, dayDate(bar.day), unit: .day), y: .value("Tokens", bar.tokens))
+                BarMark(x: .value(L10n.Chart.dailyHeader, dayDate(bar.day), unit: .day), y: .value(L10n.Chart.axisTokens, bar.tokens))
                     .foregroundStyle(PanelPalette.teal)
             }
             .chartYAxis {
@@ -172,12 +195,12 @@ private struct UsageChartView: View {
                 Chart {
                     ForEach(samples, id: \.date) { sample in
                         if let value = sample.fiveHour {
-                            LineMark(x: .value("Time", sample.date), y: .value("%", value), series: .value("Window", L10n.Chart.fiveHour))
-                                .foregroundStyle(by: .value("Window", L10n.Chart.fiveHour))
+                            LineMark(x: .value(L10n.Chart.axisTime, sample.date), y: .value(L10n.Chart.axisPercent, value), series: .value(L10n.Chart.axisWindow, L10n.Chart.fiveHour))
+                                .foregroundStyle(by: .value(L10n.Chart.axisWindow, L10n.Chart.fiveHour))
                         }
                         if let value = sample.weekly {
-                            LineMark(x: .value("Time", sample.date), y: .value("%", value), series: .value("Window", L10n.Chart.weekly))
-                                .foregroundStyle(by: .value("Window", L10n.Chart.weekly))
+                            LineMark(x: .value(L10n.Chart.axisTime, sample.date), y: .value(L10n.Chart.axisPercent, value), series: .value(L10n.Chart.axisWindow, L10n.Chart.weekly))
+                                .foregroundStyle(by: .value(L10n.Chart.axisWindow, L10n.Chart.weekly))
                         }
                     }
                 }
@@ -213,13 +236,6 @@ private struct UsageChartView: View {
     }()
 
     // MARK: Days
-
-    private func localToday(_ now: Date) -> String {
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "en_US_POSIX")
-        f.dateFormat = "yyyy-MM-dd"
-        return f.string(from: now)
-    }
 
     private func dayDate(_ day: String) -> Date { Self.dayFormatter.date(from: day) ?? Date() }
 }

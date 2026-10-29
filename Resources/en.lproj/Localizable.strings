@@ -328,3 +328,8 @@
 "chart.streak.one" = "Streak: %ld day";
 "chart.streak.other" = "Streak: %ld days";
 "chart.forecast" = "At this pace the weekly limit runs out ~%@";
+"chart.timedOut" = "Couldn't load the usage data in time. Try Refresh.";
+"chart.axis.tokens" = "Tokens";
+"chart.axis.time" = "Time";
+"chart.axis.percent" = "Percent";
+"chart.axis.window" = "Window";

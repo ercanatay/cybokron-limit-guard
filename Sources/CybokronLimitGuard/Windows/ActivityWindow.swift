@@ -28,11 +28,9 @@ final class ActivityWindowController: NSWindowController {
     }
 
     func show() {
-        NSApp.activate()
         model.reload()
         if let window, !window.isVisible { window.center() }
-        showWindow(nil)
-        window?.makeKeyAndOrderFront(nil)
+        bringToFront()
     }
 }
 

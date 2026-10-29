@@ -40,13 +40,25 @@ public enum ChartData {
         return samples.filter { $0.date >= cutoff && $0.date <= anchor }.sorted { $0.date < $1.date }
     }
 
-    /// Token counts as "950", "1.5 K", "248 M", "1.2 B".
+    /// The UTC day ("yyyy-MM-dd") of `now`. The usage report's buckets are read as UTC days, so
+    /// "today" must be the UTC day too (assumption: Codex buckets `startDate` by UTC).
+    public static func today(_ now: Date) -> String {
+        formatter().string(from: now)
+    }
+
+    /// Token counts as "950", "1.5 K", "248 M", "1.2 B", "3 T"; the unit is picked after rounding,
+    /// so 999_999 reads "1 M", not "1000 K".
     public static func compactTokens(_ value: Int64) -> String {
+        let units: [(Double, String)] = [(1e3, "K"), (1e6, "M"), (1e9, "B"), (1e12, "T")]
         let magnitude = Double(abs(value))
-        let units: [(Double, String)] = [(1e12, "T"), (1e9, "B"), (1e6, "M"), (1e3, "K")]
-        guard let unit = units.first(where: { magnitude >= $0.0 }) else { return String(value) }
-        let scaled = Double(value) / unit.0
-        let text = abs(scaled) < 10 ? String(format: "%.1f", scaled) : String(format: "%.0f", scaled)
-        return (text.hasSuffix(".0") ? String(text.dropLast(2)) : text) + " " + unit.1
+        guard var index = units.lastIndex(where: { magnitude >= $0.0 }) else { return String(value) }
+        func text(_ i: Int) -> String {
+            let scaled = Double(value) / units[i].0
+            let t = abs(scaled) < 10 ? String(format: "%.1f", scaled) : String(format: "%.0f", scaled)
+            return t.hasSuffix(".0") ? String(t.dropLast(2)) : t
+        }
+        let rounded = Double(text(index)).map(abs) ?? 0
+        if rounded >= 1000, index + 1 < units.count { index += 1 }
+        return text(index) + " " + units[index].1
     }
 }

@@ -57,9 +57,7 @@ final class SettingsWindowController: NSWindowController {
     func show() {
         model.reload()
         fitToScreen()
-        NSApp.activate()
-        showWindow(nil)
-        window?.makeKeyAndOrderFront(nil)
+        bringToFront()
     }
 
     /// Makes the panes as tall as the screen the window is on has room for, and keeps the whole

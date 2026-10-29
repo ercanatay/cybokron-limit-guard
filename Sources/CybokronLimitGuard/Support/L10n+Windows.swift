@@ -50,6 +50,11 @@ extension L10n {
         static var loading: String { tr("chart.loading", "Loading…") }
         static var refresh: String { tr("chart.refresh", "Refresh") }
         static var noHistory: String { tr("chart.noHistory", "No limit history yet.") }
+        static var timedOut: String { tr("chart.timedOut", "Couldn't load the usage data in time. Try Refresh.") }
+        static var axisTokens: String { tr("chart.axis.tokens", "Tokens") }
+        static var axisTime: String { tr("chart.axis.time", "Time") }
+        static var axisPercent: String { tr("chart.axis.percent", "Percent") }
+        static var axisWindow: String { tr("chart.axis.window", "Window") }
         static func peak(_ tokens: String) -> String { tr("chart.peak", "Peak day: %@ tokens", tokens) }
         static func streak(_ days: Int) -> String {
             days == 1 ? tr("chart.streak.one", "Streak: %ld day", days) : tr("chart.streak.other", "Streak: %ld days", days)
