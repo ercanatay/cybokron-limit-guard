@@ -42,6 +42,7 @@
 		3B3CC3E608C1C568AD9C4464 /* ResetPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1784EC5CE758EE941E44C231 /* ResetPolicy.swift */; };
 		3CC27096C5DA9C7338D8DC95 /* CodexAccountService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F82F7F378F85074B43A4633 /* CodexAccountService.swift */; };
 		3D5C76D52FD2E5B7B377E671 /* CodexAccountServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0D60B70220BA0A0C16F88CB /* CodexAccountServiceTests.swift */; };
+		3D7B64C11E8DAF5CE4F03139 /* PopoverLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539F8F633F7941DA6F11585 /* PopoverLayout.swift */; };
 		3DAA93D02ECCC51DC8B402E7 /* UpdateInstallerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D081335E53CFF3280872948 /* UpdateInstallerTests.swift */; };
 		3DF94C4292E3B2C2B3B533B0 /* KeepAwake.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1C0E94DD35029E8DE672353 /* KeepAwake.swift */; };
 		40BE4FB463A5DA05A5A5C46E /* ReleaseNotesMarkdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25B97BCFF3AB71DD119EA902 /* ReleaseNotesMarkdown.swift */; };
@@ -309,6 +310,7 @@
 		B032CFD6A7C44629BED8C436 /* CybokronLimitGuard.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CybokronLimitGuard.entitlements; sourceTree = "<group>"; };
 		B47820766592491A1A9BA7D9 /* Engine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Engine.swift; sourceTree = "<group>"; };
 		B4AAFC3B6736FFC427EDA5A6 /* ResetExecutorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResetExecutorTests.swift; sourceTree = "<group>"; };
+		B539F8F633F7941DA6F11585 /* PopoverLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverLayout.swift; sourceTree = "<group>"; };
 		B7A8071C95F08056B570121D /* LegalNoticeWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegalNoticeWindow.swift; sourceTree = "<group>"; };
 		BA516995A9CC0D4B06A157F5 /* StoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreTests.swift; sourceTree = "<group>"; };
 		C12E910A58545D3FF0949B99 /* usage-live.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "usage-live.json"; sourceTree = "<group>"; };
@@ -619,6 +621,7 @@
 			children = (
 				1DD75C8CBD0DF0D9B4100DDB /* CreditPresentation.swift */,
 				F844122DAA56ADF1DF92C2DA /* MenuBarText.swift */,
+				B539F8F633F7941DA6F11585 /* PopoverLayout.swift */,
 				ADED5B8ECE584924811BD34A /* PopoverStatus.swift */,
 				3DAAB2CA2641E55694B89B37 /* ResetsInFormatter.swift */,
 				6C4B84A8A2A96BE23681B784 /* SessionsPresentation.swift */,
@@ -966,6 +969,7 @@
 				D50869CC806091E819F0A82B /* LoginItemPolicy.swift in Sources */,
 				F509E6376B1A01186E74A00C /* MenuBarText.swift in Sources */,
 				7AFAE3C521A3B8CCDA3413DF /* Notice.swift in Sources */,
+				3D7B64C11E8DAF5CE4F03139 /* PopoverLayout.swift in Sources */,
 				C80712A0C9A32E3305437715 /* PopoverStatus.swift in Sources */,
 				52FA8BFADB3C6980219B936D /* ProtocolGuard.swift in Sources */,
 				4D781D17FB735986FA7AB2B4 /* ReleaseFeed.swift in Sources */,

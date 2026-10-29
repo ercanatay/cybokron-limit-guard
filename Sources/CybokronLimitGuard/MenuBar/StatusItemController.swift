@@ -133,7 +133,8 @@ final class StatusItemController: NSObject, NSPopoverDelegate {
 
         if let button = statusItem.button {
             button.target = self
-            button.action = #selector(togglePopover(_:))
+            button.action = #selector(statusItemClicked(_:))
+            button.sendAction(on: [.leftMouseUp, .rightMouseUp])
             button.toolTip = L10n.App.name
             button.setAccessibilityLabel(L10n.App.name)
         }
@@ -202,9 +203,37 @@ final class StatusItemController: NSObject, NSPopoverDelegate {
         return image
     }
 
-    @objc private func togglePopover(_ sender: Any?) {
-        popover.isShown ? close() : show()
+    /// Left-click toggles the popover; right-click and Control-click open the small menu.
+    @objc private func statusItemClicked(_ sender: Any?) {
+        if let event = NSApp.currentEvent,
+           event.type == .rightMouseUp || (event.type == .leftMouseUp && event.modifierFlags.contains(.control)) {
+            showContextMenu()
+        } else {
+            popover.isShown ? close() : show()
+        }
     }
+
+    private func showContextMenu() {
+        close()
+        let menu = NSMenu()
+        let settings = NSMenuItem(title: L10n.Settings.menuItem, action: #selector(menuSettings), keyEquivalent: "")
+        let about = NSMenuItem(title: L10n.Common.about(L10n.App.name), action: #selector(menuAbout), keyEquivalent: "")
+        let quit = NSMenuItem(title: L10n.Menu.quit(L10n.App.name), action: #selector(menuQuit), keyEquivalent: "q")
+        quit.keyEquivalentModifierMask = .command
+        for item in [settings, about, quit] { item.target = self }
+        menu.addItem(settings)
+        menu.addItem(about)
+        menu.addItem(.separator())
+        menu.addItem(quit)
+        // Attaching the menu only for this click keeps left-click on the popover action.
+        statusItem.menu = menu
+        statusItem.button?.performClick(nil)
+        statusItem.menu = nil
+    }
+
+    @objc private func menuSettings() { model.actions.showSettings() }
+    @objc private func menuAbout() { model.actions.showAbout() }
+    @objc private func menuQuit() { NSApp.terminate(nil) }
 
     func show() {
         guard let button = statusItem.button, !popover.isShown else { return }

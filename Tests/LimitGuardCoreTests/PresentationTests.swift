@@ -293,4 +293,9 @@ struct PresentationTests {
         #expect(!CreditPresentation.stillAvailable(creditId: "gone", in: current))
         #expect(!CreditPresentation.stillAvailable(creditId: "a", in: nil))
     }
+
+    @Test func popoverMaxContentHeightLeavesRoomAndHasAFloor() {
+        #expect(PopoverLayout.maxContentHeight(visibleScreenHeight: 900) == 740)
+        #expect(PopoverLayout.maxContentHeight(visibleScreenHeight: 400) == 300)
+    }
 }

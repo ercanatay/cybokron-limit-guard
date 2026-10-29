@@ -9,21 +9,44 @@ struct PopoverView: View {
     let closePopover: () -> Void
     @Environment(\.colorScheme) private var colorScheme
 
+    @State private var contentHeight: CGFloat = 0
+
     var body: some View {
         let palette = PanelPalette.forScheme(colorScheme)
+        let maxHeight = PopoverLayout.maxContentHeight(visibleScreenHeight: NSScreen.main?.visibleFrame.height ?? 800)
         VStack(alignment: .leading, spacing: 0) {
-            if let engine = model.engine {
-                EngineSections(engine: engine, model: model, palette: palette, closePopover: closePopover)
-            } else {
-                StatusLine(text: L10n.EngineStatus.starting, symbol: "hourglass", tint: palette.secondaryText, palette: palette)
-                    .padding(14)
+            // Sizes to its content while short; scrolls once it would outgrow the screen.
+            ScrollView(.vertical) {
+                content(palette)
+                    .frame(width: 380, alignment: .leading)
+                    .background(
+                        GeometryReader { proxy in
+                            Color.clear.preference(key: ContentHeightKey.self, value: proxy.size.height)
+                        })
             }
+            .scrollBounceBehavior(.basedOnSize)
+            .frame(height: contentHeight > 0 ? min(contentHeight, maxHeight) : maxHeight)
+            .onPreferenceChange(ContentHeightKey.self) { contentHeight = $0 }
             Divider().overlay(palette.hairline)
             PopoverFooter(engine: model.engine, model: model, palette: palette, closePopover: closePopover)
         }
         .frame(width: 380)
         .background(palette.glassTint)
     }
+
+    @ViewBuilder private func content(_ palette: PanelPalette) -> some View {
+        if let engine = model.engine {
+            EngineSections(engine: engine, model: model, palette: palette, closePopover: closePopover)
+        } else {
+            StatusLine(text: L10n.EngineStatus.starting, symbol: "hourglass", tint: palette.secondaryText, palette: palette)
+                .padding(14)
+        }
+    }
+}
+
+private struct ContentHeightKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
 }
 
 /// Everything that follows the Engine's published state.
@@ -200,7 +223,14 @@ private struct PopoverFooter: View {
             HStack(spacing: 10) {
                 footerButton(L10n.Common.about(L10n.App.name)) { model.actions.showAbout() }
                 Spacer(minLength: 4)
-                footerButton(L10n.Menu.quit(L10n.App.name)) { NSApp.terminate(nil) }
+                Button {
+                    NSApp.terminate(nil)
+                } label: {
+                    Label(L10n.Menu.quit(L10n.App.name), systemImage: "power")
+                }
+                .buttonStyle(.borderless)
+                .controlSize(.small)
+                .foregroundStyle(.red)
             }
         }
         .padding(.horizontal, 14)
