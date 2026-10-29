@@ -16,14 +16,18 @@ struct TemporaryDirectory {
 
 private final class FixtureBundleToken {}
 
-/// Loads a JSON fixture: SwiftPM keeps the Fixtures folder, the Xcode test bundle copies the files flat.
-func fixture(_ name: String) throws -> Data {
+/// A fixture's file URL: SwiftPM keeps the Fixtures folder, the Xcode test bundle copies the files flat.
+func fixtureURL(_ name: String) -> URL {
     #if SWIFT_PACKAGE
-    let url = Bundle.module.resourceURL!.appending(path: "Fixtures/\(name)")
+    return Bundle.module.resourceURL!.appending(path: "Fixtures/\(name)")
     #else
     let bundle = Bundle(for: FixtureBundleToken.self)
-    let url = bundle.url(forResource: name, withExtension: nil)
+    return bundle.url(forResource: name, withExtension: nil)
         ?? bundle.resourceURL!.appending(path: "Fixtures/\(name)")
     #endif
-    return try Data(contentsOf: url)
+}
+
+/// Loads a fixture's contents.
+func fixture(_ name: String) throws -> Data {
+    try Data(contentsOf: fixtureURL(name))
 }
