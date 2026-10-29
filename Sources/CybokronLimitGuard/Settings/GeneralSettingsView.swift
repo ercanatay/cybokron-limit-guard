@@ -33,11 +33,11 @@ struct GeneralSettingsView: View {
                 get: { model.launchAtLogin },
                 set: { model.setLaunchAtLogin($0) }
             ))
-            if model.loginItemState == .requiresApproval {
+            if model.loginItemState == .requiresApproval || model.loginItemError != nil {
                 LabeledContent {
                     Button(L10n.Settings.General.openLoginItems) { LoginItem.openSystemSettings() }
                 } label: {
-                    Text(L10n.Settings.General.launchNeedsApproval)
+                    Text(model.loginItemError.map(L10n.Settings.General.launchFailed) ?? L10n.Settings.General.launchNeedsApproval)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

@@ -27,12 +27,13 @@ struct SettingsStatusBanner: View {
 struct CommitTextField: View {
     let title: String
     let value: String
-    let commit: (String) -> Void
+    /// Stores the text and returns what was accepted, which the field then shows.
+    let commit: (String) -> String
 
     @State private var draft: String
     @FocusState private var isFocused: Bool
 
-    init(_ title: String, value: String, commit: @escaping (String) -> Void) {
+    init(_ title: String, value: String, commit: @escaping (String) -> String) {
         self.title = title
         self.value = value
         self.commit = commit
@@ -42,13 +43,13 @@ struct CommitTextField: View {
     var body: some View {
         TextField(title, text: $draft)
             .focused($isFocused)
-            .onSubmit { commit(draft) }
+            .onSubmit { draft = commit(draft) }
             .onChange(of: isFocused) { _, focused in
-                if !focused { commit(draft) }
+                if !focused { draft = commit(draft) }
             }
             .onChange(of: value) { _, newValue in
                 if !isFocused { draft = newValue }
             }
-            .onDisappear { commit(draft) }
+            .onDisappear { _ = commit(draft) }
     }
 }

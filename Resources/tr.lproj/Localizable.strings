@@ -228,7 +228,7 @@
 "settings.saveFailed" = "Ayarlar kaydedilemedi.";
 "settings.general.launchAtLogin" = "Oturum açıldığında başlat";
 "settings.general.launchNeedsApproval" = "Uygulamaya Sistem Ayarları → Genel → Oturum Açma Öğeleri bölümünden izin verin.";
-"settings.general.openLoginItems" = "Oturum Açma Öğelerini Aç";
+"settings.general.openLoginItems" = "Oturum Açma Öğelerini Aç…";
 "settings.general.showPercent" = "Menü çubuğunda yüzdeyi göster";
 "settings.general.keepAwake" = "Beklerken Mac'i uyanık tut";
 "settings.general.keepAwakeHelp" = "Yalnızca kullanım sınırında durma ile devam arasında. Ekran yine de uyku moduna geçebilir.";
@@ -279,3 +279,4 @@
 "settings.notifications.readOnly" = "Uygulama salt okunur moda geçtiğinde";
 "settings.notifications.permissionMissing" = "Bir izin eksik olduğunda";
 "notice.menuItem" = "Yasal Bildirim…";
+"settings.general.launchFailed" = "Oturum açma öğesi değiştirilemedi: %@";

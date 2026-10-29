@@ -233,7 +233,7 @@
 "settings.saveFailed" = "The settings couldn't be saved.";
 "settings.general.launchAtLogin" = "Launch at login";
 "settings.general.launchNeedsApproval" = "Allow the app in System Settings → General → Login Items.";
-"settings.general.openLoginItems" = "Open Login Items";
+"settings.general.openLoginItems" = "Open Login Items…";
 "settings.general.showPercent" = "Show percentage in menu bar";
 "settings.general.keepAwake" = "Keep Mac awake while waiting";
 "settings.general.keepAwakeHelp" = "Only between a usage-limit stop and the continue. The display may still sleep.";
@@ -284,3 +284,4 @@
 "settings.notifications.readOnly" = "The app switches to read-only mode";
 "settings.notifications.permissionMissing" = "A permission is missing";
 "notice.menuItem" = "Legal Notice…";
+"settings.general.launchFailed" = "Couldn't change the login item: %@";

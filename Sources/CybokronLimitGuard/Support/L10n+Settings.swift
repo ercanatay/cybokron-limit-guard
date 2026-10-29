@@ -30,7 +30,10 @@ extension L10n.Settings {
         static var launchNeedsApproval: String {
             tr("settings.general.launchNeedsApproval", "Allow the app in System Settings → General → Login Items.")
         }
-        static var openLoginItems: String { tr("settings.general.openLoginItems", "Open Login Items") }
+        static var openLoginItems: String { tr("settings.general.openLoginItems", "Open Login Items…") }
+        static func launchFailed(_ reason: String) -> String {
+            tr("settings.general.launchFailed", "Couldn't change the login item: %@", reason)
+        }
         static var showPercent: String { tr("settings.general.showPercent", "Show percentage in menu bar") }
         static var keepAwake: String { tr("settings.general.keepAwake", "Keep Mac awake while waiting") }
         static var keepAwakeHelp: String {

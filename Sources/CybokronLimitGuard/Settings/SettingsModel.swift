@@ -17,7 +17,7 @@ final class SettingsModel: ObservableObject {
     @Published private(set) var readOnlyReason: ReadOnlyReason?
     @Published private(set) var saveFailed = false
     @Published private(set) var loginItemState = LoginItem.state
-    @Published private(set) var loginItemFailed = false
+    @Published private(set) var loginItemError: String?
 
     private let store: JSONStore<LimitGuardCore.Settings>
 
@@ -31,7 +31,7 @@ final class SettingsModel: ObservableObject {
     /// Re-reads the file (it may have changed since the window was last shown).
     func reload() {
         saveFailed = false
-        loginItemFailed = false
+        loginItemError = nil
         loginItemState = LoginItem.state
         do {
             settings = try store.load()?.clamped() ?? LimitGuardCore.Settings()
@@ -45,12 +45,14 @@ final class SettingsModel: ObservableObject {
         }
     }
 
-    func mutate(_ change: (inout LimitGuardCore.Settings) -> Void) {
-        guard !isReadOnly else { return }
+    /// Returns true when the change was saved.
+    @discardableResult
+    func mutate(_ change: (inout LimitGuardCore.Settings) -> Void) -> Bool {
+        guard !isReadOnly else { return false }
         var updated = settings
         change(&updated)
         updated = updated.clamped()
-        guard updated != settings else { return }
+        guard updated != settings else { return true }
         settings = updated
         do {
             try store.save(updated)
@@ -58,6 +60,7 @@ final class SettingsModel: ObservableObject {
         } catch {
             saveFailed = true
         }
+        return !saveFailed
     }
 
     func binding<Value>(_ keyPath: WritableKeyPath<LimitGuardCore.Settings, Value>) -> Binding<Value> {
@@ -80,11 +83,11 @@ final class SettingsModel: ObservableObject {
 
     func setLaunchAtLogin(_ enabled: Bool) {
         guard !isReadOnly else { return }
-        loginItemFailed = false
+        loginItemError = nil
         do {
             try LoginItem.setEnabled(enabled)
         } catch {
-            loginItemFailed = true
+            loginItemError = error.localizedDescription
         }
         loginItemState = LoginItem.state
         mutate { $0.launchAtLogin = loginItemState != .disabled }
@@ -95,7 +98,7 @@ final class SettingsModel: ObservableObject {
     /// Writes the choice to the app's own `AppleLanguages` default and asks for a restart.
     func setLanguage(_ language: AppLanguage) {
         guard !isReadOnly, language != settings.language else { return }
-        mutate { $0.language = language }
+        guard mutate({ $0.language = language }) else { return }
         if let languages = language.appleLanguages {
             UserDefaults.standard.set(languages, forKey: "AppleLanguages")
         } else {

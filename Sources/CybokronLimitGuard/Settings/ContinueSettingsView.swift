@@ -51,7 +51,10 @@ struct ContinueSettingsView: View {
                     CommitTextField(
                         L10n.Settings.Continue.fallback,
                         value: model.settings.fallbackText,
-                        commit: { text in model.mutate { $0.fallbackText = text } }
+                        commit: { text in
+                            model.mutate { $0.fallbackText = SettingsLimits.appliedFallbackText(text, previous: $0.fallbackText) }
+                            return model.settings.fallbackText
+                        }
                     )
                 }
             }
@@ -69,7 +72,10 @@ struct ContinueSettingsView: View {
             CommitTextField(
                 L10n.Settings.Continue.text,
                 value: model.settings.continueTexts[code] ?? "",
-                commit: { text in model.mutate { $0.continueTexts[code] = text } }
+                commit: { text in
+                    model.mutate { SettingsLimits.applyContinueText(text, for: code, to: &$0.continueTexts) }
+                    return model.settings.continueTexts[code] ?? text
+                }
             )
             Button {
                 model.mutate { $0.continueTexts[code] = nil }

@@ -60,3 +60,22 @@ public enum ContinueTextTable {
         return base
     }
 }
+
+extension SettingsLimits {
+    /// Applies edited continue text for `code`: trimmed; an empty result or a row that was removed
+    /// meanwhile leaves the table as it was. Returns the text the table now holds (nil: no row).
+    @discardableResult
+    public static func applyContinueText(_ text: String, for code: String, to table: inout [String: String]) -> String? {
+        guard let previous = table[code] else { return nil }
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty { return previous }
+        table[code] = trimmed
+        return trimmed
+    }
+
+    /// The fallback text after an edit: trimmed, the previous one when nothing is left.
+    public static func appliedFallbackText(_ text: String, previous: String) -> String {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? previous : trimmed
+    }
+}

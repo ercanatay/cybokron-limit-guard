@@ -61,3 +61,29 @@ struct SettingsLimitsTests {
         #expect(ContinueTextTable.normalizedCode("english") == nil)
     }
 }
+
+@Suite("Continue text editing")
+struct ContinueTextEditingTests {
+    @Test func trimsAndStores() {
+        var table = ["tr": "devam et"]
+        #expect(SettingsLimits.applyContinueText("  sürdür \n", for: "tr", to: &table) == "sürdür")
+        #expect(table["tr"] == "sürdür")
+    }
+
+    @Test func blankKeepsPreviousText() {
+        var table = ["tr": "devam et"]
+        #expect(SettingsLimits.applyContinueText("   ", for: "tr", to: &table) == "devam et")
+        #expect(table == ["tr": "devam et"])
+    }
+
+    @Test func removedRowIsNotBroughtBack() {
+        var table = ["en": "continue"]
+        #expect(SettingsLimits.applyContinueText("go on", for: "tr", to: &table) == nil)
+        #expect(table == ["en": "continue"])
+    }
+
+    @Test func fallbackKeepsPreviousWhenBlank() {
+        #expect(SettingsLimits.appliedFallbackText(" ", previous: "continue") == "continue")
+        #expect(SettingsLimits.appliedFallbackText(" go ", previous: "continue") == "go")
+    }
+}
