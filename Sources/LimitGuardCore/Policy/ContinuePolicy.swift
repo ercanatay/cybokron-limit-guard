@@ -88,11 +88,7 @@ public enum ContinuePolicy {
         var info = classifyStop(turnId: turnId, snapshot: inputs.snapshot)
         if let recorded = inputs.stopInfo, recorded.turnId == turnId { info = recorded }
 
-        if info.isWeekly, let resetsAt = info.resetsAt {
-            if inputs.now > resetsAt.addingTimeInterval(weeklyGrace) { return .notEligible(.tooOld) }
-        } else if inputs.now.timeIntervalSince(stopAt) > maxStopAge {
-            return .notEligible(.tooOld)
-        }
+        if isTooOld(info, stopAt: stopAt, now: inputs.now) { return .notEligible(.tooOld) }
 
         if inputs.loop.consecutive >= settings.maxContinues { return .stopLoopGuard }
         if inputs.loop.shortTurnsInARow >= runawayTurns { return .stopRunaway }
@@ -107,6 +103,23 @@ public enum ContinuePolicy {
         if let until = waits.max(), until > inputs.now { return .waitUntil(until) }
         if !gateOpen { return .waitForGate }
         return settings.countdownSeconds > 0 ? .countdown(seconds: settings.countdownSeconds) : .send
+    }
+
+    /// A weekly stop ages out an hour after the weekly window resets, any other stop after 24 h.
+    static func isTooOld(_ info: StopInfo, stopAt: Date, now: Date) -> Bool {
+        if info.isWeekly, let resetsAt = info.resetsAt {
+            return now > resetsAt.addingTimeInterval(weeklyGrace)
+        }
+        return now.timeIntervalSince(stopAt) > maxStopAge
+    }
+
+    /// The session is waiting on a usage-limit stop auto-continue could still act on: the user did
+    /// nothing since and the stop is not too old. Ignores settings, guarding and the gate.
+    public static func isWaitingOnUsageLimit(session: SessionState, snapshot: AccountSnapshot, stopInfo: StopInfo?, now: Date) -> Bool {
+        guard case let .usageLimit(stopAt, turnId) = session.lastStop, !session.userActivityAfterStop else { return false }
+        var info = classifyStop(turnId: turnId, snapshot: snapshot)
+        if let recorded = stopInfo, recorded.turnId == turnId { info = recorded }
+        return !isTooOld(info, stopAt: stopAt, now: now)
     }
 
     /// Records which window stopped the session and when it resets; call when a stop is first seen.

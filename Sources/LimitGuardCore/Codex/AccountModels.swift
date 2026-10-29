@@ -151,7 +151,7 @@ public struct AccountSnapshot: Equatable, Sendable {
         return (snapshot, health)
     }
 
-    private static func sortedByExpiry(_ credits: [ResetCredit]) -> [ResetCredit] {
+    static func sortedByExpiry(_ credits: [ResetCredit]) -> [ResetCredit] {
         // Stable: enumerate to keep server order among equal expiries.
         credits.enumerated().sorted { lhs, rhs in
             switch (lhs.element.expiresAt, rhs.element.expiresAt) {

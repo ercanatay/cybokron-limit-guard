@@ -24,6 +24,9 @@ final class FakeAppServer: AppServerTransport, @unchecked Sendable {
     private var _onLine: (@Sendable (Data) -> Void)?
     private var _onExit: (@Sendable (Int32) -> Void)?
     private var scripts: [String: Script] = [:]
+    /// Used before `scripts`, one reply per request, until empty.
+    private var queues: [String: [Script]] = [:]
+    private var _onRequest: (@Sendable (Request) -> Void)?
     private var _sentLines: [String] = []
     private var _requests: [Request] = []
     private var _started = false
@@ -39,7 +42,18 @@ final class FakeAppServer: AppServerTransport, @unchecked Sendable {
         set { lock.withLock { _onExit = newValue } }
     }
 
+    /// Called synchronously inside `send`, before the reply is scheduled.
+    var onRequest: (@Sendable (Request) -> Void)? {
+        get { lock.withLock { _onRequest } }
+        set { lock.withLock { _onRequest = newValue } }
+    }
+
     // MARK: Scripting
+
+    /// Replies for the next requests to `method`, in order; afterwards the regular script applies.
+    func scriptQueue(_ method: String, _ replies: [Reply]) {
+        lock.withLock { queues[method] = replies.map { Script(reply: $0, delay: .zero) } }
+    }
 
     func script(_ method: String, result: String = "{}", delay: Duration = .zero) {
         lock.withLock { scripts[method] = Script(reply: .result(result), delay: delay) }
@@ -81,12 +95,19 @@ final class FakeAppServer: AppServerTransport, @unchecked Sendable {
               let method = object["method"] as? String,
               let id = object["id"] as? Int else { return }
         let params = (object["params"] as? [String: Any])?.compactMapValues { $0 as? String } ?? [:]
-        let script: Script = lock.withLock {
-            _requests.append(Request(id: id, method: method, params: params))
-            return scripts[method] ?? Script(
+        let request = Request(id: id, method: method, params: params)
+        let (script, hook): (Script, (@Sendable (Request) -> Void)?) = lock.withLock {
+            _requests.append(request)
+            if var queue = queues[method], !queue.isEmpty {
+                let next = queue.removeFirst()
+                queues[method] = queue
+                return (next, _onRequest)
+            }
+            return (scripts[method] ?? Script(
                 reply: method == "initialize" ? .result("{}") : .error(code: -32601, message: "no script for \(method)"),
-                delay: .zero)
+                delay: .zero), _onRequest)
         }
+        hook?(request)
         let payload: String
         switch script.reply {
         case .drop: return
