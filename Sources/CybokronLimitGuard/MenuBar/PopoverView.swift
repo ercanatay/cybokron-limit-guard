@@ -21,7 +21,7 @@ struct PopoverView: View {
         let maxHeight = PopoverLayout.maxContentHeight(visibleScreenHeight: visibleScreenHeight())
         VStack(alignment: .leading, spacing: 0) {
             // Sizes to its content while short; scrolls once it would outgrow the screen.
-            ScrollView(.vertical) {
+            ScrollView(.vertical, showsIndicators: true) {
                 content(palette)
                     .frame(width: 380, alignment: .leading)
                     .background(

@@ -295,7 +295,9 @@ struct PresentationTests {
     }
 
     @Test func popoverMaxContentHeightLeavesRoomAndHasAFloor() {
-        #expect(PopoverLayout.maxContentHeight(visibleScreenHeight: 900) == 740)
+        #expect(PopoverLayout.maxContentHeight(visibleScreenHeight: 1200) == 520)
+        #expect(PopoverLayout.maxContentHeight(visibleScreenHeight: 900) == 520)
+        #expect(PopoverLayout.maxContentHeight(visibleScreenHeight: 600) == 440)
         #expect(PopoverLayout.maxContentHeight(visibleScreenHeight: 400) == 300)
     }
 
