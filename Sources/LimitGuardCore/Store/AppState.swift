@@ -1,0 +1,93 @@
+import Foundation
+
+public struct TabRef: Codable, Hashable {
+    public var windowId: Int
+    public var tabIndex: Int
+    public var tty: String
+
+    public init(windowId: Int, tabIndex: Int, tty: String) {
+        self.windowId = windowId
+        self.tabIndex = tabIndex
+        self.tty = tty
+    }
+}
+
+public struct GuardedTab: Codable, Equatable {
+    public var ref: TabRef
+    public var addedAt: Date
+
+    public init(ref: TabRef, addedAt: Date) {
+        self.ref = ref
+        self.addedAt = addedAt
+    }
+}
+
+public struct ScheduledContinue: Codable, Equatable {
+    public var threadId: String
+    public var text: String
+    public var fireAt: Date
+
+    public init(threadId: String, text: String, fireAt: Date) {
+        self.threadId = threadId
+        self.text = text
+        self.fireAt = fireAt
+    }
+}
+
+public struct PendingDelivery: Codable, Equatable {
+    public var threadId: String
+    public var clientMessageId: UUID
+    public var text: String
+    public var sentAt: Date
+
+    public init(threadId: String, clientMessageId: UUID, text: String, sentAt: Date) {
+        self.threadId = threadId
+        self.clientMessageId = clientMessageId
+        self.text = text
+        self.sentAt = sentAt
+    }
+}
+
+public struct LoopRecord: Codable, Equatable {
+    public var consecutive = 0
+    public var lastSentAt: Date?
+    public var shortTurnsInARow = 0
+
+    public init(consecutive: Int = 0, lastSentAt: Date? = nil, shortTurnsInARow: Int = 0) {
+        self.consecutive = consecutive
+        self.lastSentAt = lastSentAt
+        self.shortTurnsInARow = shortTurnsInARow
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        consecutive = try c.decodeIfPresent(Int.self, forKey: .consecutive) ?? 0
+        lastSentAt = try c.decodeIfPresent(Date.self, forKey: .lastSentAt)
+        shortTurnsInARow = try c.decodeIfPresent(Int.self, forKey: .shortTurnsInARow) ?? 0
+    }
+}
+
+public struct AppState: Codable, Equatable {
+    /// Keyed by thread id.
+    public var loop: [String: LoopRecord] = [:]
+    /// `secondary.resetsAt` of the window already spent in.
+    public var autoSpendWindowKey: Date?
+    public var autoSpendAccountId: String?
+    public var scheduled: ScheduledContinue?
+    public var pendingDeliveries: [PendingDelivery] = []
+    public var guardedTabs: [GuardedTab] = []
+    public var expiryNotified: Set<String> = []
+
+    public init() {}
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        loop = try c.decodeIfPresent([String: LoopRecord].self, forKey: .loop) ?? [:]
+        autoSpendWindowKey = try c.decodeIfPresent(Date.self, forKey: .autoSpendWindowKey)
+        autoSpendAccountId = try c.decodeIfPresent(String.self, forKey: .autoSpendAccountId)
+        scheduled = try c.decodeIfPresent(ScheduledContinue.self, forKey: .scheduled)
+        pendingDeliveries = try c.decodeIfPresent([PendingDelivery].self, forKey: .pendingDeliveries) ?? []
+        guardedTabs = try c.decodeIfPresent([GuardedTab].self, forKey: .guardedTabs) ?? []
+        expiryNotified = try c.decodeIfPresent(Set<String>.self, forKey: .expiryNotified) ?? []
+    }
+}
