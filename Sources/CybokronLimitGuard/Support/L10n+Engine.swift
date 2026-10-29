@@ -1,7 +1,7 @@
 import Foundation
 import LimitGuardCore
 
-/// Notification texts and the engine status line in the menu.
+/// Notification texts and the engine status words.
 extension L10n {
     enum Notify {
         static var permissionTitle: String { tr("notify.permission.title", "Allow notifications?") }
@@ -109,28 +109,11 @@ extension L10n {
         }
     }
 
+    /// Status texts the popover shares with other places.
     enum EngineStatus {
         static var starting: String { tr("engineStatus.starting", "Starting…") }
         static var reading: String { tr("engineStatus.reading", "Reading limits…") }
-        static var unavailable: String { tr("engineStatus.unavailable", "Limits unavailable") }
-        static var codexMissing: String { tr("engineStatus.codexMissing", "Codex not found") }
         static var paused: String { tr("engineStatus.paused", "Paused") }
-        static var readOnly: String { tr("engineStatus.readOnly", "Read-only") }
-        /// "5h 100% · W 16%": the 5-hour and the weekly window.
-        static func limits(fiveHour: Int, weekly: Int) -> String {
-            let five = "\(fiveHour)%"
-            let week = "\(weekly)%"
-            return tr("engineStatus.limits", "5h %@ · W %@", five, week)
-        }
-        static func fiveHourOnly(_ percent: Int) -> String {
-            let text = "\(percent)%"
-            return tr("engineStatus.fiveHourOnly", "5h %@", text)
-        }
-        static func weeklyOnly(_ percent: Int) -> String {
-            let text = "\(percent)%"
-            return tr("engineStatus.weeklyOnly", "W %@", text)
-        }
-        static var pause: String { tr("engineStatus.pauseItem", "Pause automatic actions") }
     }
 }
 

@@ -10,9 +10,23 @@ import Foundation
 /// Format strings take `String(format:)` placeholders: `%@` for text, `%ld` for whole numbers, and
 /// numbered ones (`%1$@`, `%2$ld`) when there are several, so translations can reorder them.
 public enum Localization {
+    /// The bundle whose tables the lookups read: the app's, or for one task another one, such as a
+    /// single language's table (`table(for:)`) or the repository's tables in the tests.
+    @TaskLocal public static var bundle: Bundle = .main
+
     /// The text for `key` in the user's language, `english` when there's none.
     public static func string(_ key: String, _ english: String) -> String {
-        string(key, english, in: .main)
+        string(key, english, in: bundle)
+    }
+
+    /// The table of `locale`'s language in the current `bundle`, or that bundle itself when it has none.
+    public static func table(for locale: Locale) -> Bundle {
+        let base = bundle
+        guard let code = locale.language.languageCode?.identifier,
+              let path = base.path(forResource: code, ofType: "lproj"),
+              let table = Bundle(path: path)
+        else { return base }
+        return table
     }
 
     /// The text for `key` in `bundle`'s table, the key itself when it has none.

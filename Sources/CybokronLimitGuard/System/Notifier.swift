@@ -36,6 +36,16 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
         }
     }
 
+    /// Whether macOS lets the app show notifications: nil while not asked yet or without an app bundle.
+    func isAllowed() async -> Bool? {
+        guard let center else { return nil }
+        switch await center.notificationSettings().authorizationStatus {
+        case .authorized, .provisional, .ephemeral: return true
+        case .denied: return false
+        default: return nil
+        }
+    }
+
     private func explainAndRequest() {
         guard let center, !UserDefaults.standard.bool(forKey: Self.explainedKey) else { return }
         UserDefaults.standard.set(true, forKey: Self.explainedKey)

@@ -28,6 +28,13 @@ struct SessionTests {
 
     // MARK: - Rollout reader + session state
 
+    @Test func stateCarriesTheIndexTitle() throws {
+        #expect(try state("rollout-usage-limit.jsonl").title == "Sample")
+        var untitled = thread("rollout-usage-limit.jsonl")
+        untitled.title = ""
+        #expect(SessionState.build(thread: untitled, events: []).title == nil)
+    }
+
     @Test func readsSessionMetaAndTurnEvents() throws {
         let events = try RolloutReader().tailEvents(of: fixtureURL("rollout-usage-limit.jsonl"))
         #expect(events.first == .sessionMeta(

@@ -27,6 +27,8 @@ public struct SessionState: Equatable, Sendable {
     public var lastTurnDurations: [TimeInterval]
     public var languageSample: String
     public var seenClientMessageIds: Set<String>
+    /// The thread's title from the index (shown in the popover); nil when unknown.
+    public var title: String?
 
     public init(
         threadId: String, cwd: String, originator: String?, lastStop: StopKind, userActivityAfterStop: Bool,
@@ -87,7 +89,7 @@ public struct SessionState: Equatable, Sendable {
             }
         }
 
-        return SessionState(
+        var state = SessionState(
             threadId: thread.id,
             cwd: thread.cwd.isEmpty ? metaCwd ?? "" : thread.cwd,
             originator: thread.originator ?? metaOriginator,
@@ -98,5 +100,7 @@ public struct SessionState: Equatable, Sendable {
             languageSample: LanguageSample.extract(from: userTexts),
             seenClientMessageIds: clientIds
         )
+        state.title = thread.title.isEmpty ? nil : thread.title
+        return state
     }
 }
