@@ -189,7 +189,7 @@ first approval prompt"), and Keep-awake assertion state. Copy-to-clipboard repor
 ### 4.4 Empty and error states
 Shown in the popover status line with a one-line fix: Codex not found (link to set the path) ·
 Codex not signed in with ChatGPT (`codex login`) · app-server failed to start (retrying) ·
-Codex not signed in · notifications not allowed · no Codex tab open. The active
+notifications not allowed · no Codex tab open. The active
 account's plan (`planType`) is shown small in the footer; if the account changes, per-account
 state (auto-spend marker, ledger) is not reused for the new account.
 
@@ -202,7 +202,7 @@ state (auto-spend marker, ledger) is not reused for the new account.
 ### 4.6 Privacy
 Everything stays on the Mac. The app reads Codex's local session files only to detect stops and
 the conversation language; it never copies conversation text into its own files (the activity
-log stores only the continue text it typed), never reads `auth.json`, and sends nothing
+log stores only the continue text it sent), never reads `auth.json`, and sends nothing
 anywhere except Codex's own app-server and GitHub (update check / changelog). No analytics.
 README and SECURITY.md state this.
 
@@ -337,16 +337,16 @@ credit ("A reset credit expires today at 22:29"). No automatic spending because 
 The Terminal TUI is a client of the shared app-server daemon. `codex app-server proxy`
 connects to that same daemon over its control socket; `thread/loaded/list` lists the threads
 currently loaded by clients and `turn/start {threadId, input, clientUserMessageId}` starts a
-turn in a given thread. If S5 confirms that a turn started this way appears and runs in the
-owner's Terminal tab, this is the **primary delivery path**:
+turn in a given thread. Spike S5 verified that a turn started this way appears and runs in the
+owner's Terminal tab, so this is the Phase 1 delivery mechanism:
 - exact thread targeting by `threadId` (no tab guessing, no keystrokes, no draft clobbering,
   no risk of hitting Enter on a picker);
 - no Automation / Accessibility permission needed;
 - the turn keeps the thread's model, effort, approval and sandbox settings — the app never
   passes `model`/`effort`/`approvalPolicy`/`sandboxPolicy` overrides (D27).
 Guarded-tab selection (§7.3) still decides *which* sessions may be continued; the tab ↔ thread
-link then only needs to be known for display. Keystroke typing (§9.1) remains as fallback when
-S5 fails or the daemon isn't reachable.
+link then only needs to be known for display. If the daemon isn't reachable the app notifies
+"continue by hand" (D31).
 
 ### 9.0.1 Delivery confirmation (D24)
 Every continue carries a fresh `clientUserMessageId` (UUID, stored in `state.json` before
@@ -393,7 +393,7 @@ Updates: as Dock Groups (automatic check on launch + every 6 h, sha256-verified 
 Changelog: as Dock Groups (GitHub releases list, cached with ETag, offline copy).
 Support: as Dock Groups.
 
-Pause/Resume (popover + menu): pauses all automatic typing and spending; reading continues.
+Pause/Resume (popover + menu): pauses all automatic continues and spending; reading continues.
 
 Sleep/wake: on wake, re-read everything; a missed continue runs through the normal flow
 (countdown included) if still eligible (same age rules as §7.1).
@@ -495,9 +495,9 @@ Our differentiators: auto-continue + credit management + loop guards in one nati
 | D8 | Gate on `ordinaryUsageAllowed == true` only | builder |
 | D9 | Max one automatic spend per account every 7 days (AutoSpendMarker written before consume); earliest-expiring credit first | builder |
 | D10 | Expiring credits: reminder only, no auto-spend | builder |
-| D11 | Confirmation alert before manual spend; countdown (10 s) before typing | builder |
+| D11 | Confirmation alert before manual spend; countdown (10 s) before sending | builder |
 | D12 | Multiple accounts deferred; app shows the active account/plan only | builder |
-| D13 | v0.1.0 ships Developer ID signed + notarized (Dock Groups pipeline, `NOTARIZE_ENABLED=true` works since its v0.6.3) so Automation/Accessibility grants survive auto-updates | builder |
+| D13 | v0.1.0 ships Developer ID signed + notarized (Dock Groups pipeline, `NOTARIZE_ENABLED=true` works since its v0.6.3) so updates install cleanly and Gatekeeper keeps accepting the app | builder |
 | D14 | Weekly-limit stop: if auto-spend is allowed → spend (§8) then continue (§7). Otherwise wait for `secondary.resetsAt`; such a stop stays eligible until `resetsAt + 1 h` instead of 24 h; keep-awake only when the wait is < 6 h. `workspace_owner_credits_depleted` is treated like any stop: only `ordinaryUsageAllowed == true` opens it, `reachedType` is diagnostic | builder |
 | D15 | Auto-spend only while Codex is in use (turn in last 30 min or a session waiting on a stop) and not when the weekly window resets by itself within 12 h | owner |
 | D16 | If a half-typed draft can't be ruled out: skip and notify, never type | owner |

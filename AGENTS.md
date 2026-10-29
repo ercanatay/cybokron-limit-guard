@@ -6,7 +6,8 @@ Instructions for AI coding agents (Claude, Codex, OpenCode, Copilot, …) workin
 
 Cybokron Limit Guard is a macOS 14+ menu bar app (Swift, AppKit, no third-party dependencies) that
 watches Codex CLI usage limits and continues interrupted Codex sessions once a limit resets,
-delivering the message through the Codex app-server (no keystrokes, no Automation permission). Read [docs/design/limit-guard-spec.md](docs/design/limit-guard-spec.md) before implementing
+delivering the message through the Codex app-server (no keystrokes, no Automation permission).
+Read [docs/design/limit-guard-spec.md](docs/design/limit-guard-spec.md) before implementing
 a substantial change.
 
 - `Sources/LimitGuardCore` — logic, persistence, localisation lookup. No UI; keep logic here so it is testable.
