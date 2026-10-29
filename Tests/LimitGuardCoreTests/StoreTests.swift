@@ -10,6 +10,13 @@ struct StoreTests {
         return dir
     }
 
+    @Test func settingsIgnoreTheRetiredPermissionMissingToggle() throws {
+        let url = try tempDir().appendingPathComponent("settings.json")
+        try Data(#"{"schemaVersion":1,"notify":{"permissionMissing":false,"readOnly":false}}"#.utf8).write(to: url)
+        let s = try #require(try JSONStore<Settings>(url: url, schemaVersion: 1).load())
+        #expect(!s.notify.readOnly && s.notify.limitReached)
+    }
+
     @Test func roundTripsSettingsWithDefaults() throws {
         let dir = try tempDir()
         let url = dir.appendingPathComponent("nested/settings.json")
@@ -28,7 +35,7 @@ struct StoreTests {
         #expect(s.language == .system)
         #expect(s.continueTexts == ["tr": "devam et", "en": "continue"] && s.fallbackText == "continue")
         #expect(s.notify == NotificationToggles())
-        #expect(s.notify.limitReached && s.notify.permissionMissing)
+        #expect(s.notify.limitReached && s.notify.readOnly)
 
         var changed = s
         changed.countdownSeconds = 25

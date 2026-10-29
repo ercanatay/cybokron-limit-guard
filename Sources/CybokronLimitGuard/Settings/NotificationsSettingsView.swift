@@ -16,7 +16,6 @@ struct NotificationsSettingsView: View {
                     Toggle(L10n.Settings.Notifications.resetUsed, isOn: model.notifyBinding(\.resetUsed))
                     Toggle(L10n.Settings.Notifications.resetExpiring, isOn: model.notifyBinding(\.resetExpiring))
                     Toggle(L10n.Settings.Notifications.readOnly, isOn: model.notifyBinding(\.readOnly))
-                    Toggle(L10n.Settings.Notifications.permissionMissing, isOn: model.notifyBinding(\.permissionMissing))
                 } header: {
                     Text(L10n.Settings.Notifications.header)
                 }

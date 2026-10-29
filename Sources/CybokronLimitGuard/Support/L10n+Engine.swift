@@ -104,9 +104,6 @@ extension L10n {
         static func readOnly(_ reason: String) -> (title: String, body: String) {
             (tr("notify.readOnly.title", "Read-only mode"), reason)
         }
-        static func permissionMissing(_ reason: String) -> (title: String, body: String) {
-            (tr("notify.permissionMissing.title", "Permission needed"), reason)
-        }
     }
 
     /// Status texts the popover shares with other places.

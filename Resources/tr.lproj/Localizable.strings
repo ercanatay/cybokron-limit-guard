@@ -187,13 +187,6 @@
 "diagnostics.decode.readOnly.fix" = "Limit Guard güncellenene kadar otomatik işlemler duraklatıldı.";
 "diagnostics.decode.unknown" = "Kullanım limitleri okunamadı";
 "diagnostics.decode.unknown.fix" = "Önce yukarıdaki kontrolleri düzeltin.";
-"diagnostics.terminal.fix" = "Cybokron Limit Guard'a Sistem Ayarları → Gizlilik ve Güvenlik → Otomasyon → Terminal altında izin verin.";
-"diagnostics.terminal.ok" = "Terminal otomasyonuna izin verilmiş";
-"diagnostics.terminal.denied" = "Terminal otomasyonuna izin verilmemiş";
-"diagnostics.terminal.undecided" = "Terminal otomasyonu için henüz izin istenmedi";
-"diagnostics.terminal.undecided.fix" = "Limit Guard bir Terminal sekmesine ilk kez yazdığında macOS izin ister.";
-"diagnostics.terminal.unavailable" = "Terminal otomasyonu kontrol edilemedi";
-"diagnostics.terminal.unavailable.fix" = "Terminal'i açın, ardından kontrolü yeniden çalıştırın.";
 "diagnostics.notifications.ok" = "Bildirimlere izin verilmiş";
 "diagnostics.notifications.off" = "Bildirimlere izin verilmemiş";
 "diagnostics.notifications.fix" = "Sistem Ayarları → Bildirimler altından izin verin; uygulama bildirimler olmadan da çalışır.";
@@ -277,7 +270,6 @@
 "settings.notifications.resetUsed" = "Bir sıfırlama hakkı kullanıldığında";
 "settings.notifications.resetExpiring" = "Bir sıfırlama hakkının süresi dolmak üzereyken";
 "settings.notifications.readOnly" = "Uygulama salt okunur moda geçtiğinde";
-"settings.notifications.permissionMissing" = "Bir izin eksik olduğunda";
 "notice.menuItem" = "Yasal Bildirim…";
 "settings.general.launchFailed" = "Oturum açma öğesi değiştirilemedi: %@";
 "activity.title" = "Etkinlik";
@@ -388,7 +380,6 @@
 "notify.resetExpiring.title" = "Sıfırlama hakkının süresi yakında doluyor";
 "notify.resetExpiring.body" = "Bir sıfırlama hakkının süresi %@ doluyor.";
 "notify.readOnly.title" = "Salt okunur mod";
-"notify.permissionMissing.title" = "İzin gerekli";
 "engineStatus.starting" = "Başlatılıyor…";
 "engineStatus.reading" = "Limitler okunuyor…";
 "engineStatus.paused" = "Duraklatıldı";

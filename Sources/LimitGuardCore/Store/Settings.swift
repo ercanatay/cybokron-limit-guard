@@ -17,7 +17,6 @@ public struct NotificationToggles: Codable, Equatable {
     public var resetUsed = true
     public var resetExpiring = true
     public var readOnly = true
-    public var permissionMissing = true
 
     public init() {}
 
@@ -31,7 +30,6 @@ public struct NotificationToggles: Codable, Equatable {
         resetUsed = try c.decodeIfPresent(Bool.self, forKey: .resetUsed) ?? d.resetUsed
         resetExpiring = try c.decodeIfPresent(Bool.self, forKey: .resetExpiring) ?? d.resetExpiring
         readOnly = try c.decodeIfPresent(Bool.self, forKey: .readOnly) ?? d.readOnly
-        permissionMissing = try c.decodeIfPresent(Bool.self, forKey: .permissionMissing) ?? d.permissionMissing
     }
 }
 

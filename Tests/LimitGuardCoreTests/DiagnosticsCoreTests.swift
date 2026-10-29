@@ -38,14 +38,13 @@ struct DiagnosticsCoreTests {
         codex: Bool = true,
         limits: LimitsProbe = .read(.full),
         config: String? = #"approval_policy = "never""#,
-        terminal: PermissionState = .granted,
         notifications: PermissionState = .granted,
         keepAwake: Bool = true
     ) -> DiagnosticsCore.Inputs {
         DiagnosticsCore.Inputs(
             codexVersion: codex ? "codex-cli 0.165.0" : nil, codexFound: codex,
             lastTestedCodexVersion: "0.165.0", limits: limits, configText: config,
-            terminalAutomation: terminal, notifications: notifications, keepAwakeActive: keepAwake)
+            notifications: notifications, keepAwakeActive: keepAwake)
     }
 
     private func status(_ id: DiagnosticItem.ID, _ items: [DiagnosticItem]) -> DiagnosticItem.Status? {
@@ -98,12 +97,10 @@ struct DiagnosticsCoreTests {
     }
 
     @Test func permissionsAndKeepAwake() {
-        let denied = DiagnosticsCore.items(inputs(terminal: .denied, notifications: .denied, keepAwake: false))
-        #expect(status(.terminalAutomation, denied) == .failed)
+        let denied = DiagnosticsCore.items(inputs(notifications: .denied, keepAwake: false))
         #expect(status(.notifications, denied) == .warning)
         #expect(status(.keepAwake, denied) == .warning)
-        let undecided = DiagnosticsCore.items(inputs(terminal: .notDetermined, notifications: .notDetermined))
-        #expect(status(.terminalAutomation, undecided) == .warning)
+        let undecided = DiagnosticsCore.items(inputs(notifications: .notDetermined))
         #expect(status(.notifications, undecided) == .warning)
         #expect(status(.approvalPolicy, DiagnosticsCore.items(inputs(config: nil))) == .warning)
     }

@@ -107,7 +107,6 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
         case let .resetExpiring(_, date):
             return L10n.Notify.resetExpiring(date.formatted(date: .abbreviated, time: .shortened))
         case let .readOnly(reason): return L10n.Notify.readOnly(reason)
-        case let .permissionMissing(reason): return L10n.Notify.permissionMissing(reason)
         }
     }
 

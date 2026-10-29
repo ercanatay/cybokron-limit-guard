@@ -192,13 +192,6 @@
 "diagnostics.decode.readOnly.fix" = "Automatic actions are paused until Limit Guard is updated.";
 "diagnostics.decode.unknown" = "Usage limits could not be read";
 "diagnostics.decode.unknown.fix" = "Fix the checks above first.";
-"diagnostics.terminal.fix" = "Allow Cybokron Limit Guard under System Settings → Privacy & Security → Automation → Terminal.";
-"diagnostics.terminal.ok" = "Terminal automation is allowed";
-"diagnostics.terminal.denied" = "Terminal automation is not allowed";
-"diagnostics.terminal.undecided" = "Terminal automation has not been asked yet";
-"diagnostics.terminal.undecided.fix" = "macOS asks the first time Limit Guard types into a Terminal tab.";
-"diagnostics.terminal.unavailable" = "Terminal automation could not be checked";
-"diagnostics.terminal.unavailable.fix" = "Open Terminal, then run the check again.";
 "diagnostics.notifications.ok" = "Notifications are allowed";
 "diagnostics.notifications.off" = "Notifications are not allowed";
 "diagnostics.notifications.fix" = "Allow them under System Settings → Notifications; the app works without them.";
@@ -282,7 +275,6 @@
 "settings.notifications.resetUsed" = "A reset credit was used";
 "settings.notifications.resetExpiring" = "A reset credit is about to expire";
 "settings.notifications.readOnly" = "The app switches to read-only mode";
-"settings.notifications.permissionMissing" = "A permission is missing";
 "notice.menuItem" = "Legal Notice…";
 "settings.general.launchFailed" = "Couldn't change the login item: %@";
 "activity.title" = "Activity";
@@ -393,7 +385,6 @@
 "notify.resetExpiring.title" = "Reset credit expires soon";
 "notify.resetExpiring.body" = "A reset credit expires %@.";
 "notify.readOnly.title" = "Read-only mode";
-"notify.permissionMissing.title" = "Permission needed";
 "engineStatus.starting" = "Starting…";
 "engineStatus.reading" = "Reading limits…";
 "engineStatus.paused" = "Paused";

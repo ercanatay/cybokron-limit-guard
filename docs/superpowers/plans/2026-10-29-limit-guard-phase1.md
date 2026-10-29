@@ -2,6 +2,12 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> **Rulings during execution** (spec decisions D31–D34, `docs/design/limit-guard-spec.md`): delivery is
+> app-server only (no Terminal typing or Automation permission in Phase 1, D31); auto-spend is limited to
+> one per account every 7 days via an `AutoSpendMarker` written before consume (D32); no "LG" letters
+> anywhere (D33); subagent threads are excluded (D34). Where a task below still mentions Terminal
+> typing, Apple Events or a per-weekly-window marker, these rulings win.
+
 **Goal:** Ship v0.1.0 of a macOS menu-bar app that shows Codex usage and reset credits, continues Codex CLI sessions in owner-selected Terminal tabs after a usage-limit stop, and (opt-in) spends one reset credit before the weekly limit runs out.
 
 **Architecture:** Two targets like Cybokron Dock Groups: `LimitGuardCore` (pure, unit-tested logic: decoding, policies, persistence, app-server client behind protocols) and `CybokronLimitGuard` (SwiftUI/AppKit menu-bar app, Terminal/Apple Events, notifications). Everything that touches Codex goes through `codex app-server` (JSON-RPC over stdio); session state is read from `~/.codex` read-only. Policies are pure functions over value types so every automatic action is decided in tested code.

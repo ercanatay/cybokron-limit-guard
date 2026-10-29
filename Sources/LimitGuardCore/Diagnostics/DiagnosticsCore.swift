@@ -3,7 +3,7 @@ import Foundation
 /// One line of the diagnostics report: what was checked, how it went and, if it needs attention, a one-line fix.
 public struct DiagnosticItem: Equatable, Sendable {
     public enum ID: String, Sendable {
-        case codexFound, appServer, signedIn, rateLimitsDecode, terminalAutomation, notifications, approvalPolicy, keepAwake
+        case codexFound, appServer, signedIn, rateLimitsDecode, notifications, approvalPolicy, keepAwake
     }
 
     public enum Status: String, Sendable {
@@ -35,7 +35,7 @@ public struct DiagnosticItem: Equatable, Sendable {
 /// A macOS permission as far as it can be told without asking the user.
 public enum PermissionState: Equatable, Sendable {
     case granted, denied, notDetermined
-    /// Can't be checked now (Terminal isn't running).
+    /// Can't be checked now.
     case unavailable
 }
 
@@ -69,13 +69,12 @@ public enum DiagnosticsCore {
         public var limits: LimitsProbe
         /// The text of `~/.codex/config.toml`, nil when it can't be read.
         public var configText: String?
-        public var terminalAutomation: PermissionState
         public var notifications: PermissionState
         public var keepAwakeActive: Bool
 
         public init(
             codexVersion: String?, codexFound: Bool, lastTestedCodexVersion: String?, limits: LimitsProbe,
-            configText: String?, terminalAutomation: PermissionState, notifications: PermissionState,
+            configText: String?, notifications: PermissionState,
             keepAwakeActive: Bool
         ) {
             self.codexVersion = codexVersion
@@ -83,7 +82,6 @@ public enum DiagnosticsCore {
             self.lastTestedCodexVersion = lastTestedCodexVersion
             self.limits = limits
             self.configText = configText
-            self.terminalAutomation = terminalAutomation
             self.notifications = notifications
             self.keepAwakeActive = keepAwakeActive
         }
@@ -120,7 +118,6 @@ public enum DiagnosticsCore {
             appServerItem(inputs),
             signedInItem(inputs),
             decodeItem(inputs),
-            terminalItem(inputs),
             notificationsItem(inputs),
             approvalItem(inputs),
             keepAwakeItem(inputs),
@@ -220,35 +217,6 @@ public enum DiagnosticsCore {
                 title: Localization.string("diagnostics.decode.unknown", "Usage limits could not be read"),
                 status: .warning,
                 fix: Localization.string("diagnostics.decode.unknown.fix", "Fix the checks above first."))
-        }
-    }
-
-    private static func terminalItem(_ inputs: Inputs) -> DiagnosticItem {
-        let fix = Localization.string(
-            "diagnostics.terminal.fix", "Allow Cybokron Limit Guard under System Settings → Privacy & Security → Automation → Terminal.")
-        switch inputs.terminalAutomation {
-        case .granted:
-            return DiagnosticItem(
-                id: .terminalAutomation,
-                title: Localization.string("diagnostics.terminal.ok", "Terminal automation is allowed"),
-                status: .ok)
-        case .denied:
-            return DiagnosticItem(
-                id: .terminalAutomation,
-                title: Localization.string("diagnostics.terminal.denied", "Terminal automation is not allowed"),
-                status: .failed, fix: fix)
-        case .notDetermined:
-            return DiagnosticItem(
-                id: .terminalAutomation,
-                title: Localization.string("diagnostics.terminal.undecided", "Terminal automation has not been asked yet"),
-                status: .warning,
-                fix: Localization.string("diagnostics.terminal.undecided.fix", "macOS asks the first time Limit Guard types into a Terminal tab."))
-        case .unavailable:
-            return DiagnosticItem(
-                id: .terminalAutomation,
-                title: Localization.string("diagnostics.terminal.unavailable", "Terminal automation could not be checked"),
-                status: .warning,
-                fix: Localization.string("diagnostics.terminal.unavailable.fix", "Open Terminal, then run the check again."))
         }
     }
 

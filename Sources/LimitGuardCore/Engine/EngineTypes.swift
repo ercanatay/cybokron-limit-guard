@@ -18,7 +18,6 @@ public enum EngineNote: Equatable, Sendable {
     case resetResultUnknown(creditId: String)
     case resetExpiring(creditId: String, at: Date)
     case readOnly(String)
-    case permissionMissing(String)
 
     /// The `Settings.notify` toggle that governs this note.
     public func isEnabled(in toggles: NotificationToggles) -> Bool {
@@ -30,7 +29,6 @@ public enum EngineNote: Equatable, Sendable {
         case .resetUsed, .resetResultUnknown: return toggles.resetUsed
         case .resetExpiring: return toggles.resetExpiring
         case .readOnly: return toggles.readOnly
-        case .permissionMissing: return toggles.permissionMissing
         }
     }
 
@@ -47,7 +45,6 @@ public enum EngineNote: Equatable, Sendable {
         case .resetUsed, .resetResultUnknown: return .resetUsed
         case .resetExpiring: return .resetExpiring
         case .readOnly: return .readOnly
-        case .permissionMissing: return .permissionDenied
         }
     }
 
@@ -69,7 +66,7 @@ public enum EngineNote: Equatable, Sendable {
         case let .resetUsed(outcome): return "outcome \(outcome)"
         case let .resetResultUnknown(creditId): return "unknown result for credit \(creditId)"
         case let .resetExpiring(creditId, at): return "credit \(creditId) expires \(at.ISO8601Format())"
-        case let .readOnly(reason), let .permissionMissing(reason): return reason
+        case let .readOnly(reason): return reason
         default: return nil
         }
     }

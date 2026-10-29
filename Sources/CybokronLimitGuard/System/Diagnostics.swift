@@ -1,5 +1,4 @@
 import AppKit
-import CoreServices
 import Foundation
 import LimitGuardCore
 import UserNotifications
@@ -27,7 +26,6 @@ enum Diagnostics {
             lastTestedCodexVersion: lastTestedCodexVersion,
             limits: limits,
             configText: readCodexConfig(),
-            terminalAutomation: terminalAutomation(),
             notifications: await notificationState(),
             keepAwakeActive: keepAwakeActive))
     }
@@ -51,18 +49,6 @@ enum Diagnostics {
         let home = ProcessInfo.processInfo.environment["CODEX_HOME"]
             ?? (NSHomeDirectory() as NSString).appendingPathComponent(".codex")
         return try? String(contentsOfFile: (home as NSString).appendingPathComponent("config.toml"), encoding: .utf8)
-    }
-
-    /// Asks macOS whether Terminal may be scripted, without letting it show the permission prompt.
-    private static func terminalAutomation() -> PermissionState {
-        let target = NSAppleEventDescriptor(bundleIdentifier: "com.apple.Terminal")
-        let status = AEDeterminePermissionToAutomateTarget(target.aeDesc, AEEventClass(typeWildCard), AEEventID(typeWildCard), false)
-        switch Int(status) {
-        case Int(noErr): return .granted
-        case -1743: return .denied  // errAEEventNotPermitted
-        case -1744: return .notDetermined  // errAEEventWouldRequireUserConsent
-        default: return .unavailable  // e.g. -600, Terminal isn't running
-        }
     }
 
     private static func notificationState() async -> PermissionState {

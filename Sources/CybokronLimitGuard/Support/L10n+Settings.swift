@@ -128,7 +128,6 @@ extension L10n.Settings {
         static var resetUsed: String { tr("settings.notifications.resetUsed", "A reset credit was used") }
         static var resetExpiring: String { tr("settings.notifications.resetExpiring", "A reset credit is about to expire") }
         static var readOnly: String { tr("settings.notifications.readOnly", "The app switches to read-only mode") }
-        static var permissionMissing: String { tr("settings.notifications.permissionMissing", "A permission is missing") }
     }
 }
 

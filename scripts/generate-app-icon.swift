@@ -1,7 +1,7 @@
 #!/usr/bin/env swift
-// Renders the placeholder app icon into Resources/Assets.xcassets/AppIcon.appiconset.
+// Renders the app icon into Resources/Assets.xcassets/AppIcon.appiconset.
 //
-// The artwork is drawn from plain shapes (a rounded square with a gauge ring), so it
+// The artwork is drawn from plain shapes (a rounded square with a shield and a gauge needle), so it
 // contains no third-party artwork and no SF Symbols (Apple's license doesn't allow SF Symbols in
 // app icons). Usage, from the repository root:
 //
@@ -39,6 +39,7 @@ func renderIcon(pixels: Int) -> Data {
     // Drawn on Apple's 1024-point macOS icon grid: an 824-point body inset by 100 points.
     let scale = CGFloat(pixels) / 1024
     func scaled(_ value: CGFloat) -> CGFloat { value * scale }
+    func scaled(_ x: CGFloat, _ y: CGFloat) -> NSPoint { NSPoint(x: x * scale, y: y * scale) }
 
     let body = NSRect(x: scaled(100), y: scaled(100), width: scaled(824), height: scaled(824))
     let bodyPath = NSBezierPath(roundedRect: body, xRadius: scaled(186), yRadius: scaled(186))
@@ -48,21 +49,59 @@ func renderIcon(pixels: Int) -> Data {
     )
     background?.draw(in: bodyPath, angle: -90)
 
-    // A gauge: a translucent ring with a solid arc covering most of it.
-    let center = NSPoint(x: CGFloat(pixels) / 2, y: CGFloat(pixels) / 2)
-    let radius = scaled(250)
-    let ring = NSBezierPath()
-    ring.lineWidth = scaled(84)
-    ring.lineCapStyle = .round
-    ring.appendArc(withCenter: center, radius: radius, startAngle: 0, endAngle: 360)
-    NSColor(white: 1, alpha: 0.35).setStroke()
-    ring.stroke()
-    let arc = NSBezierPath()
-    arc.lineWidth = scaled(84)
-    arc.lineCapStyle = .round
-    arc.appendArc(withCenter: center, radius: radius, startAngle: 90, endAngle: -160, clockwise: true)
-    NSColor(white: 1, alpha: 1).setStroke()
-    arc.stroke()
+    // A white shield carrying a gauge: a track, the used part of it in solid colour, and a needle.
+    // No letters anywhere, so nothing in the icon can be mistaken for another brand.
+    let ink = NSColor(srgbRed: 0.17, green: 0.24, blue: 0.60, alpha: 1)
+
+    let shield = NSBezierPath()
+    shield.move(to: NSPoint(x: scaled(512), y: scaled(808)))
+    shield.curve(to: NSPoint(x: scaled(282), y: scaled(742)),
+                 controlPoint1: scaled(512, 808), controlPoint2: scaled(390, 790))
+    shield.line(to: NSPoint(x: scaled(282), y: scaled(540)))
+    shield.curve(to: NSPoint(x: scaled(512), y: scaled(222)),
+                 controlPoint1: scaled(282, 380), controlPoint2: scaled(430, 290))
+    shield.curve(to: NSPoint(x: scaled(742), y: scaled(540)),
+                 controlPoint1: scaled(594, 290), controlPoint2: scaled(742, 380))
+    shield.line(to: NSPoint(x: scaled(742), y: scaled(742)))
+    shield.curve(to: NSPoint(x: scaled(512), y: scaled(808)),
+                 controlPoint1: scaled(634, 790), controlPoint2: scaled(512, 808))
+    shield.close()
+    NSGraphicsContext.saveGraphicsState()
+    let shadow = NSShadow()
+    shadow.shadowColor = NSColor(white: 0, alpha: 0.28)
+    shadow.shadowBlurRadius = scaled(30)
+    shadow.shadowOffset = NSSize(width: 0, height: -scaled(14))
+    shadow.set()
+    NSColor.white.setFill()
+    shield.fill()
+    NSGraphicsContext.restoreGraphicsState()
+
+    let center = NSPoint(x: scaled(512), y: scaled(530))
+    let radius = scaled(150)
+    let lineWidth = scaled(58)
+    func arc(from start: CGFloat, to end: CGFloat, alpha: CGFloat) {
+        let path = NSBezierPath()
+        path.lineWidth = lineWidth
+        path.lineCapStyle = .round
+        path.appendArc(withCenter: center, radius: radius, startAngle: start, endAngle: end, clockwise: true)
+        ink.withAlphaComponent(alpha).setStroke()
+        path.stroke()
+    }
+    let needleAngle: CGFloat = 38
+    arc(from: 210, to: -30, alpha: 0.24)
+    arc(from: 210, to: needleAngle, alpha: 1)
+
+    let radians = needleAngle * .pi / 180
+    let needle = NSBezierPath()
+    needle.lineWidth = scaled(44)
+    needle.lineCapStyle = .round
+    needle.move(to: center)
+    needle.line(to: NSPoint(x: center.x + cos(radians) * scaled(112), y: center.y + sin(radians) * scaled(112)))
+    ink.setStroke()
+    needle.stroke()
+    let hub = scaled(40)
+    ink.setFill()
+    NSBezierPath(ovalIn: NSRect(x: center.x - hub, y: center.y - hub, width: hub * 2, height: hub * 2)).fill()
 
     guard let png = bitmap.representation(using: .png, properties: [:]) else {
         fatalError("Couldn't encode a \(pixels)px PNG")

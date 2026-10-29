@@ -182,14 +182,14 @@ Settings → General, and is repeated in README.
 Settings → General → **Run Diagnostics**, and automatically when something fails. Checks with
 ✓/⚠/✗ and a one-line fix: codex found + version (and whether it is newer than the last tested
 version), signed in with ChatGPT, app-server daemon reachable, `rateLimits/read` decodes,
-Terminal automation permission (fallback path), notifications allowed, **approval policy**:
+notifications allowed, **approval policy**:
 warns when Codex's `approval_policy` is interactive ("an unattended continue will stop at the
 first approval prompt"), and Keep-awake assertion state. Copy-to-clipboard report (no secrets).
 
 ### 4.4 Empty and error states
 Shown in the popover status line with a one-line fix: Codex not found (link to set the path) ·
 Codex not signed in with ChatGPT (`codex login`) · app-server failed to start (retrying) ·
-Terminal permission missing · notifications not allowed · no Codex tab open. The active
+Codex not signed in · notifications not allowed · no Codex tab open. The active
 account's plan (`planType`) is shown small in the footer; if the account changes, per-account
 state (auto-spend marker, ledger) is not reused for the new account.
 
@@ -297,8 +297,9 @@ Spend one credit only when all hold:
 - fresh read shows `secondary.usedPercent ≥ threshold`, `availableCount ≥ 1`, at least one
   credit with `status == available`;
 - the 5-hour window state does **not** matter (spend even if the 5-hour limit is not reached);
-- no automatic spend has happened yet in this weekly window (key = `secondary.resetsAt`):
-  **max one automatic spend per weekly window**;
+- no automatic spend for this account in the last 7 days: **max one automatic spend per account
+  every 7 days** (an `AutoSpendMarker {accountId, spentAt}` is written *before* consume, auto only,
+  and kept on any outcome; no account id → skip);
 - no pending consume in the ledger;
 - **Codex is in use**: a Codex TUI turn ran in the last 30 min, or a session is waiting on a
   usage-limit stop (D15);
@@ -306,7 +307,7 @@ Spend one credit only when all hold:
 Choice of credit: the available one with the **earliest `expiresAt`** (null = never expires,
 chosen last), passed explicitly as `creditId`.
 After the call, re-read limits. If weekly is still ≥ threshold after an `outcome == reset`, notify
-and do not try again this window.
+and do not try again until the marker expires.
 
 ### 8.2 Manual
 Popover button (§4.2). Always allowed (also when the auto setting is off), still goes through
@@ -327,7 +328,12 @@ credit ("A reset credit expires today at 22:29"). No automatic spending because 
 
 ## 9. Delivering the continue message
 
-### 9.0 Preferred path: Codex's own app-server (Spike S5)
+> **Phase 1 ruling (D31):** delivery = Codex app-server (WebSocket over `codex app-server proxy`);
+> keystroke typing is not used in Phase 1 (moved to Phase 2). If the daemon is unreachable the app
+> notifies "continue by hand" and never types. §9.1 below is kept as the Phase 2 design only; the
+> Automation/Accessibility permissions it mentions are not requested in Phase 1.
+
+### 9.0 Delivery path: Codex's own app-server (Spike S5)
 The Terminal TUI is a client of the shared app-server daemon. `codex app-server proxy`
 connects to that same daemon over its control socket; `thread/loaded/list` lists the threads
 currently loaded by clients and `turn/start {threadId, input, clientUserMessageId}` starts a
@@ -348,7 +354,7 @@ sending). The app confirms delivery by finding that id (path 9.0) or a new user 
 (path 9.1) in the thread within 2 min. Unconfirmed → marked "unconfirmed" in Activity and
 **never re-sent automatically**; the owner gets a notification with a "Send again" button.
 
-## 9.1 Fallback: typing into Terminal.app
+## 9.1 Phase 2 (not in Phase 1): typing into Terminal.app
 
 Default mechanism (to be confirmed by Spike S1): Apple Events to Terminal —
 `do script "<text>" in <tab>` with the tab addressed explicitly (`do script` without `in` opens
@@ -381,7 +387,7 @@ Continue: Auto-continue (on) · countdown (10 s) · max tries (3) · min gap (2 
 language → text table · fallback text.
 Resets: Auto-use when weekly ≥ threshold (**off**) · threshold (97 %) · expiry reminders (on).
 Notifications: each kind on/off — limit reached, continue sent, continue skipped/stopped, reset
-used, reset expiring, read-only mode, permission missing.
+used, reset expiring, read-only mode.
 Updates: as Dock Groups (automatic check on launch + every 6 h, sha256-verified DMG install,
 "Other Versions…" downgrade with pre-downgrade copy of settings/state files).
 Changelog: as Dock Groups (GitHub releases list, cached with ETag, offline copy).
@@ -487,7 +493,7 @@ Our differentiators: auto-continue + credit management + loop guards in one nati
 | D6 | Include: % in menu bar, daily usage chart, auto-update + downgrade, changelog, pause, next-action + cancel, keep-awake, notifications, activity log, editable continue text, launch at login | owner |
 | D7 | Detection via `task_complete.error.codex_error_info == usage_limit_exceeded` | builder |
 | D8 | Gate on `ordinaryUsageAllowed == true` only | builder |
-| D9 | Max one automatic spend per weekly window; earliest-expiring credit first | builder |
+| D9 | Max one automatic spend per account every 7 days (AutoSpendMarker written before consume); earliest-expiring credit first | builder |
 | D10 | Expiring credits: reminder only, no auto-spend | builder |
 | D11 | Confirmation alert before manual spend; countdown (10 s) before typing | builder |
 | D12 | Multiple accounts deferred; app shows the active account/plan only | builder |
@@ -509,3 +515,7 @@ Our differentiators: auto-continue + credit management + loop guards in one nati
 | D28 | Burn-rate forecast for 5-hour and weekly windows | owner |
 | D29 | "Limit is back" notification | owner |
 | D30 | Spike S5: deliver via app-server `turn/start`; if it works it is the primary path, typing is fallback | owner |
+| D31 | Phase 1 delivery is app-server only (WebSocket over `codex app-server proxy`); no keystroke typing, no Automation/Accessibility permission; daemon unreachable → notify "continue by hand". Typing fallback moved to Phase 2 | owner |
+| D32 | Auto-spend guard: max one automatic spend per account every 7 days; `AutoSpendMarker {accountId, spentAt}` written before consume (auto only), kept on any outcome (replaces the `resetsAt`-keyed marker) | builder |
+| D33 | No "LG" letters anywhere (confusable with the LG brand): menu-bar item is a gauge SF Symbol, app icon is a shield + gauge needle | owner |
+| D34 | Subagent threads (`threads.source` contains "subagent") are excluded from scanning; a parent's continue resumes them | builder |
