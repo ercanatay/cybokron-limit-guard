@@ -19,7 +19,7 @@ public actor SessionScanner {
     }
 
     public init(index: ThreadIndex, reader: RolloutReader) {
-        self.init(index: index, reader: reader, readUserMessages: { try reader.recentUserMessages(of: $0) })
+        self.init(index: index, reader: reader, readUserMessages: { try reader.recentUserMessages(of: $0, count: LanguageSample.scanCount) })
     }
 
     init(index: ThreadIndex, reader: RolloutReader, readUserMessages: @escaping (URL) throws -> [String]) {

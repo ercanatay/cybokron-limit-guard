@@ -29,4 +29,35 @@ import Testing
         #expect(r.text == "weiter")
         #expect(r.language == "de")
     }
+
+    @Test func shortContinueWordsDecideTheLanguage() {
+        let table = ["tr": "devam et", "en": "continue"]
+        let sample = LanguageSample.extract(from: ["devam et", "devam", "devam et"])
+        #expect(ContinueText.resolve(sample: sample, table: table, fallback: "go on").text == "devam et")
+        #expect(ContinueText.resolve(sample: "Devam!", table: table, fallback: "go on").text == "devam et")
+        #expect(ContinueText.resolve(sample: "CONTINUE.", table: table, fallback: "go on").text == "continue")
+        // The most recent one wins.
+        #expect(ContinueText.resolve(sample: "continue\ndevam", table: table, fallback: "go on").text == "devam et")
+        #expect(ContinueText.resolve(sample: "devam\ncontinue", table: table, fallback: "go on").text == "continue")
+    }
+
+    @Test func aLongTurkishMessageFollowedByOkIsTurkish() {
+        let table = ["tr": "devam et", "en": "continue"]
+        let sample = LanguageSample.extract(from: [
+            "Lütfen bu projedeki testleri çalıştır ve başarısız olanları düzelt, sonra bana kısa bir özet ver.", "ok"])
+        #expect(ContinueText.resolve(sample: sample, table: table, fallback: "go on").text == "devam et")
+    }
+
+    @Test func englishOnlyAndEmptySamples() {
+        let table = ["tr": "devam et", "en": "continue"]
+        let english = LanguageSample.extract(from: ["Please run the tests in this project and fix the failing ones, then give me a short summary."])
+        #expect(ContinueText.resolve(sample: english, table: table, fallback: "go on").text == "continue")
+        #expect(ContinueText.resolve(sample: LanguageSample.extract(from: []), table: table, fallback: "go on").text == "go on")
+    }
+
+    @Test func shortMessagesDoNotCrowdOutLongOnesInTheSample() {
+        let long = "Lütfen bu projedeki testleri çalıştır ve başarısız olanları düzelt."
+        let sample = LanguageSample.extract(from: [long, "ok", "ok", "ok", "ok"])
+        #expect(sample.hasPrefix(long))
+    }
 }
