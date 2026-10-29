@@ -14,8 +14,16 @@ struct TemporaryDirectory {
     }
 }
 
-/// Loads a JSON fixture from Tests/LimitGuardCoreTests/Fixtures.
+private final class FixtureBundleToken {}
+
+/// Loads a JSON fixture: SwiftPM keeps the Fixtures folder, the Xcode test bundle copies the files flat.
 func fixture(_ name: String) throws -> Data {
+    #if SWIFT_PACKAGE
     let url = Bundle.module.resourceURL!.appending(path: "Fixtures/\(name)")
+    #else
+    let bundle = Bundle(for: FixtureBundleToken.self)
+    let url = bundle.url(forResource: name, withExtension: nil)
+        ?? bundle.resourceURL!.appending(path: "Fixtures/\(name)")
+    #endif
     return try Data(contentsOf: url)
 }

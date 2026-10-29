@@ -42,12 +42,14 @@ struct AccountModelsTests {
     @Test func unknownCreditStatusDecodesAsUnknown() throws {
         let (snapshot, health) = try AccountSnapshot.decode(from: fixture("rate-limits-unknown-enum.json"), readAt: readAt)
         #expect(snapshot.credits.contains { $0.status == .unknown("frozen") })
+        #expect(snapshot.availableCreditCount == 2)
+        #expect(snapshot.availableCredits.count == 1)
         #expect(health == .full)
     }
 
     @Test func creditsSortByExpiryNilLast() throws {
         let json = """
-        {"ordinaryUsageAllowed":true,"rateLimits":{},"rateLimitResetCredits":{"availableCount":3,"credits":[
+        {"ordinaryUsageAllowed":true,"rateLimits":{"primary":{"usedPercent":1},"secondary":{"usedPercent":2}},"rateLimitResetCredits":{"availableCount":3,"credits":[
         {"id":"a","status":"available","grantedAt":1,"expiresAt":null},
         {"id":"b","status":"available","grantedAt":1,"expiresAt":300},
         {"id":"c","status":"available","grantedAt":1,"expiresAt":200}]}}
@@ -58,11 +60,32 @@ struct AccountModelsTests {
 
     @Test func creditWithoutIdIsReadOnly() throws {
         let json = """
-        {"ordinaryUsageAllowed":true,"rateLimits":{},"rateLimitResetCredits":{"availableCount":1,"credits":[
+        {"ordinaryUsageAllowed":true,"rateLimits":{"primary":{"usedPercent":1},"secondary":{"usedPercent":2}},"rateLimitResetCredits":{"availableCount":1,"credits":[
         {"status":"available","grantedAt":1,"expiresAt":null}]}}
         """
         let (snapshot, health) = try AccountSnapshot.decode(from: Data(json.utf8), readAt: readAt)
         #expect(snapshot.credits.isEmpty)
+        guard case .readOnly = health else {
+            Issue.record("expected readOnly, got \(health)")
+            return
+        }
+    }
+
+    @Test func missingWindowsAreReadOnly() throws {
+        let (snapshot, health) = try AccountSnapshot.decode(
+            from: Data(#"{"ordinaryUsageAllowed":true,"rateLimits":{}}"#.utf8), readAt: readAt)
+        #expect(snapshot.fiveHour == nil)
+        guard case .readOnly = health else {
+            Issue.record("expected readOnly, got \(health)")
+            return
+        }
+    }
+
+    @Test func stringUsedPercentIsReadOnly() throws {
+        let json = #"{"ordinaryUsageAllowed":true,"rateLimits":{"primary":{"usedPercent":"100"},"secondary":{"usedPercent":2}}}"#
+        let (snapshot, health) = try AccountSnapshot.decode(from: Data(json.utf8), readAt: readAt)
+        #expect(snapshot.fiveHour == nil)
+        #expect(snapshot.weekly?.usedPercent == 2)
         guard case .readOnly = health else {
             Issue.record("expected readOnly, got \(health)")
             return

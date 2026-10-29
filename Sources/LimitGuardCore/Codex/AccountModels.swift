@@ -79,8 +79,14 @@ public struct AccountSnapshot: Equatable, Sendable {
     public var accountId: String?
     /// Earliest `expiresAt` first, credits that never expire last.
     public var credits: [ResetCredit]
+    /// The server's `availableCount`; the credit list may be capped, so this can exceed `availableCredits.count`.
     public var availableCreditCount: Int
     public var readAt: Date
+
+    /// Credits that can be spent, earliest expiry first. Spending decisions must use this, never the count.
+    public var availableCredits: [ResetCredit] {
+        credits.filter { $0.status == .available }
+    }
 
     public init(
         ordinaryUsageAllowed: Bool?, fiveHour: RateLimitWindow?, weekly: RateLimitWindow?,
@@ -107,7 +113,14 @@ public struct AccountSnapshot: Equatable, Sendable {
         if allowed == nil { problems.append("ordinaryUsageAllowed missing") }
 
         let limits = root["rateLimits"] as? [String: Any]
-        if limits == nil { problems.append("rateLimits missing") }
+        let fiveHour = RateLimitWindow(json: limits?["primary"])
+        let weekly = RateLimitWindow(json: limits?["secondary"])
+        if limits == nil {
+            problems.append("rateLimits missing")
+        } else {
+            if fiveHour == nil { problems.append("primary window missing/undecodable") }
+            if weekly == nil { problems.append("secondary window missing/undecodable") }
+        }
 
         var credits: [ResetCredit] = []
         var availableCount: Int?
@@ -125,8 +138,8 @@ public struct AccountSnapshot: Equatable, Sendable {
 
         let snapshot = AccountSnapshot(
             ordinaryUsageAllowed: allowed,
-            fiveHour: RateLimitWindow(json: limits?["primary"]),
-            weekly: RateLimitWindow(json: limits?["secondary"]),
+            fiveHour: fiveHour,
+            weekly: weekly,
             planType: JSONField.string(limits?["planType"]),
             reachedType: JSONField.string(limits?["rateLimitReachedType"]),
             accountId: JSONField.string(root["accountId"]),
