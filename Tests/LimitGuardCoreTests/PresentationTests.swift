@@ -192,7 +192,6 @@ struct PresentationTests {
         let rows = SessionsPresentation.rows(tabs: tabs, sessions: sessions, snapshot: snapshot(fiveHour: 100, weekly: 40, allowed: false), now: now)
         #expect(rows.map(\.state) == [.waitingGuarded, .waitingNotGuarded, .ambiguous, .ambiguous, .idle])
         #expect(rows.map(\.isGuarded) == [true, false, false, true, false])
-        #expect(rows[0].shortThreadId == "019a0000")
         #expect(rows[0].threadTitle == "Fix the parser")
         #expect(rows[1].threadTitle == nil)
         #expect(rows[0].title == "alpha")
@@ -321,7 +320,7 @@ struct PresentationTests {
         typealias P = SessionsPresentation
         #expect(P.note(state: .waitingGuarded, paused: false, autoContinue: true) == .continuesAutomatically)
         #expect(P.note(state: .waitingGuarded, paused: true, autoContinue: true) == .pausedResumeContinues)
-        #expect(P.note(state: .waitingGuarded, paused: true, autoContinue: false) == .pausedResumeContinues)
+        #expect(P.note(state: .waitingGuarded, paused: true, autoContinue: false) == .autoContinueOff)
         #expect(P.note(state: .waitingGuarded, paused: false, autoContinue: false) == .autoContinueOff)
         #expect(P.note(state: .waitingNotGuarded, paused: true, autoContinue: false) == .waitingNotGuarded)
         #expect(P.note(state: .idle, paused: true, autoContinue: true) == .none)

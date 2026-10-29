@@ -28,15 +28,12 @@ public struct SessionRow: Equatable, Sendable, Identifiable {
     public var isGuarded: Bool
     /// The waiting thread mapped to this tab.
     public var threadId: String?
-    /// The first 8 characters of `threadId`.
-    public var shortThreadId: String?
     /// The mapped thread's title, when the index has one.
     public var threadTitle: String?
     public var state: State
 }
 
 public enum SessionsPresentation {
-    static let shortIdLength = 8
 
     /// `tabs` and `sessions` as the Engine publishes them. A tab without a thread is ambiguous when a
     /// waiting TUI conversation no tab claims has the tab's folder, or the tab's folder is unknown.
@@ -69,7 +66,7 @@ public enum SessionsPresentation {
             }
             return SessionRow(
                 ref: tab.ref, title: tab.title, cwd: tab.cwd, tty: tab.ref.tty, isGuarded: entry.isGuarded,
-                threadId: entry.threadId, shortThreadId: entry.threadId.map { String($0.prefix(shortIdLength)) },
+                threadId: entry.threadId,
                 threadTitle: entry.threadId.flatMap { titles[$0] }.flatMap(displayName), state: state)
         }
     }
@@ -104,8 +101,8 @@ public enum SessionsPresentation {
         switch state {
         case .idle: return .none
         case .waitingGuarded:
-            if paused { return .pausedResumeContinues }
-            return autoContinue ? .continuesAutomatically : .autoContinueOff
+            if !autoContinue { return .autoContinueOff }
+            return paused ? .pausedResumeContinues : .continuesAutomatically
         case .confirming: return .confirming
         case .unconfirmed: return .unconfirmed
         case .settled: return .settled

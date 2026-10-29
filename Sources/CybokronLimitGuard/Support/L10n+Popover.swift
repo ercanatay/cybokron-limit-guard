@@ -119,7 +119,6 @@ extension L10n {
             static var guardHelp: String {
                 tr("popover.sessions.guardHelp", "Guarded tabs are continued automatically after the limit resets.")
             }
-            static func thread(_ shortId: String) -> String { tr("popover.sessions.thread", "Thread %@", shortId) }
             static var waitingGuarded: String {
                 tr("popover.sessions.waitingGuarded", "Waiting on the limit. Continues automatically.")
             }

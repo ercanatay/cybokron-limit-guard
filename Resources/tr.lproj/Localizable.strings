@@ -442,7 +442,6 @@
 "popover.sessions.title" = "Codex oturumları";
 "popover.sessions.none" = "Korumak için Terminal sekmesinde Codex'i açın.";
 "popover.sessions.guardHelp" = "Korunan sekmeler, limit sıfırlanınca otomatik olarak devam ettirilir.";
-"popover.sessions.thread" = "Konuşma %@";
 "popover.sessions.waitingGuarded" = "Limit bekleniyor. Kendiliğinden devam edecek.";
 "popover.sessions.pausedResume" = "Duraklatıldı — Sürdür'e basınca devam eder";
 "popover.sessions.autoContinueOff" = "Otomatik devam kapalı";

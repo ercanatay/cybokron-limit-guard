@@ -131,7 +131,7 @@ final class StatusItemController: NSObject, NSPopoverDelegate {
         super.init()
 
         popover.behavior = .transient
-        popover.animates = true
+        popover.animates = false
         popover.delegate = self
         let hosting = NSHostingController(rootView: PopoverView(
             model: model, closePopover: { [weak self] in self?.close() },
@@ -257,7 +257,7 @@ final class StatusItemController: NSObject, NSPopoverDelegate {
         model.refreshPermissions()
         model.setSettingsUnreadable(settingsStatus() == .unreadable)
         model.setAutoContinue(loadSettings().autoContinue)
-        popover.contentSize = NSSize(width: 380, height: max(PopoverHeightCache.total, 120))
+        popover.contentSize = NSSize(width: 380, height: PopoverHeightCache.total > 0 ? PopoverHeightCache.total : 360)
         // An accessory app must be active for the popover to take keyboard focus.
         NSApp.activate(ignoringOtherApps: true)
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
