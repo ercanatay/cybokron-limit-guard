@@ -168,8 +168,10 @@ public protocol ChangelogCachePersisting: Sendable {
 /// Stores the `ChangelogCache` as JSON, by default in
 /// `~/Library/Application Support/Cybokron Limit Guard/changelog-cache.json`.
 public struct JSONFileChangelogCachePersistence: ChangelogCachePersisting {
-    public static var defaultFileURL: URL {
-        JSONFileSupport.directoryURL.appending(path: "changelog-cache.json", directoryHint: .notDirectory)
+    public static var defaultFileURL: URL { defaultFileURL(in: DataDirectory.url) }
+
+    static func defaultFileURL(in directory: URL) -> URL {
+        directory.appending(path: "changelog-cache.json", directoryHint: .notDirectory)
     }
 
     public let fileURL: URL

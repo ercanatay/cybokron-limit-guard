@@ -2,10 +2,8 @@ import Foundation
 
 /// Where the updater keeps its small files, and how it writes them.
 enum JSONFileSupport {
-    /// `~/Library/Application Support/Cybokron Limit Guard`. Nothing in it leaves this Mac.
-    static var directoryURL: URL {
-        URL.applicationSupportDirectory.appending(path: "Cybokron Limit Guard", directoryHint: .isDirectory)
-    }
+    /// The data folder (`DataDirectory.url`). Nothing in it leaves this Mac.
+    static var directoryURL: URL { DataDirectory.url }
 
     /// Encodes `value` as pretty-printed JSON and writes it atomically, creating the folder if needed.
     static func write<T: Encodable>(_ value: T, to fileURL: URL) throws {

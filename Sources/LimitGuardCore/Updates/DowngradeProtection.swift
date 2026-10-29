@@ -16,7 +16,7 @@ public enum DowngradeProtection {
     }
 
     /// The app's data folder, `~/Library/Application Support/Cybokron Limit Guard`.
-    public static var dataDirectory: URL { JSONFileSupport.directoryURL }
+    public static var dataDirectory: URL { DataDirectory.url }
 
     /// The timestamp in the copies' names: `yyyyMMdd-HHmmss`, local time.
     public static func timestamp(_ date: Date = Date()) -> String {

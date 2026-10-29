@@ -78,8 +78,10 @@ extension UpdateState: Codable {
 /// Stores the `UpdateState` as JSON, by default in
 /// `~/Library/Application Support/Cybokron Limit Guard/update-state.json`.
 public struct JSONFileUpdateStatePersistence: Sendable {
-    public static var defaultFileURL: URL {
-        JSONFileSupport.directoryURL.appending(path: "update-state.json", directoryHint: .notDirectory)
+    public static var defaultFileURL: URL { defaultFileURL(in: DataDirectory.url) }
+
+    static func defaultFileURL(in directory: URL) -> URL {
+        directory.appending(path: "update-state.json", directoryHint: .notDirectory)
     }
 
     public let fileURL: URL

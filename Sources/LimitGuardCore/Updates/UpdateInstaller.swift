@@ -64,8 +64,10 @@ public enum UpdateInstallError: LocalizedError, Equatable, Sendable {
 /// The updater's working folders, by default under
 /// `~/Library/Application Support/Cybokron Limit Guard/updates/`.
 public struct UpdateDirectories: Sendable {
-    public static var defaultRoot: URL {
-        JSONFileSupport.directoryURL.appending(path: "updates", directoryHint: .isDirectory)
+    public static var defaultRoot: URL { defaultRoot(in: DataDirectory.url) }
+
+    static func defaultRoot(in directory: URL) -> URL {
+        directory.appending(path: "updates", directoryHint: .isDirectory)
     }
 
     public let root: URL
