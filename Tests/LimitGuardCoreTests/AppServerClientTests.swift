@@ -181,9 +181,12 @@ struct AppServerClientTests {
     @Test func staleTimeoutAfterRestartDoesNotHitNewRequests() async throws {
         let first = FakeAppServer()
         first.scriptDrop("hang")
+        first.script("warm")
         let second = FakeAppServer()
         second.script("b", result: #"{"who":"b"}"#, delay: .milliseconds(400))
         let (client, _) = makeClient([first, second])
+        // Handshake first, so "hang" is really in flight when the transport exits.
+        _ = try await client.request("warm", timeout: .seconds(5))
         let hung = Task { try await client.request("hang", timeout: .milliseconds(250)) }
         try await Task.sleep(for: .milliseconds(80))
         first.simulateExit(1)

@@ -69,8 +69,12 @@ struct CodexAccountServiceTests {
     @Test func consumeTimeoutPassesThroughWithoutRetry() async {
         let fake = FakeAppServer()
         fake.scriptDrop("account/rateLimitResetCredit/consume")
+        let service = makeService(fake)
+        // Complete the handshake first: on a slow runner it could otherwise eat the short timeout below,
+        // so the consume request would never be sent.
+        _ = try? await service.readUsage()
         await #expect(throws: AppServerError.timeout) {
-            _ = try await makeService(fake).consume(creditId: "c", idempotencyKey: UUID(), timeout: .milliseconds(200))
+            _ = try await service.consume(creditId: "c", idempotencyKey: UUID(), timeout: .milliseconds(200))
         }
         #expect(fake.requests.filter { $0.method == "account/rateLimitResetCredit/consume" }.count == 1)
     }

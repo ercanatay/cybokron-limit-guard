@@ -31,13 +31,21 @@ struct ResetExecutorTests {
         return CodexAccountService(client: client, now: { now })
     }
 
+    /// A service whose JSON-RPC handshake is already done, so short per-request timeouts in a test
+    /// measure only the scripted reply and never a slow lazy handshake (CI runners are slow).
+    private func makeWarmService(_ fakes: [FakeAppServer]) async -> CodexAccountService {
+        let service = makeService(fakes)
+        _ = try? await service.readUsage()
+        return service
+    }
+
     private func makeExecutor(
         _ fakes: [FakeAppServer], ledger: ResetLedger, delays: Box<[Duration]> = Box([]),
-        consumeTimeout: Duration = .seconds(2)
+        consumeTimeout: Duration = .seconds(2), service: CodexAccountService? = nil
     ) -> ResetExecutor {
         let now = fixedNow
         return ResetExecutor(
-            service: makeService(fakes), ledger: ledger, now: { now },
+            service: service ?? makeService(fakes), ledger: ledger, now: { now },
             consumeTimeout: consumeTimeout,
             sleeper: { delay in delays.value.append(delay) })
     }
@@ -92,7 +100,8 @@ struct ResetExecutorTests {
         fake.scriptQueue(Self.consume, [.drop, .drop, .result(#"{"outcome":"reset"}"#)])
         let delays = Box<[Duration]>([])
         let ledger = ResetLedger(store: ledgerStore(dir))
-        let result = await makeExecutor([fake], ledger: ledger, delays: delays, consumeTimeout: .milliseconds(150)).spend(creditId: "c1", reason: .auto)
+        let service = await makeWarmService([fake])
+        let result = await makeExecutor([fake], ledger: ledger, delays: delays, consumeTimeout: .milliseconds(300), service: service).spend(creditId: "c1", reason: .auto)
         #expect(result == .outcome(.reset))
         let requests = consumeRequests(fake)
         #expect(requests.count == 3)
@@ -109,7 +118,8 @@ struct ResetExecutorTests {
         fake.scriptDrop(Self.consume)
         let delays = Box<[Duration]>([])
         let ledger = ResetLedger(store: ledgerStore(dir))
-        let result = await makeExecutor([fake], ledger: ledger, delays: delays, consumeTimeout: .milliseconds(150)).spend(creditId: "c1", reason: .auto)
+        let service = await makeWarmService([fake])
+        let result = await makeExecutor([fake], ledger: ledger, delays: delays, consumeTimeout: .milliseconds(300), service: service).spend(creditId: "c1", reason: .auto)
         #expect(result == .unknown)
         #expect(consumeRequests(fake).count == 4)
         #expect(Set(consumeRequests(fake).map(\.params)).count == 1)
@@ -167,7 +177,8 @@ struct ResetExecutorTests {
         defer { dir.remove() }
         let dropping = FakeAppServer()
         dropping.scriptDrop(Self.consume)
-        let firstRun = await makeExecutor([dropping], ledger: ResetLedger(store: ledgerStore(dir)), consumeTimeout: .milliseconds(150))
+        let warm = await makeWarmService([dropping])
+        let firstRun = await makeExecutor([dropping], ledger: ResetLedger(store: ledgerStore(dir)), consumeTimeout: .milliseconds(300), service: warm)
             .spend(creditId: "c1", reason: .manual)
         #expect(firstRun == .unknown)
         let stored = try #require(try ledgerStore(dir).load()?.entries.first)
