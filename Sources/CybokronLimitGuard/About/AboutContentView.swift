@@ -98,6 +98,8 @@ struct AboutContentView: View {
                     Link(L10n.Common.changelog, destination: UpdateLinks.changelog)
                 }
                 Link(L10n.About.reportBug, destination: AboutData.issuesURL)
+                Button(L10n.Notice.menuItem) { LegalNoticeWindow.show(mode: .review) }
+                    .buttonStyle(.link)
             }
             .tint(PanelPalette.teal)
             .font(.callout)

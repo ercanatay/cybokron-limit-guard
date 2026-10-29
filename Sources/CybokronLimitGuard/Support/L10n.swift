@@ -312,6 +312,34 @@ extension L10n {
     }
 }
 
+// MARK: - Legal notice and diagnostics
+
+extension L10n {
+    enum Notice {
+        static var title: String { tr("notice.title", "Before you use Cybokron Limit Guard") }
+        static var body: String {
+            tr(
+                "notice.body",
+                "This is an independent, open-source tool. It is not made, endorsed or supported by OpenAI or any other AI platform. It acts on your behalf: it can send messages into your Codex sessions and, only if you allow it, redeem your usage-limit reset credits. Automated use, or a fault in this tool, may conflict with the usage policies of your AI platform account, which may then apply restrictions, limits or suspensions to your account. You use this tool at your own risk; the software is provided \"as is\", without warranty of any kind (MIT License). Review your platform's terms before enabling automatic actions."
+            )
+        }
+        static var understand: String { tr("notice.understand", "I understand") }
+        static var quit: String { tr("notice.quit", "Quit") }
+        static var menuItem: String { tr("notice.menuItem", "Legal Notice…") }
+    }
+
+    enum Diagnostics {
+        static var title: String { tr("diagnostics.title", "Diagnostics") }
+        static var menuItem: String { tr("diagnostics.menuItem", "Run Diagnostics…") }
+        static var running: String { tr("diagnostics.running", "Running checks…") }
+        static var runAgain: String { tr("diagnostics.runAgain", "Run Again") }
+        static var copyReport: String { tr("diagnostics.copyReport", "Copy Report") }
+        static var statusOK: String { tr("diagnostics.status.ok", "OK") }
+        static var statusWarning: String { tr("diagnostics.status.warning", "Warning") }
+        static var statusFailed: String { tr("diagnostics.status.failed", "Failed") }
+    }
+}
+
 // MARK: - Lookup
 
 /// `L10n`'s lookups; the key and English text must be literals (`LocalizationTests` read them).
