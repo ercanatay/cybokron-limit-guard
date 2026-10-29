@@ -324,13 +324,12 @@ extension L10n {
             )
         }
         static var understand: String { tr("notice.understand", "I understand") }
-        static var quit: String { tr("notice.quit", "Quit") }
         static var menuItem: String { tr("notice.menuItem", "Legal Notice…") }
+        static var quit: String { tr("notice.quit", "Quit") }
     }
 
     enum Diagnostics {
         static var title: String { tr("diagnostics.title", "Diagnostics") }
-        static var menuItem: String { tr("diagnostics.menuItem", "Run Diagnostics…") }
         static var running: String { tr("diagnostics.running", "Running checks…") }
         static var runAgain: String { tr("diagnostics.runAgain", "Run Again") }
         static var copyReport: String { tr("diagnostics.copyReport", "Copy Report") }

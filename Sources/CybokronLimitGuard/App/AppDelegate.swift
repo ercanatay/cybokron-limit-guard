@@ -1,9 +1,8 @@
 import AppKit
 import LimitGuardCore
 
-/// Placeholder shell: a status item showing "LG" with About, Check for Updates and Quit items, so
-/// the app launches. The Settings window (which hosts the Updates, Changelog and Support panes)
-/// comes later.
+/// Placeholder shell: a status item showing "LG" with Settings…, About and Quit, so the app
+/// launches. The popover comes later.
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
@@ -12,6 +11,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private lazy var aboutWindow = AboutWindowController()
     private lazy var diagnosticsWindow = DiagnosticsWindowController()
     private let settingsStore = JSONStore<Settings>(url: AppPaths.settingsURL, schemaVersion: 1)
+    private lazy var settingsWindow = SettingsWindowController(
+        store: settingsStore,
+        updater: updater,
+        runDiagnostics: { [weak self] in self?.diagnosticsWindow.show() }
+    )
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         updater.showWindow = { [weak self] in self?.updateWindow.show() }
@@ -24,24 +28,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         item.button?.toolTip = L10n.App.name
         let menu = NSMenu()
         menu.addItem(NSMenuItem(
+            title: L10n.Settings.menuItem,
+            action: #selector(showSettings(_:)),
+            keyEquivalent: ","
+        ))
+        menu.addItem(NSMenuItem(
             title: L10n.Common.about(L10n.App.name),
             action: #selector(showAbout(_:)),
-            keyEquivalent: ""
-        ))
-        menu.addItem(NSMenuItem(
-            title: L10n.Common.checkForUpdates,
-            action: #selector(checkForUpdates(_:)),
-            keyEquivalent: ""
-        ))
-        menu.addItem(NSMenuItem(
-            title: L10n.Notice.menuItem,
-            action: #selector(showLegalNotice(_:)),
-            keyEquivalent: ""
-        ))
-        // Temporary: Settings → General gets "Run Diagnostics" later.
-        menu.addItem(NSMenuItem(
-            title: L10n.Diagnostics.menuItem,
-            action: #selector(runDiagnostics(_:)),
             keyEquivalent: ""
         ))
         menu.addItem(.separator())
@@ -62,19 +55,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    @objc private func showLegalNotice(_ sender: Any?) {
-        LegalNoticeWindow.show(mode: .review)
-    }
-
-    @objc private func runDiagnostics(_ sender: Any?) {
-        diagnosticsWindow.show()
+    @objc private func showSettings(_ sender: Any?) {
+        settingsWindow.show()
     }
 
     @objc private func showAbout(_ sender: Any?) {
         aboutWindow.show()
-    }
-
-    @objc private func checkForUpdates(_ sender: Any?) {
-        updater.checkForUpdatesFromMenu()
     }
 }
