@@ -123,7 +123,7 @@ extension L10n {
             }
             static var sendAgain: String { tr("popover.sessions.sendAgain", "Send again") }
             static var settled: String {
-                tr("popover.sessions.settled", "Won’t continue on its own after this stop.")
+                tr("popover.sessions.settled", "Won’t continue on its own for this stop.")
             }
             static var ambiguous: String {
                 tr("popover.sessions.ambiguous", "Can’t tell which conversation — continue by hand")

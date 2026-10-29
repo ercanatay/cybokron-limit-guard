@@ -258,11 +258,11 @@
 "settings.general.showNotice" = "Show legal notice";
 "settings.general.runDiagnostics" = "Run Diagnostics";
 "settings.continue.auto" = "Continue automatically when the limit is back";
-"settings.continue.countdown" = "Countdown before typing: %ld s";
+"settings.continue.countdown" = "Countdown before sending: %ld s";
 "settings.continue.maxTries" = "Maximum continues in a row: %ld";
 "settings.continue.minGap" = "Minimum gap between continues: %ld min";
-"settings.continue.texts.header" = "Text to type, by language";
-"settings.continue.texts.footer" = "The app recognises the language of the conversation and types the matching text. Other languages get the fallback text.";
+"settings.continue.texts.header" = "Continue text by language";
+"settings.continue.texts.footer" = "The app recognises the language of the conversation and sends the matching text. Other languages get the fallback text.";
 "settings.continue.texts.code" = "Language code";
 "settings.continue.texts.text" = "Text";
 "settings.continue.texts.add" = "Add";
@@ -454,7 +454,7 @@
 "popover.sessions.confirming" = "Continue sent. Waiting for Codex to confirm it.";
 "popover.sessions.unconfirmed" = "Codex didn’t confirm the continue. It isn’t sent again on its own.";
 "popover.sessions.sendAgain" = "Send again";
-"popover.sessions.settled" = "Won’t continue on its own after this stop.";
+"popover.sessions.settled" = "Won’t continue on its own for this stop.";
 "popover.sessions.ambiguous" = "Can’t tell which conversation — continue by hand";
 "popover.sessions.continueNow" = "Continue now";
 "popover.sessions.continueNeedsLimit" = "Available once the limit is back.";

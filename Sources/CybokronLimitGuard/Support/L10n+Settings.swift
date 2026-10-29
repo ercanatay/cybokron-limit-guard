@@ -91,7 +91,7 @@ extension L10n.Settings {
     enum Continue {
         static var autoContinue: String { tr("settings.continue.auto", "Continue automatically when the limit is back") }
         static func countdown(_ seconds: Int) -> String {
-            tr("settings.continue.countdown", "Countdown before typing: %ld s", seconds)
+            tr("settings.continue.countdown", "Countdown before sending: %ld s", seconds)
         }
         static func maxTries(_ count: Int) -> String {
             tr("settings.continue.maxTries", "Maximum continues in a row: %ld", count)
@@ -99,11 +99,11 @@ extension L10n.Settings {
         static func minGap(_ minutes: Int) -> String {
             tr("settings.continue.minGap", "Minimum gap between continues: %ld min", minutes)
         }
-        static var textsHeader: String { tr("settings.continue.texts.header", "Text to type, by language") }
+        static var textsHeader: String { tr("settings.continue.texts.header", "Continue text by language") }
         static var textsFooter: String {
             tr(
                 "settings.continue.texts.footer",
-                "The app recognises the language of the conversation and types the matching text. Other languages get the fallback text."
+                "The app recognises the language of the conversation and sends the matching text. Other languages get the fallback text."
             )
         }
         static var languageCode: String { tr("settings.continue.texts.code", "Language code") }
