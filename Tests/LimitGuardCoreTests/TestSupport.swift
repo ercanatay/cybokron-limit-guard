@@ -13,3 +13,9 @@ struct TemporaryDirectory {
         try? FileManager.default.removeItem(at: url)
     }
 }
+
+/// Loads a JSON fixture from Tests/LimitGuardCoreTests/Fixtures.
+func fixture(_ name: String) throws -> Data {
+    let url = Bundle.module.resourceURL!.appending(path: "Fixtures/\(name)")
+    return try Data(contentsOf: url)
+}

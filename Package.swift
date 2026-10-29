@@ -26,7 +26,8 @@ let package = Package(
         .testTarget(
             name: "LimitGuardCoreTests",
             dependencies: ["LimitGuardCore"],
-            path: "Tests/LimitGuardCoreTests"
+            path: "Tests/LimitGuardCoreTests",
+            resources: [.copy("Fixtures")]
         ),
     ],
     swiftLanguageModes: [.v5]

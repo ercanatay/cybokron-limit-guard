@@ -1,0 +1,91 @@
+{
+  "accountId": "acct-test",
+  "ordinaryUsageAllowed": false,
+  "rateLimitResetCredits": {
+    "availableCount": 2,
+    "credits": [
+      {
+        "description": "Thanks for using Codex! You've been granted one free rate limit reset.",
+        "expiresAt": 1793302182,
+        "grantedAt": 1790710182,
+        "id": "RateLimitResetCredit_3509ea3582e88191b472658ffebbe55f",
+        "resetType": "codexRateLimits",
+        "status": "available",
+        "title": "Full reset (Weekly + 5 hr)"
+      },
+      {
+        "description": "Thanks for using Codex! You've been granted one free rate limit reset.",
+        "expiresAt": 1794009312,
+        "grantedAt": 1791417312,
+        "id": "RateLimitResetCredit_f47fba77cbf88191820aacc1a0023ce3",
+        "resetType": "codexRateLimits",
+        "status": "frozen",
+        "title": "Full reset (Weekly + 5 hr)"
+      }
+    ]
+  },
+  "rateLimitUpsell": {
+    "banner_type": "workspace_owner_credits_depleted",
+    "ctas": [
+      {
+        "action": "add_credits",
+        "label": "Add Credits"
+      }
+    ],
+    "description": "Your workspace is out of credits. Add credits to continue using Codex.",
+    "referral": null,
+    "request_url": null,
+    "reset_at": 1793286502,
+    "title": "You're out of credits"
+  },
+  "rateLimits": {
+    "credits": {
+      "balance": null,
+      "hasCredits": false,
+      "unlimited": false
+    },
+    "individualLimit": null,
+    "limitId": "codex",
+    "limitName": null,
+    "normalModelSlug": null,
+    "planType": "team",
+    "primary": {
+      "resetsAt": 1793286502,
+      "usedPercent": 100,
+      "windowDurationMins": 300
+    },
+    "rateLimitReachedType": "workspace_owner_credits_depleted",
+    "secondary": {
+      "resetsAt": 1793783434,
+      "usedPercent": 59,
+      "windowDurationMins": 10080
+    },
+    "spendControlReached": false
+  },
+  "rateLimitsByLimitId": {
+    "codex": {
+      "credits": {
+        "balance": null,
+        "hasCredits": false,
+        "unlimited": false
+      },
+      "individualLimit": null,
+      "limitId": "codex",
+      "limitName": null,
+      "normalModelSlug": null,
+      "planType": "team",
+      "primary": {
+        "resetsAt": 1793286502,
+        "usedPercent": 100,
+        "windowDurationMins": 300
+      },
+      "rateLimitReachedType": "workspace_owner_credits_depleted",
+      "secondary": {
+        "resetsAt": 1793783434,
+        "usedPercent": 59,
+        "windowDurationMins": 10080
+      },
+      "spendControlReached": false
+    }
+  }
+}
