@@ -1,0 +1,87 @@
+name: Bug report
+description: Something in Cybokron Limit Guard doesn't work as expected.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Questions and ideas are welcome in [Discussions](https://github.com/ercanatay/cybokron-limit-guard/discussions).
+
+        **Security issues:** please don't open an issue — use [private vulnerability reporting](https://github.com/ercanatay/cybokron-limit-guard/security/advisories/new) instead.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug, and what you expected to happen instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Start a Codex CLI session in Terminal
+        2. Hit the 5-hour limit
+        3. …
+    validations:
+      required: true
+  - type: input
+    id: app-version
+    attributes:
+      label: App version
+      description: About box, or the commit hash if you built it yourself.
+      placeholder: "0.1.0 (1) / a1b2c3d"
+    validations:
+      required: true
+  - type: input
+    id: macos-version
+    attributes:
+      label: macOS version
+      placeholder: "macOS 15.5"
+    validations:
+      required: true
+  - type: input
+    id: codex-version
+    attributes:
+      label: Codex CLI version
+      description: Output of `codex --version`.
+      placeholder: "codex-cli 0.4.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: arch
+    attributes:
+      label: Mac
+      options:
+        - Apple silicon
+        - Intel
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where did it happen?
+      options:
+        - Usage bars / limit reading
+        - Auto-continue
+        - Reset credits
+        - Usage chart or forecast
+        - Notifications
+        - Updates
+        - Settings or localisation
+        - Other
+  - type: dropdown
+    id: install
+    attributes:
+      label: How did you get the app?
+      options:
+        - Release download (DMG)
+        - Built with Xcode
+        - Built with scripts/build-app.sh (Command Line Tools)
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs, screenshots or diagnostics
+      description: |
+        Output from the app's Diagnostics panel, Console.app logs, or screenshots (remove anything private).
+      render: shell
