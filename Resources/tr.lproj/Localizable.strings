@@ -10,3 +10,159 @@
 
 /* Menu */
 "menu.quit" = "%@ Uygulamasından Çık";
+
+/* common */
+"common.cancel" = "İptal";
+"common.ok" = "Tamam";
+"common.close" = "Kapat";
+"common.done" = "Tamamlandı";
+"common.install" = "Yükle";
+"common.tryAgain" = "Tekrar Dene";
+"common.changelog" = "Değişiklik Günlüğü";
+"common.links" = "Bağlantılar";
+"common.openReleasesPage" = "Sürümler Sayfasını Aç";
+"common.checkForUpdates" = "Güncellemeleri Denetle…";
+"common.about" = "%@ Hakkında";
+"common.versionShort" = "v%@";
+"common.update.installing" = "%@ sürümü kuruluyor…";
+"common.update.restarting" = "%@ sürümü kuruldu — yeniden başlatılıyor…";
+
+/* settings */
+"settings.tab.updates" = "Güncellemeler";
+"settings.support.tab" = "Destek";
+"settings.updates.automatic" = "Güncellemeleri otomatik denetle";
+"settings.updates.currentVersion" = "Güncel sürüm";
+"settings.updates.lastChecked" = "Son denetim";
+"settings.updates.checkNow" = "Şimdi Denetle";
+"settings.updates.otherVersions" = "Diğer Sürümler…";
+"settings.updates.footer" = "Uygulama, başlangıçta ve her 6 saatte bir projenin GitHub sürümlerini denetler; yalnızca uygulamanın sürüm numarası iletilir. Yeni bir sürüm, İndir ve Kur'u seçtikten sonra kurulur. Diğer Sürümler…, yayınlanmış her sürümü, eski ya da yenisini kurar; geri dönünce otomatik denetimler daha yenileri atlar.";
+"settings.updates.viewChangelog" = "Değişiklik Günlüğünü Görüntüle";
+"settings.updates.latestPath" = "En güncel yolda: her yeni sürüm teklif edilir";
+"settings.updates.skipped" = "Atlanan daha yeni sürümler: %@";
+"settings.updates.clear" = "Temizle";
+"settings.updates.clear.help" = "Otomatik denetimlerin bu sürümleri yeniden önermesine izin ver";
+"settings.updates.never" = "Hiç";
+"settings.updates.status.idle" = "Uygulama başladıktan sonra denetlenmedi";
+"settings.updates.status.checking" = "Denetleniyor…";
+"settings.updates.status.upToDate" = "Günceldesiniz (v%@)";
+"settings.updates.status.available" = "%@ sürümü mevcut";
+"settings.updates.showUpdate" = "Güncellemeyi Göster…";
+"settings.otherVersions.title" = "Diğer Sürümler";
+"settings.otherVersions.intro" = "%@ uygulamasının yayınlanmış herhangi bir sürümünü, eski ya da yenisini kurar. Uygulama kapanır ve seçtiğiniz sürüm olarak yeniden açılır.";
+"settings.otherVersions.releasesLink" = "GitHub'daki Sürümler Sayfasını Aç";
+"settings.otherVersions.loading" = "Sürümler GitHub'dan yükleniyor…";
+"settings.otherVersions.none" = "GitHub'da yayınlanmış sürüm listede yok.";
+"settings.otherVersions.current" = "Güncel";
+"settings.otherVersions.noDownload" = "İndirme yok";
+"settings.otherVersions.install.help" = "%@ sürümünü kur";
+"settings.otherVersions.install.noImage" = "Bu sürümün kuruluma uygun bir disk imajı yok.";
+"settings.otherVersions.confirm.title" = "%@ sürümü kurulsun mu?";
+"settings.otherVersions.confirm.quits" = "%1$@ kapanır ve %2$@ sürümü olarak yeniden açılır.";
+"settings.otherVersions.confirm.cantUpdate" = "%@ sürümü kendini güncelleyemez: geri dönmek için sürümler sayfasından daha yeni bir sürüm indirin.";
+"settings.otherVersions.confirm.skips" = "Bundan sonra otomatik denetimler daha yeni sürümleri atlar (%@); Güncellemeleri Denetle… yine de onları önerir.";
+"settings.otherVersions.confirm.older" = "An older version may not know about features added since.";
+"settings.otherVersions.busy.title" = "Bir güncelleme devam ediyor";
+"settings.otherVersions.busy.message" = "%@ şu anda bir güncelleme arıyor veya yüklüyor. Tamamlandıktan sonra tekrar deneyin.";
+"settings.otherVersions.confirm.upgrade" = "Atlanan sürümler temizlenir; böylece otomatik denetimler her yeni sürümü yeniden önerir.";
+"settings.otherVersions.dataCopies" = "Copies of your data files are kept next to them before it's installed, in case that version can't read the newer ones.";
+
+/* updates */
+"updates.otherVersions.preSafety.title" = "Bu sürümde güvenlik düzeltmeleri yok";
+"updates.otherVersions.preSafety.message" = "%@ sürümü, yüklediği güncellemelerin daha sıkı denetlenmesi gibi önemli güvenlik düzeltmelerinden önce yayımlandı. Yalnızca ihtiyacınız varsa yükleyin ve ardından en son sürüme tekrar güncelleyin.";
+
+/* changelog */
+"changelog.tab" = "Değişiklik Günlüğü";
+"changelog.currentVersion" = "Mevcut sürüm: %@";
+"changelog.refresh" = "Yenile";
+"changelog.refresh.help" = "En son sürüm notlarını GitHub'dan yükle";
+"changelog.lastUpdated" = "Son güncelleme %@";
+"changelog.header" = "Sürüm Notları";
+"changelog.footer" = "GitHub sürümlerinden alınmıştır. Bir kopya bu Mac'te saklanır, bu yüzden notlar çevrimdışıyken de görünür.";
+"changelog.latest" = "En yeni";
+"changelog.installed" = "Kurulu";
+"changelog.prerelease" = "Ön sürüm";
+"changelog.noNotes" = "Bu sürüm için sürüm notu yok.";
+"changelog.loading" = "GitHub'dan sürüm notları yükleniyor…";
+"changelog.unavailable" = "Sürüm notları kullanılamıyor";
+"changelog.error.cached" = "Sürüm notları yüklenemedi — önbellekteki kopya gösteriliyor.";
+"changelog.retry" = "Tekrar denemek için Yenile'ye tıklayın.";
+"changelog.openRelease" = "GitHub'da görüntüle";
+
+/* updateWindow */
+"updateWindow.title" = "Yazılım Güncellemesi";
+"updateWindow.checking" = "Güncellemeler denetleniyor…";
+"updateWindow.upToDate.title" = "Günceldesiniz!";
+"updateWindow.upToDate.message" = "%1$@ %2$@, mevcut en yeni sürüm.";
+"updateWindow.available.title" = "%@ uygulamasının yeni bir sürümü var!";
+"updateWindow.available.message" = "%1$@ sürümü mevcut — sizde %2$@ var.";
+"updateWindow.available.noImage" = "Bu sürümün otomatik kuruluma uygun disk imajı yok; onu sürüm sayfasından indirin.";
+"updateWindow.available.question" = "Şimdi indirip kurmak ister misiniz?";
+"updateWindow.skip" = "Bu Sürümü Atla";
+"updateWindow.remindLater" = "Daha Sonra Hatırlat";
+"updateWindow.openReleasePage" = "Sürüm Sayfasını Aç";
+"updateWindow.downloadAndInstall" = "İndir ve Kur";
+"updateWindow.downloading" = "%@ sürümü indiriliyor…";
+"updateWindow.restartsWhenDone" = "%@, işi bitince yeniden başlar.";
+"updateWindow.reopening" = "%@ yeniden açılıyor.";
+"updateWindow.dryRun.title" = "Deneme koşusu tamamlandı";
+"updateWindow.dryRun.message" = "%1$@ sürümü indirildi, doğrulandı ve %2$@ konumuna kopyalandı. Hiçbir şey değiştirilmedi.";
+"updateWindow.checkFailed" = "Güncellemeler denetlenemedi";
+"updateWindow.installFailed" = "%@ sürümü kurulamadı";
+"updateWindow.link.releases" = "Sürümler";
+"updateWindow.link.releasePage" = "Sürüm Sayfası";
+"updateWindow.releaseNotes" = "Sürüm Notları";
+"updateWindow.releaseNotes.none" = "Bu sürümün notu yok.";
+"updateWindow.relaunchFailed" = "%@ sürümü kuruldu ama uygulama kendini yeniden başlatamadı. Kapatıp yeniden açın.";
+
+/* about */
+"about.section.findMe" = "Beni Çevrimiçi Bul";
+"about.section.support" = "Bu Projeyi Destekle";
+"about.section.books" = "Kitaplarım";
+"about.section.software" = "Açık Kaynak Yazılımlarım";
+"about.fullList" = "Tam liste: github.com/ercanatay";
+"about.section.blogs" = "Medium'daki Bloglarım";
+"about.icon.accessibility" = "%@ ikonu";
+"about.version" = "Sürüm %@ · açık kaynak, MIT Lisansı";
+"about.website" = "Web Sitesi";
+"about.sourceCode" = "Kaynak Kodu";
+"about.license" = "Lisans";
+"about.reportBug" = "Bir hata mı buldunuz? Issue açın";
+"about.project.limitGuard" = "This app · Codex usage limits in the macOS menu bar";
+"about.project.dockGroups" = "Dock groups for macOS";
+"about.project.intelComputerUse" = "Intel Mac'ler için MCP üzerinden yerel macOS masaüstü otomasyonu.";
+"about.project.exchangeRate" = "Canlı veri çekmeli PHP/MySQL döviz kuru ve portföy takipçisi + GitHub sürüm güncellemeleri.";
+"about.project.backlinkChecker" = "Backlink'lerin ankrajlarını, dofollow/nofollow ve HTTP durumlarını denetler.";
+"about.project.consentManager" = "YOOtheme Pro 5 Consent Manager çeviri eklentisi (WordPress.org).";
+"about.project.antigravityUpdater" = "Antigravity Tools için hafif macOS güncelleyicisi, 21 dil.";
+"about.project.widgetVisibility" = "Alt eleman desteği olan, Jetpack'siz widget görünürlüğü WP eklentisi.";
+"about.project.forbiddenContent" = "Yazı başlıklarındaki yasak anahtar kelimeleri (örn. 'Casino') bulur — bir WP denetim aracı gibi.";
+
+/* core */
+"core.releaseNotes.truncated" = "Sürüm notları burada gösterilenden daha uzun; tüm notlar sürüm sayfasında bulunur.";
+"core.update.check.notHTTP" = "Yanıt HTTP değildi.";
+"core.update.check.malformed" = "GitHub'dan gelen sürüm bilgisi okunamadı.";
+"core.update.check.unsupportedTag" = "En yeni sürüm (“%@”) bir sürüm numarasıyla etiketlenmemiş.";
+"core.update.check.noRelease" = "Henüz yayınlanmış sürüm yok.";
+"core.update.check.rateLimited" = "GitHub şu anda istekleri sınırlıyor. Bir saat sonra tekrar deneyin.";
+"core.update.check.httpStatus" = "GitHub, HTTP %ld durumuyla yanıt verdi.";
+"core.update.check.network" = "GitHub'a ulaşılamadı: %@";
+"core.update.check.noVersion" = "Uygulamanın bu kopyasının sürüm numarası yok; karşılaştırma yapılamaz.";
+"core.update.install.insecureURL" = "Güncellemenin indirme adresi güvenli değil (%@).";
+"core.update.install.downloadFailed" = "Güncelleme indirilemedi: %@";
+"core.update.install.sizeMismatch" = "İndirilen güncelleme eksik (%1$ld / %2$ld bayt).";
+"core.update.install.checksum" = "İndirilen güncelleme, yayınlanmış sağlama toplamıyla uyuşmuyor; bu yüzden kurulmadı.";
+"core.update.install.mountFailed" = "Güncellemenin disk imajı açılamadı: %@";
+"core.update.install.appNotFound" = "Güncellemenin disk imajı uygulamayı içermiyor.";
+"core.update.install.wrongApp" = "Güncellemenin disk imajı başka bir uygulama içeriyor (%@).";
+"core.update.install.versionMismatch" = "İndirilen uygulama %1$@ sürümünde, ama sürüm %2$@.";
+"core.update.install.invalidSignature" = "İndirilen uygulamanın kod imzası geçerli değil, bu yüzden yüklenmedi: %@";
+"core.update.install.wrongSigner" = "İndirilen uygulama başka bir geliştirici tarafından imzalanmış (%2$@ yerine ekip %1$@), bu yüzden yüklenmedi.";
+"core.update.install.replaceFailed" = "Yeni sürüm yerine konulamadı; bu yüzden mevcut olan korundu: %@";
+"core.update.install.rollbackFailed" = "Güncelleme başarısız oldu ve önceki sürüm yerine konulamadı. %@ konumunda tutuluyor.";
+"core.update.location.translocated" = "macOS bu kopyayı geçici, salt-okunur bir konumdan çalıştırıyor. Uygulamayı Uygulamalar klasörünüze taşıyın, oradan açın ve yeniden deneyin.";
+"core.update.location.notFound" = "Çalışan uygulama %@ konumunda bulunamadı.";
+"core.update.location.readOnly" = "Uygulama, kendi disk imajı gibi salt-okunur bir birimden çalışıyor. Önce Uygulamalar klasörünüze kopyalayın.";
+"core.update.location.noPermission" = "“%@” içindeki uygulamayı değiştirme izniniz yok. Bunun yerine yeni sürümü sürümler sayfasından indirin.";
+"core.update.install.noFile" = "Sunucu dosya göndermedi.";
+"core.update.install.httpStatus" = "HTTP durumu %ld.";
+"core.update.install.copyFailed" = "Uygulama kopyalanamadı: %@";

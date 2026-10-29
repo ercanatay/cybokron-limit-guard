@@ -15,3 +15,159 @@
 
 /* Menu */
 "menu.quit" = "Quit %@";
+
+/* common */
+"common.cancel" = "Cancel";
+"common.ok" = "OK";
+"common.close" = "Close";
+"common.done" = "Done";
+"common.install" = "Install";
+"common.tryAgain" = "Try Again";
+"common.changelog" = "Changelog";
+"common.links" = "Links";
+"common.openReleasesPage" = "Open Releases Page";
+"common.checkForUpdates" = "Check for Updates…";
+"common.about" = "About %@";
+"common.versionShort" = "v%@";
+"common.update.installing" = "Installing version %@…";
+"common.update.restarting" = "Installed version %@ — restarting…";
+
+/* settings */
+"settings.tab.updates" = "Updates";
+"settings.support.tab" = "Support";
+"settings.updates.automatic" = "Automatically check for updates";
+"settings.updates.currentVersion" = "Current version";
+"settings.updates.lastChecked" = "Last checked";
+"settings.updates.checkNow" = "Check Now";
+"settings.updates.otherVersions" = "Other Versions…";
+"settings.updates.footer" = "Checks the project's GitHub releases at launch and every 6 hours; only the app's version number is sent along. A new version is installed only after you choose Download and Install. Other Versions… installs any published release, older or newer; going back skips the newer ones in automatic checks.";
+"settings.updates.viewChangelog" = "View Changelog";
+"settings.updates.latestPath" = "Back on the latest path: every newer release is offered";
+"settings.updates.skipped" = "Skipped newer versions: %@";
+"settings.updates.clear" = "Clear";
+"settings.updates.clear.help" = "Let automatic checks offer these versions again";
+"settings.updates.never" = "Never";
+"settings.updates.status.idle" = "Not checked since the app started";
+"settings.updates.status.checking" = "Checking…";
+"settings.updates.status.upToDate" = "You're up to date (v%@)";
+"settings.updates.status.available" = "Version %@ is available";
+"settings.updates.showUpdate" = "Show Update…";
+"settings.otherVersions.title" = "Other Versions";
+"settings.otherVersions.intro" = "Install any published release of %@, older or newer. The app quits and reopens as the version you pick.";
+"settings.otherVersions.releasesLink" = "Open Releases Page on GitHub";
+"settings.otherVersions.loading" = "Loading releases from GitHub…";
+"settings.otherVersions.none" = "GitHub lists no published releases.";
+"settings.otherVersions.current" = "Current";
+"settings.otherVersions.noDownload" = "No download";
+"settings.otherVersions.install.help" = "Install version %@";
+"settings.otherVersions.install.noImage" = "This release has no disk image to install from.";
+"settings.otherVersions.confirm.title" = "Install version %@?";
+"settings.otherVersions.confirm.quits" = "%1$@ quits and reopens as version %2$@.";
+"settings.otherVersions.confirm.cantUpdate" = "Version %@ can't update itself: to come back, download a newer version from the releases page.";
+"settings.otherVersions.confirm.skips" = "Automatic checks then skip the newer versions (%@); Check for Updates… still offers them.";
+"settings.otherVersions.confirm.older" = "An older version may not know about features added since.";
+"settings.otherVersions.busy.title" = "An update is under way";
+"settings.otherVersions.busy.message" = "%@ is checking for or installing an update right now. Try again once it's finished.";
+"settings.otherVersions.confirm.upgrade" = "Skipped versions are cleared, so automatic checks offer every newer release again.";
+"settings.otherVersions.dataCopies" = "Copies of your data files are kept next to them before it's installed, in case that version can't read the newer ones.";
+
+/* updates */
+"updates.otherVersions.preSafety.title" = "This version lacks security fixes";
+"updates.otherVersions.preSafety.message" = "Version %@ was released before important security fixes, such as stricter checks of the updates it installs. Install it only if you need it, and update to the latest version again afterwards.";
+
+/* changelog */
+"changelog.tab" = "Changelog";
+"changelog.currentVersion" = "Current version: %@";
+"changelog.refresh" = "Refresh";
+"changelog.refresh.help" = "Load the latest release notes from GitHub";
+"changelog.lastUpdated" = "Last updated %@";
+"changelog.header" = "Release Notes";
+"changelog.footer" = "From the project's GitHub releases. A copy stays on this Mac, so the notes show offline too.";
+"changelog.latest" = "Latest";
+"changelog.installed" = "Installed";
+"changelog.prerelease" = "Pre-release";
+"changelog.noNotes" = "No release notes for this version.";
+"changelog.loading" = "Loading release notes from GitHub…";
+"changelog.unavailable" = "Release notes unavailable";
+"changelog.error.cached" = "Could not load release notes — showing cached copy.";
+"changelog.retry" = "Click Refresh to try again.";
+"changelog.openRelease" = "View on GitHub";
+
+/* updateWindow */
+"updateWindow.title" = "Software Update";
+"updateWindow.checking" = "Checking for updates…";
+"updateWindow.upToDate.title" = "You're up to date!";
+"updateWindow.upToDate.message" = "%1$@ %2$@ is the newest version available.";
+"updateWindow.available.title" = "A new version of %@ is available!";
+"updateWindow.available.message" = "Version %1$@ is available — you have %2$@.";
+"updateWindow.available.noImage" = "This release has no disk image for automatic installation; download it from its release page.";
+"updateWindow.available.question" = "Would you like to download and install it now?";
+"updateWindow.skip" = "Skip This Version";
+"updateWindow.remindLater" = "Remind Me Later";
+"updateWindow.openReleasePage" = "Open Release Page";
+"updateWindow.downloadAndInstall" = "Download and Install";
+"updateWindow.downloading" = "Downloading version %@…";
+"updateWindow.restartsWhenDone" = "%@ restarts when it's done.";
+"updateWindow.reopening" = "%@ is reopening.";
+"updateWindow.dryRun.title" = "Dry run finished";
+"updateWindow.dryRun.message" = "Version %1$@ was downloaded, verified and copied to %2$@. Nothing was replaced.";
+"updateWindow.checkFailed" = "Couldn't check for updates";
+"updateWindow.installFailed" = "Version %@ couldn't be installed";
+"updateWindow.link.releases" = "Releases";
+"updateWindow.link.releasePage" = "Release Page";
+"updateWindow.releaseNotes" = "Release Notes";
+"updateWindow.releaseNotes.none" = "This release has no notes.";
+"updateWindow.relaunchFailed" = "Version %@ is installed, but the app couldn't restart itself. Quit it and open it again.";
+
+/* about */
+"about.section.findMe" = "Find Me Online";
+"about.section.support" = "Support This Project";
+"about.section.books" = "My Books";
+"about.section.software" = "My Open Source Software";
+"about.fullList" = "Full list at github.com/ercanatay";
+"about.section.blogs" = "Medium Blogs";
+"about.icon.accessibility" = "%@ icon";
+"about.version" = "Version %@ · open source, MIT License";
+"about.website" = "Website";
+"about.sourceCode" = "Source Code";
+"about.license" = "License";
+"about.reportBug" = "Found a bug? Open an issue";
+"about.project.limitGuard" = "This app · Codex usage limits in the macOS menu bar";
+"about.project.dockGroups" = "Dock groups for macOS";
+"about.project.intelComputerUse" = "Native macOS desktop automation for Intel Macs via MCP.";
+"about.project.exchangeRate" = "PHP/MySQL exchange rate & portfolio tracker with live scrape + GitHub release updates.";
+"about.project.backlinkChecker" = "Check anchors, dofollow/nofollow and HTTP statuses of backlinks.";
+"about.project.consentManager" = "YOOtheme Pro 5 Consent Manager translations plugin (WordPress.org).";
+"about.project.antigravityUpdater" = "Lightweight macOS updater for Antigravity Tools, 21 languages.";
+"about.project.widgetVisibility" = "Jetpack-free WP plugin for widget visibility with descendant support.";
+"about.project.forbiddenContent" = "Detects forbidden keywords (e.g. 'Casino') in post titles — like a WP audit checker.";
+
+/* core */
+"core.releaseNotes.truncated" = "The release notes are longer than shown here; the release page has all of them.";
+"core.update.check.notHTTP" = "The answer wasn't HTTP.";
+"core.update.check.malformed" = "The release information from GitHub couldn't be read.";
+"core.update.check.unsupportedTag" = "The latest release (“%@”) isn't tagged with a version number.";
+"core.update.check.noRelease" = "No release has been published yet.";
+"core.update.check.rateLimited" = "GitHub is limiting requests right now. Try again in an hour.";
+"core.update.check.httpStatus" = "GitHub answered with HTTP status %ld.";
+"core.update.check.network" = "GitHub couldn't be reached: %@";
+"core.update.check.noVersion" = "This copy of the app has no version number, so it can't be compared.";
+"core.update.install.insecureURL" = "The update's download address isn't secure (%@).";
+"core.update.install.downloadFailed" = "The update couldn't be downloaded: %@";
+"core.update.install.sizeMismatch" = "The downloaded update is incomplete (%1$ld of %2$ld bytes).";
+"core.update.install.checksum" = "The downloaded update doesn't match its published checksum, so it wasn't installed.";
+"core.update.install.mountFailed" = "The update's disk image couldn't be opened: %@";
+"core.update.install.appNotFound" = "The update's disk image doesn't contain the app.";
+"core.update.install.wrongApp" = "The update's disk image contains another app (%@).";
+"core.update.install.versionMismatch" = "The downloaded app is version %1$@, but the release is %2$@.";
+"core.update.install.invalidSignature" = "The downloaded app's code signature isn't valid, so it wasn't installed: %@";
+"core.update.install.wrongSigner" = "The downloaded app is signed by another developer (team %1$@ instead of %2$@), so it wasn't installed.";
+"core.update.install.replaceFailed" = "The new version couldn't be put in place, so the current one was kept: %@";
+"core.update.install.rollbackFailed" = "The update failed and the previous version couldn't be put back. It's kept at %@.";
+"core.update.location.translocated" = "macOS runs this copy from a temporary read-only location. Move the app to your Applications folder, open it from there, and try again.";
+"core.update.location.notFound" = "The running app wasn't found at %@.";
+"core.update.location.readOnly" = "The app runs from a read-only volume, such as its disk image. Copy it to your Applications folder first.";
+"core.update.location.noPermission" = "You don't have permission to replace the app in “%@”. Download the new version from the releases page instead.";
+"core.update.install.noFile" = "The server sent no file.";
+"core.update.install.httpStatus" = "HTTP status %ld.";
+"core.update.install.copyFailed" = "Copying the app failed: %@";

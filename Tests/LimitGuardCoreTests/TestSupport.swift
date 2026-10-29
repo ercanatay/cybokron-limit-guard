@@ -12,6 +12,17 @@ struct TemporaryDirectory {
     func remove() {
         try? FileManager.default.removeItem(at: url)
     }
+
+    /// Creates an `.app` bundle with no Info.plist at all, only a shell script as its executable.
+    func makeScriptAppBundle(named name: String) throws -> URL {
+        let appURL = url.appending(path: "\(name).app", directoryHint: .isDirectory)
+        let macOS = appURL.appending(components: "Contents", "MacOS", directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: macOS, withIntermediateDirectories: true)
+        let executable = macOS.appending(path: name)
+        try Data("#!/bin/sh\nexit 0\n".utf8).write(to: executable)
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: executable.path)
+        return appURL
+    }
 }
 
 private final class FixtureBundleToken {}
