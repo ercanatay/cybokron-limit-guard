@@ -33,11 +33,18 @@ public enum TabMatcher {
         let candidates = threads.filter { $0.originator == tuiOriginator && loaded[$0.threadId] != nil }
         let candidateIds = Set(candidates.map(\.threadId))
 
-        // Rule 1: one tab, one thread — paired unless the tab's cwd is known and says otherwise.
+        // Rule 1: one tab, one thread — paired unless the tab's cwd is known and says otherwise, or
+        // another loaded thread could be the one in that tab.
         if candidateTabs.count == 1, candidates.count == 1 {
             let tab = candidateTabs[0]
             let thread = candidates[0].threadId
-            if let cwd = tab.cwd, normalize(cwd) != loaded[thread] { return [:] }
+            let threadCwd = loaded[thread]
+            guard loaded.values.filter({ $0 == threadCwd }).count == 1 else { return [:] }
+            if let cwd = tab.cwd {
+                if normalize(cwd) != threadCwd { return [:] }
+            } else if loaded.count != 1 {
+                return [:]
+            }
             return [tab.ref: thread]
         }
 

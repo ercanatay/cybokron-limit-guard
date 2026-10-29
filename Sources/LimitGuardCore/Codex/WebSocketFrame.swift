@@ -86,14 +86,26 @@ public struct WebSocketDecoder: Sendable {
     }
 
     public mutating func feed(_ data: Data) throws -> [WebSocketEvent] {
+        let (events, error) = feedPartially(data)
+        if let error { throw error }
+        return events
+    }
+
+    /// Like `feed`, but also returns the events decoded before a protocol violation. After an error
+    /// the decoder is unusable; the connection must be closed.
+    public mutating func feedPartially(_ data: Data) -> (events: [WebSocketEvent], error: WebSocketProtocolError?) {
         buffer.append(contentsOf: data)
         var events: [WebSocketEvent] = []
         var offset = 0
         defer { buffer.removeFirst(offset) }
-        while let consumed = try decodeFrame(at: offset, into: &events) {
-            offset += consumed
+        do {
+            while let consumed = try decodeFrame(at: offset, into: &events) {
+                offset += consumed
+            }
+        } catch {
+            return (events, error as? WebSocketProtocolError ?? .invalidControlFrame)
         }
-        return events
+        return (events, nil)
     }
 
     /// Decodes the frame starting at `start`; nil when it is not complete yet.

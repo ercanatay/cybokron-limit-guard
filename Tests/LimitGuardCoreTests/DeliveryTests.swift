@@ -161,6 +161,18 @@ struct TabMatcherTests {
         #expect(TabMatcher.match(tabs: [tab("/dev/ttys003", cwd: "/p/b")], threads: threads, loadedThreadCwds: ["t1": "/p/a"]).isEmpty)
     }
 
+    @Test func singleTabWithSecondLoadedThreadInSameCwdIsAmbiguous() {
+        let threads = [session("t1", cwd: "/p/a")]
+        let loaded = ["t1": "/p/a", "t2": "/p/a"]
+        #expect(TabMatcher.match(tabs: [tab("/dev/ttys003", cwd: "/p/a")], threads: threads, loadedThreadCwds: loaded).isEmpty)
+    }
+
+    @Test func nilCwdTabWithTwoLoadedThreadsIsAmbiguous() {
+        let threads = [session("t1", cwd: "/p/a")]
+        let loaded = ["t1": "/p/a", "t2": "/p/b"]
+        #expect(TabMatcher.match(tabs: [tab("/dev/ttys003", cwd: nil)], threads: threads, loadedThreadCwds: loaded).isEmpty)
+    }
+
     @Test func cwdSeparatesTwoTabs() {
         let tabs = [tab("/dev/ttys003", cwd: "/p/a"), tab("/dev/ttys004", cwd: "/p/b", pid: 101)]
         let threads = [session("t1", cwd: "/p/a"), session("t2", cwd: "/p/b")]

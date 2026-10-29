@@ -217,21 +217,20 @@ public final class WebSocketTransport: AppServerTransport, @unchecked Sendable {
                 held.removeAll()
             }
             guard phase == .open, !bytes.isEmpty else { return nil }
-            do {
-                for event in try decoder.feed(bytes) {
-                    switch event {
-                    case .text(let message): lines.append(message)
-                    case .binary, .pong: break
-                    case .ping(let payload):
-                        try? channel.write(WebSocketFrame.encode(opcode: .pong, payload: payload, maskKey: WebSocketFrame.randomMaskKey()))
-                    case .close(let code):
-                        try? channel.write(WebSocketFrame.close(code: code ?? 1000, maskKey: WebSocketFrame.randomMaskKey()))
-                        return Self.closedByPeerStatus
-                    }
+            // Lines decoded before a framing error are still delivered.
+            let (events, error) = decoder.feedPartially(bytes)
+            for event in events {
+                switch event {
+                case .text(let message): lines.append(message)
+                case .binary, .pong: break
+                case .ping(let payload):
+                    try? channel.write(WebSocketFrame.encode(opcode: .pong, payload: payload, maskKey: WebSocketFrame.randomMaskKey()))
+                case .close(let code):
+                    try? channel.write(WebSocketFrame.close(code: code ?? 1000, maskKey: WebSocketFrame.randomMaskKey()))
+                    return Self.closedByPeerStatus
                 }
-            } catch {
-                return Self.protocolErrorStatus
             }
+            if error != nil { return Self.protocolErrorStatus }
             return nil
         }
         let callback = onLine

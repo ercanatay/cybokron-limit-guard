@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 
 /// What `thread/read` tells about a loaded thread.
 public struct ThreadInfo: Equatable, Sendable {
@@ -22,6 +23,8 @@ public struct AppServerDelivery: ContinueDelivery {
     static let requestTimeout: Duration = .seconds(15)
     /// Upper bound on `thread/loaded/list` pages, against a server that never ends the list.
     static let maxLoadedPages = 50
+
+    private static let logger = Logger(subsystem: "com.cybokron.limitguard", category: "Delivery")
 
     private let client: AppServerClient
 
@@ -71,7 +74,10 @@ public struct AppServerDelivery: ContinueDelivery {
         var seen: Set<String> = []
         var cursor: String?
         var usedCursors: Set<String> = []
-        for _ in 0..<Self.maxLoadedPages {
+        for page in 0..<Self.maxLoadedPages {
+            if page == Self.maxLoadedPages - 1 {
+                Self.logger.notice("thread/loaded/list: reading the last of \(Self.maxLoadedPages) pages; later pages are ignored")
+            }
             var params: [String: Any] = [:]
             if let cursor { params["cursor"] = cursor }
             let data = try await client.request("thread/loaded/list", params: params, timeout: Self.requestTimeout)

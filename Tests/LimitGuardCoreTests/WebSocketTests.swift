@@ -86,6 +86,14 @@ struct WebSocketFrameTests {
         }
     }
 
+    @Test func keepsEventsDecodedBeforeAViolation() {
+        var decoder = WebSocketDecoder()
+        let wire = WebSocketFrame.encode(opcode: .text, payload: Data("ok".utf8), maskKey: nil) + Data([0x83, 0x00])
+        let (events, error) = decoder.feedPartially(wire)
+        #expect(events == [.text(Data("ok".utf8))])
+        #expect(error == .unknownOpcode(3))
+    }
+
     @Test func computesTheRFCAcceptValue() {
         #expect(WebSocketHandshake.acceptValue(for: "dGhlIHNhbXBsZSBub25jZQ==") == "s3pPLMBiTxaQ9kYGzzhZRbK+xOo=")
     }
@@ -269,6 +277,18 @@ struct WebSocketTransportTests {
         #expect(received.exits == [WebSocketTransport.closedByPeerStatus])
         #expect(channel.clientEvents == [.close(code: 1001)])
         #expect(throws: TransportError.notRunning) { try transport.send(Data("{}".utf8)) }
+    }
+
+    @Test func linesBeforeAFramingErrorAreDelivered() async throws {
+        let channel = FakeProxyChannel()
+        let (transport, received) = try connect(channel)
+        try await Task.sleep(for: .milliseconds(20))
+        channel.serverSends(WebSocketFrame.encode(opcode: .text, payload: Data(#"{"id":1}"#.utf8), maskKey: nil) + Data([0x83, 0x00]))
+        try await waitUntil { !received.exits.isEmpty }
+        #expect(received.lines == [#"{"id":1}"#])
+        #expect(received.exits == [WebSocketTransport.protocolErrorStatus])
+        #expect(channel.stopped)
+        transport.stop()
     }
 
     @Test func wrongAcceptFailsTheConnection() async throws {
