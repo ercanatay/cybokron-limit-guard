@@ -337,6 +337,63 @@ struct SessionTests {
         #expect(states.first { $0.threadId == "tui-finished" }?.lastStop == StopKind.none)
     }
 
+    @Test func languageSampleReadOnceWhileFileGrows() async throws {
+        let dir = try TemporaryDirectory()
+        defer { dir.remove() }
+        let quiet = dir.url.appending(path: "quiet.jsonl")
+        let busy = dir.url.appending(path: "busy.jsonl")
+        let stopped = #"{"timestamp":"2026-10-26T10:00:00.000Z","type":"session_meta","payload":{"id":"x","cwd":"/w","originator":"codex-tui"}}"#
+            + "\n" + userLine("şu dosyayı düzelt") + "\n"
+            + #"{"timestamp":"2026-10-26T11:00:00.000Z","type":"event_msg","payload":{"type":"task_complete","turn_id":"t1","error":{"codex_error_info":"usage_limit_exceeded"}}}"# + "\n"
+        try Data(stopped.utf8).write(to: quiet)
+        try Data(stopped.utf8).write(to: busy)
+
+        let dbURL = dir.url.appending(path: "state_5.sqlite")
+        let now = date("2026-10-26T12:00:00.000Z")
+        let updated = Int64(now.timeIntervalSince1970) - 600
+        try makeDatabase(at: dbURL, rows: [
+            ("quiet", quiet.path, "/w", "codex-tui", updated, updated * 1000, 0, "", "vscode"),
+            ("busy", busy.path, "/w", "codex-tui", updated, updated * 1000, 0, "", "vscode"),
+        ])
+        let reads = Counter()
+        let reader = RolloutReader()
+        let scanner = SessionScanner(index: ThreadIndex(databaseURL: dbURL), reader: reader, readUserMessages: { url in
+            reads.add(url.lastPathComponent)
+            return try reader.recentUserMessages(of: url)
+        })
+        let first = await scanner.scan(now: now)
+        #expect(Set(first.map(\.languageSample)) == ["şu dosyayı düzelt"])
+        #expect(reads.values.sorted() == ["busy.jsonl", "quiet.jsonl"])
+
+        func append(_ url: URL, _ text: String) throws {
+            let handle = try FileHandle(forWritingTo: url)
+            defer { try? handle.close() }
+            try handle.seekToEnd()
+            try handle.write(contentsOf: Data(text.utf8))
+        }
+        // Growth with no activity (still waiting on the same stop), and a continued turn that keeps writing.
+        try append(quiet, #"{"timestamp":"2026-10-26T11:10:00.000Z","type":"event_msg","payload":{"type":"token_count"}}"# + "\n")
+        try append(busy, #"{"timestamp":"2026-10-26T11:10:00.000Z","type":"event_msg","payload":{"type":"task_started","turn_id":"t2"}}"#
+            + "\n" + userLine("devam et") + "\n")
+        for round in 0..<3 {
+            try append(busy, fillerLine(500 + round) + "\n")
+            try append(quiet, fillerLine(500 + round) + "\n")
+            let states = await scanner.scan(now: now)
+            #expect(states.first { $0.threadId == "quiet" }?.languageSample == "şu dosyayı düzelt")
+            #expect(states.first { $0.threadId == "busy" }?.userActivityAfterStop == true)
+        }
+        #expect(reads.values.count == 2)
+
+        // A thread already continued is never read backwards, even by a fresh scanner.
+        let freshReads = Counter()
+        let fresh = SessionScanner(index: ThreadIndex(databaseURL: dbURL), reader: reader, readUserMessages: { url in
+            freshReads.add(url.lastPathComponent)
+            return try reader.recentUserMessages(of: url)
+        })
+        _ = await fresh.scan(now: now)
+        #expect(freshReads.values == ["quiet.jsonl"])
+    }
+
     @Test func subagentThreadsAreSkipped() async throws {
         let dir = try TemporaryDirectory()
         defer { dir.remove() }
@@ -363,5 +420,17 @@ struct SessionTests {
             index: ThreadIndex(databaseURL: URL(fileURLWithPath: "/nonexistent/state_5.sqlite")), reader: RolloutReader()
         )
         #expect(await scanner.scan(now: Date()).isEmpty)
+    }
+}
+
+/// Records calls from the scanner's injected reader.
+private final class Counter: @unchecked Sendable {
+    private let lock = NSLock()
+    private var recorded: [String] = []
+
+    var values: [String] { lock.withLock { recorded } }
+
+    func add(_ value: String) {
+        lock.withLock { recorded.append(value) }
     }
 }
