@@ -13,7 +13,7 @@ struct PopoverView: View {
 
     var body: some View {
         let palette = PanelPalette.forScheme(colorScheme)
-        let maxHeight = PopoverLayout.maxContentHeight(visibleScreenHeight: visibleScreenHeight())
+        let maxHeight = contentHeight
         VStack(alignment: .leading, spacing: 0) {
             // A fixed-height area pinned to the top; what doesn't fit scrolls.
             ScrollView(.vertical, showsIndicators: true) {
@@ -28,6 +28,14 @@ struct PopoverView: View {
         .frame(width: 380)
         .fixedSize(horizontal: false, vertical: true)
         .background(palette.glassTint)
+    }
+
+    private var contentHeight: CGFloat {
+        #if DEBUG
+        // Tall enough for the whole made-up content, so the picture needs no scrolling.
+        if ScreenshotMode.isActive { return ScreenshotMode.popoverContentHeight }
+        #endif
+        return PopoverLayout.maxContentHeight(visibleScreenHeight: visibleScreenHeight())
     }
 
     @ViewBuilder private func content(_ palette: PanelPalette) -> some View {

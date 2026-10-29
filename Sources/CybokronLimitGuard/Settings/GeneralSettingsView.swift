@@ -128,6 +128,12 @@ struct GeneralSettingsView: View {
     }
 
     private func resolveCodex() async {
+        #if DEBUG
+        if ScreenshotMode.isActive {
+            resolvedCodex = ScreenshotMode.codexPath
+            return
+        }
+        #endif
         isResolving = true
         let override = model.settings.codexPathOverride
         // The automatic lookup asks a login shell: off the main thread.
