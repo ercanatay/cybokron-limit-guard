@@ -1,4 +1,5 @@
 import LimitGuardCore
+import AppKit
 import SwiftUI
 
 /// Resets: whether the app may spend a reset credit by itself, at which weekly usage, and the
@@ -16,7 +17,7 @@ struct ResetsSettingsView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     HStack {
-                        Text(L10n.Settings.Resets.threshold(model.settings.autoSpendThreshold))
+                        Text(L10n.Settings.Resets.thresholdLabel)
                         Spacer(minLength: 8)
                         ThresholdField(value: model.binding(\.autoSpendThreshold))
                     }
@@ -49,12 +50,14 @@ private struct ThresholdField: View {
                 .focused($focused)
                 .onSubmit(commit)
                 .onChange(of: focused) { _, isFocused in if !isFocused { commit() } }
-                .accessibilityLabel(L10n.Settings.Resets.threshold(value))
+                .accessibilityLabel(L10n.Settings.Resets.thresholdLabel)
             Text("%").foregroundStyle(.secondary)
             Stepper("", value: $value, in: SettingsLimits.autoSpendThreshold)
                 .labelsHidden()
         }
         .onAppear { text = String(value) }
+        .onDisappear(perform: commit)
+        .onReceive(NotificationCenter.default.publisher(for: NSWindow.willCloseNotification)) { _ in commit() }
         .onChange(of: value) { _, new in text = String(new) }
     }
 

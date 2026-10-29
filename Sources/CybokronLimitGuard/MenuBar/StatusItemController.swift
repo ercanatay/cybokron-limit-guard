@@ -69,7 +69,7 @@ final class PopoverModel: ObservableObject {
         let alert = NSAlert()
         alert.alertStyle = .warning
         alert.messageText = L10n.Popover.Resets.confirmTitle
-        alert.informativeText = [row.title ?? L10n.Popover.Resets.untitled, L10n.Popover.Resets.confirmMessage]
+        alert.informativeText = [L10n.Popover.Resets.displayTitle(row.title), L10n.Popover.Resets.confirmMessage]
             .joined(separator: "\n\n")
         alert.addButton(withTitle: L10n.Popover.Resets.use)
         alert.addButton(withTitle: L10n.Common.cancel)
@@ -126,7 +126,11 @@ final class StatusItemController: NSObject, NSPopoverDelegate {
         popover.behavior = .transient
         popover.animates = true
         popover.delegate = self
-        let hosting = NSHostingController(rootView: PopoverView(model: model, closePopover: { [weak self] in self?.close() }))
+        let hosting = NSHostingController(rootView: PopoverView(
+            model: model, closePopover: { [weak self] in self?.close() },
+            visibleScreenHeight: { [weak self] in
+                (self?.statusItem.button?.window?.screen ?? NSScreen.main)?.visibleFrame.height ?? 800
+            }))
         hosting.sizingOptions = .preferredContentSize
         popover.contentViewController = hosting
         model.reopen = { [weak self] in self?.show() }

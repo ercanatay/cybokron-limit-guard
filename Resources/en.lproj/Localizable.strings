@@ -270,7 +270,7 @@
 "settings.continue.fallback" = "Fallback text";
 "settings.resets.autoUse" = "Use a reset credit when the weekly limit is almost used up";
 "settings.resets.autoUseCaption" = "At most one automatic reset per account every 7 days. Only while Codex is in use.";
-"settings.resets.threshold" = "When the weekly limit is %@ used";
+"settings.resets.thresholdLabel" = "When the weekly limit reaches";
 "settings.resets.expiryReminders" = "Remind me before a reset credit expires";
 "settings.notifications.header" = "Notify me when";
 "settings.notifications.limitReached" = "A usage limit is reached";
@@ -472,7 +472,7 @@
 "popover.sessions.pill.guarded" = "Guarded";
 "popover.sessions.pill.waiting" = "Waiting";
 "popover.sessions.pill.unclear" = "Unclear";
-"popover.sessions.pill.notSent" = "Not sent";
+"popover.sessions.pill.notSent" = "Not confirmed";
 "popover.sessions.pill.sending" = "Sending";
 "popover.sessions.empty" = "No open Codex session";
 "popover.status.notSignedIn" = "Codex isn't signed in — run `codex login` in Terminal";

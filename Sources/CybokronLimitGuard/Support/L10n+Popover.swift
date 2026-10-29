@@ -140,7 +140,7 @@ extension L10n {
             static var pillGuarded: String { tr("popover.sessions.pill.guarded", "Guarded") }
             static var pillWaiting: String { tr("popover.sessions.pill.waiting", "Waiting") }
             static var pillUnclear: String { tr("popover.sessions.pill.unclear", "Unclear") }
-            static var pillNotSent: String { tr("popover.sessions.pill.notSent", "Not sent") }
+            static var pillNotSent: String { tr("popover.sessions.pill.notSent", "Not confirmed") }
             static var pillSending: String { tr("popover.sessions.pill.sending", "Sending") }
             static var empty: String { tr("popover.sessions.empty", "No open Codex session") }
             static var continueNow: String { tr("popover.sessions.continueNow", "Continue now") }

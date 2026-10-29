@@ -7,13 +7,16 @@ import SwiftUI
 struct PopoverView: View {
     @ObservedObject var model: PopoverModel
     let closePopover: () -> Void
+    /// The visible height of the screen the popover opens on.
+    let visibleScreenHeight: () -> CGFloat
     @Environment(\.colorScheme) private var colorScheme
 
-    @State private var contentHeight: CGFloat = 0
+    /// Starts from the last measured height so the popover doesn't open tall and then shrink.
+    @State private var contentHeight: CGFloat = PopoverHeightCache.last
 
     var body: some View {
         let palette = PanelPalette.forScheme(colorScheme)
-        let maxHeight = PopoverLayout.maxContentHeight(visibleScreenHeight: NSScreen.main?.visibleFrame.height ?? 800)
+        let maxHeight = PopoverLayout.maxContentHeight(visibleScreenHeight: visibleScreenHeight())
         VStack(alignment: .leading, spacing: 0) {
             // Sizes to its content while short; scrolls once it would outgrow the screen.
             ScrollView(.vertical) {
@@ -26,7 +29,10 @@ struct PopoverView: View {
             }
             .scrollBounceBehavior(.basedOnSize)
             .frame(height: contentHeight > 0 ? min(contentHeight, maxHeight) : maxHeight)
-            .onPreferenceChange(ContentHeightKey.self) { contentHeight = $0 }
+            .onPreferenceChange(ContentHeightKey.self) {
+                contentHeight = $0
+                if $0 > 0 { PopoverHeightCache.last = $0 }
+            }
             Divider().overlay(palette.hairline)
             PopoverFooter(engine: model.engine, model: model, palette: palette, closePopover: closePopover)
         }
@@ -42,6 +48,11 @@ struct PopoverView: View {
                 .padding(PanelMetrics.l)
         }
     }
+}
+
+@MainActor
+private enum PopoverHeightCache {
+    static var last: CGFloat = 0
 }
 
 private struct ContentHeightKey: PreferenceKey {
@@ -67,11 +78,11 @@ private struct EngineSections: View {
             LimitBarView(
                 title: L10n.Popover.Limit.fiveHour, window: engine.snapshot?.fiveHour,
                 forecast: engine.forecast.fiveHour, forecastText: L10n.Popover.Limit.fiveHourForecast,
-                clockTemplate: "jmm", gateClosed: gateClosed, palette: palette)
+                clockTemplate: "jmm", palette: palette)
             LimitBarView(
                 title: L10n.Popover.Limit.weekly, window: engine.snapshot?.weekly,
                 forecast: engine.forecast.weekly, forecastText: L10n.Chart.forecast,
-                clockTemplate: "EEEdMMMjmm", gateClosed: gateClosed, palette: palette)
+                clockTemplate: "EEEdMMMjmm", palette: palette)
             if let next = engine.nextAction {
                 NextActionView(action: next, tabs: engine.tabs, palette: palette) { engine.cancelNextAction() }
             }
@@ -80,9 +91,6 @@ private struct EngineSections: View {
         }
         .padding(PanelMetrics.l)
     }
-
-    /// Ordinary usage is blocked: the bars read red.
-    private var gateClosed: Bool { engine.snapshot?.ordinaryUsageAllowed == false }
 
     @ViewBuilder private var statusSection: some View {
         VStack(alignment: .leading, spacing: PanelMetrics.s) {
@@ -262,7 +270,7 @@ private struct PopoverFooter: View {
                 } label: {
                     Label(L10n.Popover.Footer.quit, systemImage: "power")
                         .lineLimit(1)
-                        .fixedSize()
+                        .minimumScaleFactor(0.8)
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.bordered)
@@ -283,7 +291,7 @@ private struct PopoverFooter: View {
         } label: {
             Text(title)
                 .lineLimit(1)
-                .fixedSize()
+                .minimumScaleFactor(0.8)
                 .frame(maxWidth: .infinity)
         }
         .buttonStyle(.bordered)

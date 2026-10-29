@@ -11,8 +11,6 @@ struct LimitBarView: View {
     let forecastText: (String) -> String
     /// The `DateFormatter` template of the reset time in brackets.
     let clockTemplate: String
-    /// Ordinary usage is blocked: the bar is red whatever the percentage.
-    var gateClosed = false
     let palette: PanelPalette
 
     var body: some View {
@@ -57,7 +55,7 @@ struct LimitBarView: View {
             ZStack(alignment: .leading) {
                 Capsule().fill(palette.hairline)
                 Capsule()
-                    .fill(gateClosed ? Color.red : PopoverFormat.tint(forUsed: window?.usedPercent ?? 0))
+                    .fill(PopoverFormat.tint(forUsed: window?.usedPercent ?? 0))
                     .frame(width: max(clamped > 0 ? 6 : 0, geometry.size.width * clamped))
             }
         }

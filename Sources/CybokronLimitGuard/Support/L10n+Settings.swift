@@ -123,10 +123,7 @@ extension L10n.Settings {
                 "At most one automatic reset per account every 7 days. Only while Codex is in use."
             )
         }
-        static func threshold(_ percent: Int) -> String {
-            let formatted = percent.formatted(.percent.scale(1))
-            return tr("settings.resets.threshold", "When the weekly limit is %@ used", formatted)
-        }
+        static var thresholdLabel: String { tr("settings.resets.thresholdLabel", "When the weekly limit reaches") }
         static var expiryReminders: String {
             tr("settings.resets.expiryReminders", "Remind me before a reset credit expires")
         }

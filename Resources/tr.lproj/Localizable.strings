@@ -265,7 +265,7 @@
 "settings.continue.fallback" = "Yedek metin";
 "settings.resets.autoUse" = "Haftalık limit neredeyse tükendiğinde bir sıfırlama hakkı kullan";
 "settings.resets.autoUseCaption" = "Hesap başına 7 günde en fazla bir otomatik sıfırlama. Yalnızca Codex kullanılırken.";
-"settings.resets.threshold" = "Haftalık limitin %@ kadarı kullanıldığında";
+"settings.resets.thresholdLabel" = "Haftalık limit şu orana ulaştığında";
 "settings.resets.expiryReminders" = "Bir sıfırlama hakkının süresi dolmadan önce bana hatırlat";
 "settings.notifications.header" = "Şu durumlarda bana bildir";
 "settings.notifications.limitReached" = "Bir kullanım limitine ulaşıldığında";
@@ -466,7 +466,7 @@
 "popover.sessions.pill.guarded" = "Korunuyor";
 "popover.sessions.pill.waiting" = "Bekliyor";
 "popover.sessions.pill.unclear" = "Belirsiz";
-"popover.sessions.pill.notSent" = "Gönderilemedi";
+"popover.sessions.pill.notSent" = "Onaylanmadı";
 "popover.sessions.pill.sending" = "Gönderiliyor";
 "popover.sessions.empty" = "Açık Codex oturumu yok";
 "popover.status.notSignedIn" = "Codex'te oturum açılmamış — Terminal'de `codex login` komutunu çalıştırın";
