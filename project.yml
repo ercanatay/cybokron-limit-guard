@@ -1,0 +1,110 @@
+# XcodeGen spec for CybokronLimitGuard.xcodeproj.
+# After changing this file or adding/removing source files, regenerate and commit the project:
+#     xcodegen generate
+name: CybokronLimitGuard
+
+options:
+  bundleIdPrefix: com.cybokron
+  deploymentTarget:
+    macOS: "14.0"
+  developmentLanguage: en
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+settings:
+  base:
+    MARKETING_VERSION: "0.1.0"
+    # CFBundleVersion: major * 10000 + minor * 100 + patch of MARKETING_VERSION (0.1.0 → 100), so
+    # LaunchServices prefers the newest copy; scripts/check-version.sh checks it.
+    CURRENT_PROJECT_VERSION: "100"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    SWIFT_VERSION: "5.0"
+    # Open-source build: sign ad hoc so anyone can build and run without a developer account.
+    CODE_SIGN_STYLE: Manual
+    CODE_SIGN_IDENTITY: "-"
+    DEVELOPMENT_TEAM: ""
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    DEAD_CODE_STRIPPING: YES
+  configs:
+    Debug:
+      ONLY_ACTIVE_ARCH: YES
+    Release:
+      ONLY_ACTIVE_ARCH: NO
+
+targets:
+  LimitGuardCore:
+    type: library.static
+    platform: macOS
+    sources:
+      - path: Sources/LimitGuardCore
+    settings:
+      base:
+        PRODUCT_NAME: LimitGuardCore
+        SKIP_INSTALL: YES
+        # Swift-only library: no Objective-C header (and no header copy phase) needed.
+        SWIFT_INSTALL_OBJC_HEADER: NO
+        OTHER_LDFLAGS: "-lsqlite3"
+
+  CybokronLimitGuard:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources/CybokronLimitGuard
+      # The asset catalog and every <language>.lproj folder of string tables (a variant group per
+      # table, so new languages are picked up by `xcodegen generate`).
+      - path: Resources
+        excludes:
+          - Info.plist
+          - CybokronLimitGuard.entitlements
+      - path: Resources/Info.plist
+        buildPhase: none
+      - path: Resources/CybokronLimitGuard.entitlements
+        buildPhase: none
+    dependencies:
+      - target: LimitGuardCore
+    settings:
+      base:
+        PRODUCT_NAME: Cybokron Limit Guard
+        PRODUCT_MODULE_NAME: CybokronLimitGuard
+        PRODUCT_BUNDLE_IDENTIFIER: com.cybokron.limitguard
+        INFOPLIST_FILE: Resources/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ENABLE_HARDENED_RUNTIME: YES
+        CODE_SIGN_ENTITLEMENTS: Resources/CybokronLimitGuard.entitlements
+        ENABLE_DEBUG_DYLIB: NO
+        COMBINE_HIDPI_IMAGES: YES
+        # Universal (arm64 + x86_64) for Release; Debug builds only the active architecture.
+        ARCHS: $(ARCHS_STANDARD)
+
+  LimitGuardCoreTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Tests/LimitGuardCoreTests
+    dependencies:
+      - target: LimitGuardCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.cybokron.limitguard.core-tests
+        GENERATE_INFOPLIST_FILE: YES
+
+schemes:
+  CybokronLimitGuard:
+    build:
+      targets:
+        CybokronLimitGuard: all
+        LimitGuardCoreTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      gatherCoverageData: true
+      targets:
+        - LimitGuardCoreTests
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release

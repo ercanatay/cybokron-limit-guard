@@ -1,0 +1,64 @@
+import Foundation
+
+/// Pure shaping of the usage chart's data (spec §12).
+public enum ChartData {
+    private static var calendar: Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC") ?? .gmt
+        return calendar
+    }
+
+    private static func formatter() -> DateFormatter {
+        let f = DateFormatter()
+        f.calendar = calendar
+        f.timeZone = calendar.timeZone
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.dateFormat = "yyyy-MM-dd"
+        return f
+    }
+
+    /// The `days` days ending on `today` ("yyyy-MM-dd"), oldest first, from the report's daily
+    /// buckets; days the report has no bucket for count 0. Empty when there are no buckets at all
+    /// or `today` isn't a valid day.
+    public static func daily(_ report: UsageReport, days: Int, today: String) -> [DailyUsage] {
+        guard let buckets = report.daily, days > 0 else { return [] }
+        let f = formatter()
+        guard let end = f.date(from: today) else { return [] }
+        var tokensByDay: [String: Int64] = [:]
+        for bucket in buckets { tokensByDay[bucket.day, default: 0] += bucket.tokens }
+        return (0..<days).reversed().compactMap { offset in
+            guard let date = calendar.date(byAdding: .day, value: -offset, to: end) else { return nil }
+            let day = f.string(from: date)
+            return DailyUsage(day: day, tokens: tokensByDay[day] ?? 0)
+        }
+    }
+
+    /// The samples of the last `days` days, relative to `now` (the newest sample when nil).
+    public static func limitHistory(_ samples: [UsageSample], days: Int, now: Date? = nil) -> [UsageSample] {
+        guard let anchor = now ?? samples.map(\.date).max() else { return [] }
+        let cutoff = anchor.addingTimeInterval(-Double(days) * 24 * 3600)
+        return samples.filter { $0.date >= cutoff && $0.date <= anchor }.sorted { $0.date < $1.date }
+    }
+
+    /// The UTC day ("yyyy-MM-dd") of `now`. The usage report's buckets are read as UTC days, so
+    /// "today" must be the UTC day too (assumption: Codex buckets `startDate` by UTC).
+    public static func today(_ now: Date) -> String {
+        formatter().string(from: now)
+    }
+
+    /// Token counts as "950", "1.5 K", "248 M", "1.2 B", "3 T"; the unit is picked after rounding,
+    /// so 999_999 reads "1 M", not "1000 K".
+    public static func compactTokens(_ value: Int64) -> String {
+        let units: [(Double, String)] = [(1e3, "K"), (1e6, "M"), (1e9, "B"), (1e12, "T")]
+        let magnitude = Double(abs(value))
+        guard var index = units.lastIndex(where: { magnitude >= $0.0 }) else { return String(value) }
+        func text(_ i: Int) -> String {
+            let scaled = Double(value) / units[i].0
+            let t = abs(scaled) < 10 ? String(format: "%.1f", scaled) : String(format: "%.0f", scaled)
+            return t.hasSuffix(".0") ? String(t.dropLast(2)) : t
+        }
+        let rounded = Double(text(index)).map(abs) ?? 0
+        if rounded >= 1000, index + 1 < units.count { index += 1 }
+        return text(index) + " " + units[index].1
+    }
+}

@@ -1,0 +1,32 @@
+{
+  "dailyUsageBuckets": [
+    {
+      "startDate": "2026-10-24",
+      "tokens": 144043068
+    },
+    {
+      "startDate": "2026-10-25",
+      "tokens": 64382285
+    },
+    {
+      "startDate": "2026-10-26",
+      "tokens": 179788999
+    },
+    {
+      "startDate": "2026-10-27",
+      "tokens": 217048292
+    },
+    {
+      "startDate": "2026-10-28",
+      "tokens": 248173462
+    }
+  ],
+  "summary": {
+    "currentStreakDays": 17,
+    "lifetimeTokens": 3153253976,
+    "longestRunningTurnSec": 8222,
+    "longestStreakDays": 29,
+    "peakDailyTokens": 248173462
+  },
+  "threadUsage": null
+}

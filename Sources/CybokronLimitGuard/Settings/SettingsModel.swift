@@ -1,0 +1,134 @@
+import AppKit
+import LimitGuardCore
+import OSLog
+import SwiftUI
+
+/// The settings the window edits: loaded from `settings.json`, written back on every change.
+///
+/// A file from a newer app version (or one that can't be read) is never overwritten: the model then
+/// stays `isReadOnly`, the panes disable their controls and say why.
+@MainActor
+final class SettingsModel: ObservableObject {
+    enum ReadOnlyReason {
+        case newerSchema
+        case unreadable
+    }
+
+    @Published private(set) var settings = LimitGuardCore.Settings()
+    @Published private(set) var readOnlyReason: ReadOnlyReason?
+    @Published private(set) var saveFailed = false
+    @Published private(set) var loginItemState = LoginItem.state
+    @Published private(set) var loginItemError: String?
+
+    private static let logger = Logger(subsystem: "com.cybokron.limitguard", category: "settings")
+    private let store: JSONStore<LimitGuardCore.Settings>
+
+    init(store: JSONStore<LimitGuardCore.Settings>) {
+        self.store = store
+        reload()
+    }
+
+    var isReadOnly: Bool { readOnlyReason != nil }
+
+    /// Re-reads the file (it may have changed since the window was last shown).
+    func reload() {
+        saveFailed = false
+        loginItemError = nil
+        loginItemState = LoginItem.state
+        do {
+            settings = try store.load()?.clamped() ?? LimitGuardCore.Settings()
+            readOnlyReason = nil
+        } catch StoreError.newerSchema {
+            settings = LimitGuardCore.Settings()
+            readOnlyReason = .newerSchema
+        } catch {
+            settings = LimitGuardCore.Settings()
+            readOnlyReason = .unreadable
+        }
+    }
+
+    /// Returns true when the change was saved.
+    @discardableResult
+    func mutate(_ change: (inout LimitGuardCore.Settings) -> Void) -> Bool {
+        guard !isReadOnly else { return false }
+        var updated = settings
+        change(&updated)
+        updated = updated.clamped()
+        guard updated != settings else { return true }
+        settings = updated
+        do {
+            try store.save(updated)
+            saveFailed = false
+            NotificationCenter.default.post(name: .limitGuardSettingsChanged, object: nil)
+        } catch {
+            Self.logger.error("settings not saved: \(String(describing: error), privacy: .public)")
+            saveFailed = true
+        }
+        return !saveFailed
+    }
+
+    /// "Reset settings…" for an unreadable file, then shows what was written.
+    func resetUnreadable() {
+        guard readOnlyReason == .unreadable else { return }
+        SettingsReset.run(store: store)
+        reload()
+    }
+
+    func binding<Value>(_ keyPath: WritableKeyPath<LimitGuardCore.Settings, Value>) -> Binding<Value> {
+        Binding(
+            get: { self.settings[keyPath: keyPath] },
+            set: { value in self.mutate { $0[keyPath: keyPath] = value } }
+        )
+    }
+
+    func notifyBinding<Value>(_ keyPath: WritableKeyPath<NotificationToggles, Value>) -> Binding<Value> {
+        Binding(
+            get: { self.settings.notify[keyPath: keyPath] },
+            set: { value in self.mutate { $0.notify[keyPath: keyPath] = value } }
+        )
+    }
+
+    // MARK: Launch at login
+
+    var launchAtLogin: Bool { loginItemState != .disabled }
+
+    func setLaunchAtLogin(_ enabled: Bool) {
+        guard !isReadOnly else { return }
+        loginItemError = nil
+        do {
+            try LoginItem.setEnabled(enabled)
+        } catch {
+            loginItemError = error.localizedDescription
+        }
+        loginItemState = LoginItem.state
+        mutate { $0.launchAtLogin = loginItemState != .disabled }
+    }
+
+    // MARK: Language
+
+    /// Writes the choice to the app's own `AppleLanguages` default and asks for a restart.
+    func setLanguage(_ language: AppLanguage) {
+        guard !isReadOnly, language != settings.language else { return }
+        guard mutate({ $0.language = language }) else { return }
+        if let languages = language.appleLanguages {
+            UserDefaults.standard.set(languages, forKey: "AppleLanguages")
+        } else {
+            UserDefaults.standard.removeObject(forKey: "AppleLanguages")
+        }
+        offerRestart()
+    }
+
+    private func offerRestart() {
+        let alert = NSAlert()
+        alert.messageText = L10n.Settings.General.restartTitle
+        alert.informativeText = L10n.Settings.General.restartMessage(L10n.App.name)
+        alert.addButton(withTitle: L10n.Settings.General.restartNow)
+        alert.addButton(withTitle: L10n.Settings.General.restartLater)
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+        let relaunch = Process()
+        relaunch.executableURL = URL(fileURLWithPath: "/bin/sh")
+        relaunch.arguments = ["-c", "sleep 1; /usr/bin/open -n \"$0\"", Bundle.main.bundlePath]
+        try? relaunch.run()
+        NSApp.terminate(nil)
+    }
+}

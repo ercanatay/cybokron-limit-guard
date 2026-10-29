@@ -14,7 +14,7 @@ Cybokron Limit Guard is a small, open-source macOS menu-bar app that:
 
 1. Shows Codex usage clearly (5-hour %, weekly %, reset times, reset credits with expiry dates).
 2. When a Codex turn in Terminal.app was cut by the usage limit, waits until usage is allowed
-   again and types a "continue" message, in the conversation's language, into that exact tab.
+   again and sends a "continue" message, in the conversation's language, to that exact conversation.
 3. If the owner allows it, spends **one** reset credit when the weekly limit is about to run out,
    so the task is not interrupted.
 4. Lets the owner spend a specific reset credit manually, right now, from the menu.
@@ -40,7 +40,7 @@ phases extend it to other terminals/IDEs and other agents (§14).
 - Buying credits, changing plans, or anything on chatgpt.com.
 
 **Anti-goals (a failure even if it "works")**
-- Typing into the wrong tab, or into a tab where the owner is mid-sentence.
+- Sending into the wrong conversation, or into one where the owner is mid-sentence.
 - Spending two credits where one was intended, or spending one without permission.
 - A continue loop that burns a 5-hour window on retries.
 - Guessing usage from percentages and acting on the guess.
@@ -100,7 +100,7 @@ Top to bottom:
 1. **Status line**: "Watching 1 Codex session" / "Paused" / "Read-only: Codex protocol changed".
 2. **5-hour limit** bar: `100 % used · resets in 3 h 42 m (18:15)`.
 3. **Weekly limit** bar: `59 % used · resets in 5 d 21 h (Tue 4 Nov 10:30)`.
-4. **Next action** (only when one is scheduled): "At 18:15 type 'devam et' into Terminal —
+4. **Next action** (only when one is scheduled): "At 18:15 send 'devam et' —
    `~/project` (ttys003)" with **[Cancel]**. Also the reset-credit plan if armed
    ("Will use 1 reset when weekly reaches 97 %").
 5. **Usage limit resets** section (mirrors the ChatGPT screen the owner shared):
@@ -138,14 +138,15 @@ LimitGuardCore
   SessionScanner        state_5.sqlite (read-only) + rollout tail parsing → SessionState
   TurnOutcomeParser     last task_complete / user message / language sample
   LanguageDetector      NaturalLanguage (NLLanguageRecognizer) → continue text
-  ContinuePolicy        pure decision: should we type now? (§7)
+  ContinuePolicy        pure decision: should we send now? (§7)
   ResetPolicy           pure decision: should we spend a credit now? (§8)
   ResetLedger           pending-consume journal on disk (idempotency)
   ActivityLog, UsageHistory, Settings, Store (JSON files, schemaVersion)
   Updates/*, Changelog/*  copied from Dock Groups
 CybokronLimitGuard
-  TerminalBridge        Apple Events to Terminal.app: list tabs (tty, busy, processes,
-                        history), type text into a tab           ← "where" (Terminal)
+  CodexProcessLister    `ps`/`lsof`: Codex TUI processes per tty, their pid, start time
+                        and cwd (no Apple Events)                 ← "where" (Terminal)
+  AppServerDelivery     `turn/start` over the shared daemon (§9.0)
   AgentAdapter protocol ← "what" (Codex); Phase 1 has CodexAdapter only
   Scheduler             timers, sleep/wake, power assertion
   MenuBar/, Popover/, Settings/, Activity/, Chart/, About/, Updates/
@@ -182,14 +183,16 @@ Settings → General, and is repeated in README.
 Settings → General → **Run Diagnostics**, and automatically when something fails. Checks with
 ✓/⚠/✗ and a one-line fix: codex found + version (and whether it is newer than the last tested
 version), signed in with ChatGPT, app-server daemon reachable, `rateLimits/read` decodes,
-Terminal automation permission (fallback path), notifications allowed, **approval policy**:
+notifications allowed, **approval policy**:
 warns when Codex's `approval_policy` is interactive ("an unattended continue will stop at the
 first approval prompt"), and Keep-awake assertion state. Copy-to-clipboard report (no secrets).
 
 ### 4.4 Empty and error states
 Shown in the popover status line with a one-line fix: Codex not found (link to set the path) ·
 Codex not signed in with ChatGPT (`codex login`) · app-server failed to start (retrying) ·
-Terminal permission missing · notifications not allowed · no Codex tab open. The active
+notifications not allowed · no Codex tab open · settings file can't be read (**Reset settings…**:
+the broken file is kept as `settings.corrupt-<timestamp>.json`, the defaults are written and the
+legal notice is asked for again; a file from a newer version is never touched). The active
 account's plan (`planType`) is shown small in the footer; if the account changes, per-account
 state (auto-spend marker, ledger) is not reused for the new account.
 
@@ -202,7 +205,7 @@ state (auto-spend marker, ledger) is not reused for the new account.
 ### 4.6 Privacy
 Everything stays on the Mac. The app reads Codex's local session files only to detect stops and
 the conversation language; it never copies conversation text into its own files (the activity
-log stores only the continue text it typed), never reads `auth.json`, and sends nothing
+log stores only the continue text it sent), never reads `auth.json`, and sends nothing
 anywhere except Codex's own app-server and GitHub (update check / changelog). No analytics.
 README and SECURITY.md state this.
 
@@ -212,7 +215,7 @@ The protocol is experimental and changes between Codex releases.
 - Decode tolerantly (unknown fields ignored, unknown enum values → `.unknown`).
 - If a field the **actions** depend on is missing/undecodable (`ordinaryUsageAllowed`, window
   shape, credit `id`/`status`, consume `outcome`, `task_complete` shape), the app enters
-  **read-only mode**: it keeps showing whatever it can, never types, never spends, shows a banner
+  **read-only mode**: it keeps showing whatever it can, never sends, never spends, shows a banner
   "Codex changed how it reports usage — automatic actions are paused", and logs the codex version.
 - Record `codex --version` in every activity entry that acts.
 - Never read `~/.codex/auth.json` or any credential; every account call goes through
@@ -231,19 +234,19 @@ A Codex TUI session is **eligible** when all hold:
 Finished turns (`error == null`), other errors (`server_overloaded`, …) and aborted turns are
 never continued.
 
-### 7.2 When to type
+### 7.2 When to send
 1. Wait until `primary.resetsAt` (or `secondary.resetsAt` if the weekly window is the one at
    100 %). This only schedules the first check.
 2. **Gate: `ordinaryUsageAllowed == true`** from a fresh `rateLimits/read` (< 30 s old).
    `false` → keep polling with back-off; `null` / decode failure → do nothing. Percentages and
    `resetsAt` never open the gate on their own. If still `false` 60 min after `resetsAt`, notify
    once ("Codex still reports the limit as reached") and keep waiting quietly.
-3. **Countdown**: notification + popover row "Typing 'devam et' into Terminal in 10 s —
+3. **Countdown**: notification + popover row "Sending 'devam et' in 10 s —
    [Cancel]". Default 10 s, setting 0–60 s.
-4. **Re-check right before typing** (all must still hold): session still eligible (re-read the
+4. **Re-check right before sending** (all must still hold): session still eligible (re-read the
    rollout tail), tab still exists with the same tty, the tab's process is still the same Codex
    TUI pid, app not paused, loop guard not exhausted.
-5. Type the continue text and submit (§9). Log it.
+5. Send the continue text (§9). Log it.
 6. **Verify**: within 2 min the rollout must show a new user message / turn start. If not,
    log "continue not observed" and count it as a failed attempt.
 
@@ -252,10 +255,15 @@ never continued.
 **The owner chooses which Terminal windows/tabs are guarded (D19).** Nothing is guarded by
 default. The popover has a **Guarded tabs** section listing every open Terminal tab that runs a
 Codex TUI (window/tab title, working directory, tty, short thread title when known) with a
-checkbox each; several can be ticked. Auto-continue only ever types into a ticked tab; an
-unticked tab that stops on the limit is shown as "waiting (not guarded)" with a one-click
-**Continue now** button. The choice is kept per tab (Terminal tab identity = window id + tab
-index + tty) for as long as the tab lives; a closed tab drops out. Setting "Guard new Codex
+checkbox each; several can be ticked. Auto-continue only ever sends to the conversation of a
+ticked tab; an unticked tab that stops on the limit is shown as "waiting (not guarded)" with a
+one-click **Continue now** button. The choice is kept per tab for as long as the tab lives. A tab
+is the Codex TUI process on a tty: tty + Codex pid + that process's start time (`ps -o lstart=`).
+A closed tab drops out, and a new Codex process on the same tty (after a quit, reboot or update
+relaunch, or a restarted `codex`) is a new, unticked tab; guards whose process is gone are dropped
+at launch. A row says "continues automatically" only while the app will still do so: after a
+continue it shows "confirming", then **Send again** if Codex did not confirm it (D24); a stop that
+was cancelled, skipped or stopped by the loop guard offers **Continue now** instead. Setting "Guard new Codex
 tabs automatically" (default **off**).
 
 Mapping a guarded tab to its thread:
@@ -266,7 +274,7 @@ Mapping a guarded tab to its thread:
   1. If exactly one candidate tab and exactly one eligible thread → pair them.
   2. Otherwise match by evidence: thread `cwd` == process cwd, **and** the tab's visible
      history contains the limit message and/or the tail of the thread's last agent message.
-  3. Still ambiguous → do **not** type; notify "Several Codex tabs are waiting — continue them
+  3. Still ambiguous → do **not** send; notify "Several Codex tabs are waiting — continue them
      by hand" and show them in the popover.
 
 ### 7.4 Loop guard (settings)
@@ -291,14 +299,15 @@ Mapping a guarded tab to its thread:
 
 ### 8.1 Automatic (off by default)
 Setting **"Use a reset credit when the weekly limit is almost used up"** (default **off**),
-threshold **97 % used** (= 3 % left; editable 80–99).
+threshold **97 % used** (= 3 % left; editable 50–99).
 Spend one credit only when all hold:
 - setting on, not paused, not read-only;
 - fresh read shows `secondary.usedPercent ≥ threshold`, `availableCount ≥ 1`, at least one
   credit with `status == available`;
 - the 5-hour window state does **not** matter (spend even if the 5-hour limit is not reached);
-- no automatic spend has happened yet in this weekly window (key = `secondary.resetsAt`):
-  **max one automatic spend per weekly window**;
+- no automatic spend for this account in the last 7 days: **max one automatic spend per account
+  every 7 days** (an `AutoSpendMarker {accountId, spentAt}` is written *before* consume, auto only,
+  and kept on any outcome; no account id → skip);
 - no pending consume in the ledger;
 - **Codex is in use**: a Codex TUI turn ran in the last 30 min, or a session is waiting on a
   usage-limit stop (D15);
@@ -306,7 +315,7 @@ Spend one credit only when all hold:
 Choice of credit: the available one with the **earliest `expiresAt`** (null = never expires,
 chosen last), passed explicitly as `creditId`.
 After the call, re-read limits. If weekly is still ≥ threshold after an `outcome == reset`, notify
-and do not try again this window.
+and do not try again until the marker expires.
 
 ### 8.2 Manual
 Popover button (§4.2). Always allowed (also when the auto setting is off), still goes through
@@ -327,28 +336,34 @@ credit ("A reset credit expires today at 22:29"). No automatic spending because 
 
 ## 9. Delivering the continue message
 
-### 9.0 Preferred path: Codex's own app-server (Spike S5)
+> **Phase 1 ruling (D31):** delivery = Codex app-server (WebSocket over `codex app-server proxy`);
+> keystroke typing is not used in Phase 1 (moved to Phase 2). If the daemon is unreachable the app
+> notifies "continue by hand" and never types. §9.1 below is kept as the Phase 2 design only; the
+> Automation/Accessibility permissions it mentions are not requested in Phase 1.
+
+### 9.0 Delivery path: Codex's own app-server (Spike S5)
 The Terminal TUI is a client of the shared app-server daemon. `codex app-server proxy`
 connects to that same daemon over its control socket; `thread/loaded/list` lists the threads
 currently loaded by clients and `turn/start {threadId, input, clientUserMessageId}` starts a
-turn in a given thread. If S5 confirms that a turn started this way appears and runs in the
-owner's Terminal tab, this is the **primary delivery path**:
+turn in a given thread. Spike S5 verified that a turn started this way appears and runs in the
+owner's Terminal tab, so this is the Phase 1 delivery mechanism:
 - exact thread targeting by `threadId` (no tab guessing, no keystrokes, no draft clobbering,
   no risk of hitting Enter on a picker);
 - no Automation / Accessibility permission needed;
 - the turn keeps the thread's model, effort, approval and sandbox settings — the app never
   passes `model`/`effort`/`approvalPolicy`/`sandboxPolicy` overrides (D27).
 Guarded-tab selection (§7.3) still decides *which* sessions may be continued; the tab ↔ thread
-link then only needs to be known for display. Keystroke typing (§9.1) remains as fallback when
-S5 fails or the daemon isn't reachable.
+link then only needs to be known for display. If the daemon isn't reachable the app notifies
+"continue by hand" (D31).
 
 ### 9.0.1 Delivery confirmation (D24)
 Every continue carries a fresh `clientUserMessageId` (UUID, stored in `state.json` before
 sending). The app confirms delivery by finding that id (path 9.0) or a new user message/turn
-(path 9.1) in the thread within 2 min. Unconfirmed → marked "unconfirmed" in Activity and
-**never re-sent automatically**; the owner gets a notification with a "Send again" button.
+in the thread within 2 min. Unconfirmed → marked "unconfirmed" in Activity and
+**never re-sent automatically**; the owner gets a notification with a "Send again" button, and
+the tab's popover row offers "Send again" too. "Send again" reuses the same `clientUserMessageId`.
 
-## 9.1 Fallback: typing into Terminal.app
+## 9.1 Phase 2 (not in Phase 1): typing into Terminal.app
 
 Default mechanism (to be confirmed by Spike S1): Apple Events to Terminal —
 `do script "<text>" in <tab>` with the tab addressed explicitly (`do script` without `in` opens
@@ -381,13 +396,14 @@ Continue: Auto-continue (on) · countdown (10 s) · max tries (3) · min gap (2 
 language → text table · fallback text.
 Resets: Auto-use when weekly ≥ threshold (**off**) · threshold (97 %) · expiry reminders (on).
 Notifications: each kind on/off — limit reached, continue sent, continue skipped/stopped, reset
-used, reset expiring, read-only mode, permission missing.
+used, reset expiring, read-only mode.
 Updates: as Dock Groups (automatic check on launch + every 6 h, sha256-verified DMG install,
 "Other Versions…" downgrade with pre-downgrade copy of settings/state files).
 Changelog: as Dock Groups (GitHub releases list, cached with ETag, offline copy).
 Support: as Dock Groups.
 
-Pause/Resume (popover + menu): pauses all automatic typing and spending; reading continues.
+Pause/Resume (popover + menu): pauses all automatic continues and spending; reading continues.
+Pause is kept in `state.json`, so a relaunch (reboot, update) stays paused.
 
 Sleep/wake: on wake, re-read everything; a missed continue runs through the normal flow
 (countdown included) if still eligible (same age rules as §7.1).
@@ -396,7 +412,7 @@ Sleep/wake: on wake, re-read everything; a missed continue runs through the norm
 `activity.json`, last 100 entries: time, kind (limitReached, continueScheduled, continueSent,
 continueCancelled, continueSkipped(reason), loopGuardStop, resetUsed(outcome, creditId,
 auto|manual), resetExpiring, readOnly, permissionDenied, error), tab/tty, thread id (short),
-text typed, codex version. Window with a table and "Copy" / "Clear".
+text sent, codex version. Window with a table and "Copy" / "Clear".
 
 ## 12. Usage chart
 Window with Swift Charts:
@@ -487,18 +503,18 @@ Our differentiators: auto-continue + credit management + loop guards in one nati
 | D6 | Include: % in menu bar, daily usage chart, auto-update + downgrade, changelog, pause, next-action + cancel, keep-awake, notifications, activity log, editable continue text, launch at login | owner |
 | D7 | Detection via `task_complete.error.codex_error_info == usage_limit_exceeded` | builder |
 | D8 | Gate on `ordinaryUsageAllowed == true` only | builder |
-| D9 | Max one automatic spend per weekly window; earliest-expiring credit first | builder |
+| D9 | Max one automatic spend per account every 7 days (AutoSpendMarker written before consume); earliest-expiring credit first | builder |
 | D10 | Expiring credits: reminder only, no auto-spend | builder |
-| D11 | Confirmation alert before manual spend; countdown (10 s) before typing | builder |
+| D11 | Confirmation alert before manual spend; countdown (10 s) before sending | builder |
 | D12 | Multiple accounts deferred; app shows the active account/plan only | builder |
-| D13 | v0.1.0 ships Developer ID signed + notarized (Dock Groups pipeline, `NOTARIZE_ENABLED=true` works since its v0.6.3) so Automation/Accessibility grants survive auto-updates | builder |
+| D13 | v0.1.0 ships Developer ID signed + notarized (Dock Groups pipeline, `NOTARIZE_ENABLED=true` works since its v0.6.3) so updates install cleanly and Gatekeeper keeps accepting the app | builder |
 | D14 | Weekly-limit stop: if auto-spend is allowed → spend (§8) then continue (§7). Otherwise wait for `secondary.resetsAt`; such a stop stays eligible until `resetsAt + 1 h` instead of 24 h; keep-awake only when the wait is < 6 h. `workspace_owner_credits_depleted` is treated like any stop: only `ordinaryUsageAllowed == true` opens it, `reachedType` is diagnostic | builder |
 | D15 | Auto-spend only while Codex is in use (turn in last 30 min or a session waiting on a stop) and not when the weekly window resets by itself within 12 h | owner |
-| D16 | If a half-typed draft can't be ruled out: skip and notify, never type | owner |
+| D16 | If a half-typed draft can't be ruled out: skip and notify, never send | owner |
 | D17 | Live consume test: **not run** — owner stopped it on 2026-10-29 14:54 before it executed (both credits untouched). Consume stays verified only against the schema + FakeAppServer until the owner decides otherwise | owner |
 | D18 | If Spike S2 can't separate tabs, v0.1.0 auto-continues only with exactly one Codex tab; several → notify + manual list | owner |
 | D19 | Owner picks which Terminal tabs are guarded (opt-in, multi-select); default none; optional "guard new Codex tabs automatically" (off) | owner |
-| D20 | Never type when a Codex selection screen/prompt is open in the tab | builder |
+| D20 | Never send when a Codex selection screen/prompt is open in the tab | builder |
 | D21 | Privacy: local only, no analytics, conversation text never stored by the app | builder |
 | D22 | cybokron.com landing page EN+TR after the app ships (P1.5); other languages later (P6) | owner |
 | D23 | First-run legal notice (independent tool, platform may restrict/suspend the account, as-is/MIT, own risk); must be accepted before any automatic action; re-shown on text change | owner |
@@ -508,4 +524,8 @@ Our differentiators: auto-continue + credit management + loop guards in one nati
 | D27 | Continue keeps the thread's model/effort/approval/sandbox — no overrides | owner |
 | D28 | Burn-rate forecast for 5-hour and weekly windows | owner |
 | D29 | "Limit is back" notification | owner |
-| D30 | Spike S5: deliver via app-server `turn/start`; if it works it is the primary path, typing is fallback | owner |
+| D30 | ~~Spike S5: deliver via app-server `turn/start`; if it works it is the primary path, typing is fallback~~ Superseded by D31 | owner |
+| D31 | Phase 1 delivery is app-server only (WebSocket over `codex app-server proxy`); no keystroke typing, no Automation/Accessibility permission; daemon unreachable → notify "continue by hand". Typing fallback moved to Phase 2 | owner |
+| D32 | Auto-spend guard: max one automatic spend per account every 7 days; `AutoSpendMarker {accountId, spentAt}` written before consume (auto only), kept on any outcome (replaces the `resetsAt`-keyed marker) | builder |
+| D33 | No "LG" letters anywhere (confusable with the LG brand): menu-bar item is a gauge SF Symbol, app icon is a shield + gauge needle | owner |
+| D34 | Subagent threads (`threads.source` contains "subagent") are excluded from scanning; a parent's continue resumes them | builder |
