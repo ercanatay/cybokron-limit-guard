@@ -1,0 +1,12 @@
+/*
+  Localizable.strings (Türkçe)
+  Cybokron Limit Guard
+
+  Anahtarlar en.lproj ile birebir aynıdır; yer tutucular (%@, %ld, %1$@ …) korunur.
+*/
+
+/* App */
+"app.name" = "Cybokron Limit Guard";
+
+/* Menu */
+"menu.quit" = "%@ Uygulamasından Çık";

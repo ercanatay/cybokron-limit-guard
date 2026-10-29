@@ -1,0 +1,649 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1BA88C675794529F6B2833D1 /* CybokronLimitGuardApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C588758D3C1F8A25EED039CF /* CybokronLimitGuardApp.swift */; };
+		255E6C26122B4F50F792E982 /* TestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 416127CEA9CE887B64367BC9 /* TestSupport.swift */; };
+		5536156CFC6183F37ED3B542 /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C2481B9587399CE3E3E73AE /* Localization.swift */; };
+		5826BAE45E8D6A349B1F1344 /* LocalizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAAD0ABED822F52203247300 /* LocalizationTests.swift */; };
+		617088F8CF7E50C52A67BC30 /* libLimitGuardCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 763F3F23B0DB9A1DB5D84D9E /* libLimitGuardCore.a */; };
+		9122A9C6056C3147B55A1CC1 /* L10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C695B608468F86F5628EB5A /* L10n.swift */; };
+		A18E90D321E13DB5923661D0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12C6F8197E931DBEAC9A5B26 /* AppDelegate.swift */; };
+		A75D2A42D60D4F3838E1850A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 72DCB1169C5C4EE0BAB9F429 /* Assets.xcassets */; };
+		CB7A2669630D592407214029 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 901D6C70D1E0EFF47614FEDE /* Localizable.strings */; };
+		FD129963DAC5678D923BC709 /* libLimitGuardCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 763F3F23B0DB9A1DB5D84D9E /* libLimitGuardCore.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		0234BED4A52CC0C282E33C60 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 07B9FD18CD81775CD0BC84F9 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 24D7CCE10BF09145E4E129CA;
+			remoteInfo = LimitGuardCore;
+		};
+		34F5C56F41A9E977D730F38F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 07B9FD18CD81775CD0BC84F9 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 24D7CCE10BF09145E4E129CA;
+			remoteInfo = LimitGuardCore;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		12C6F8197E931DBEAC9A5B26 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		19BC1237BC32CCEBF96B96A6 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		22228E374B890A393D526F36 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		2C695B608468F86F5628EB5A /* L10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10n.swift; sourceTree = "<group>"; };
+		416127CEA9CE887B64367BC9 /* TestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestSupport.swift; sourceTree = "<group>"; };
+		5C2481B9587399CE3E3E73AE /* Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localization.swift; sourceTree = "<group>"; };
+		72DCB1169C5C4EE0BAB9F429 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		763F3F23B0DB9A1DB5D84D9E /* libLimitGuardCore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libLimitGuardCore.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		883BF5688705D019C75536C1 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/Localizable.strings; sourceTree = "<group>"; };
+		B032CFD6A7C44629BED8C436 /* CybokronLimitGuard.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CybokronLimitGuard.entitlements; sourceTree = "<group>"; };
+		C435407CB01BB34FA88F7772 /* CybokronLimitGuard.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CybokronLimitGuard.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C588758D3C1F8A25EED039CF /* CybokronLimitGuardApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CybokronLimitGuardApp.swift; sourceTree = "<group>"; };
+		DD8F040A84CFBBD3D5273546 /* LimitGuardCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LimitGuardCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FAAD0ABED822F52203247300 /* LocalizationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationTests.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		9AEFE0240371CFE27ACB11AB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				617088F8CF7E50C52A67BC30 /* libLimitGuardCore.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DB8879AB151267AB08BC333B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FD129963DAC5678D923BC709 /* libLimitGuardCore.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		2E8991D700431BECE11EC0A6 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				F242A119857919D91B9C9FB9 /* LimitGuardCoreTests */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		47687FBDD03407F0D66C98F0 = {
+			isa = PBXGroup;
+			children = (
+				493F2EF4BBD406FBC40DC698 /* Resources */,
+				B619803B03CDE292D1C75AAA /* Sources */,
+				2E8991D700431BECE11EC0A6 /* Tests */,
+				84AD14D01CF098CB498E840A /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		493F2EF4BBD406FBC40DC698 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				901D6C70D1E0EFF47614FEDE /* Localizable.strings */,
+				72DCB1169C5C4EE0BAB9F429 /* Assets.xcassets */,
+				B032CFD6A7C44629BED8C436 /* CybokronLimitGuard.entitlements */,
+				22228E374B890A393D526F36 /* Info.plist */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		4C7D3FFF9A04993B4120AFF2 /* LimitGuardCore */ = {
+			isa = PBXGroup;
+			children = (
+				808598DFE8C498F33198843A /* Localization */,
+			);
+			path = LimitGuardCore;
+			sourceTree = "<group>";
+		};
+		808598DFE8C498F33198843A /* Localization */ = {
+			isa = PBXGroup;
+			children = (
+				5C2481B9587399CE3E3E73AE /* Localization.swift */,
+			);
+			path = Localization;
+			sourceTree = "<group>";
+		};
+		832D754E5F9869552865857B /* App */ = {
+			isa = PBXGroup;
+			children = (
+				12C6F8197E931DBEAC9A5B26 /* AppDelegate.swift */,
+				C588758D3C1F8A25EED039CF /* CybokronLimitGuardApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		84AD14D01CF098CB498E840A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C435407CB01BB34FA88F7772 /* CybokronLimitGuard.app */,
+				763F3F23B0DB9A1DB5D84D9E /* libLimitGuardCore.a */,
+				DD8F040A84CFBBD3D5273546 /* LimitGuardCoreTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		B619803B03CDE292D1C75AAA /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				DC892016E277DB279997A8E8 /* CybokronLimitGuard */,
+				4C7D3FFF9A04993B4120AFF2 /* LimitGuardCore */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		DC892016E277DB279997A8E8 /* CybokronLimitGuard */ = {
+			isa = PBXGroup;
+			children = (
+				832D754E5F9869552865857B /* App */,
+				E2D51FC7B153B109D5A0F22D /* Support */,
+			);
+			path = CybokronLimitGuard;
+			sourceTree = "<group>";
+		};
+		E2D51FC7B153B109D5A0F22D /* Support */ = {
+			isa = PBXGroup;
+			children = (
+				2C695B608468F86F5628EB5A /* L10n.swift */,
+			);
+			path = Support;
+			sourceTree = "<group>";
+		};
+		F242A119857919D91B9C9FB9 /* LimitGuardCoreTests */ = {
+			isa = PBXGroup;
+			children = (
+				FAAD0ABED822F52203247300 /* LocalizationTests.swift */,
+				416127CEA9CE887B64367BC9 /* TestSupport.swift */,
+			);
+			path = LimitGuardCoreTests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		24D7CCE10BF09145E4E129CA /* LimitGuardCore */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 79A7DAEC6054575E18D33E0D /* Build configuration list for PBXNativeTarget "LimitGuardCore" */;
+			buildPhases = (
+				254C48B27913C9D1124D23C7 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LimitGuardCore;
+			packageProductDependencies = (
+			);
+			productName = LimitGuardCore;
+			productReference = 763F3F23B0DB9A1DB5D84D9E /* libLimitGuardCore.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		5FE11EBD0EF8B075397A8B73 /* LimitGuardCoreTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A218FD549550B6F488E91C4E /* Build configuration list for PBXNativeTarget "LimitGuardCoreTests" */;
+			buildPhases = (
+				A0443F4789FCFC508EF86F65 /* Sources */,
+				9AEFE0240371CFE27ACB11AB /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1944CD0458B594A5934F8F61 /* PBXTargetDependency */,
+			);
+			name = LimitGuardCoreTests;
+			packageProductDependencies = (
+			);
+			productName = LimitGuardCoreTests;
+			productReference = DD8F040A84CFBBD3D5273546 /* LimitGuardCoreTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		90E07C8FF5DA62E72A106EC4 /* CybokronLimitGuard */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7F310BD67824A027BCC9C0CA /* Build configuration list for PBXNativeTarget "CybokronLimitGuard" */;
+			buildPhases = (
+				9EE975E2A3FB28D940F32A62 /* Sources */,
+				F37C866B970E0735D9B12131 /* Resources */,
+				DB8879AB151267AB08BC333B /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A24888AD52BCD7C680C01C40 /* PBXTargetDependency */,
+			);
+			name = CybokronLimitGuard;
+			packageProductDependencies = (
+			);
+			productName = CybokronLimitGuard;
+			productReference = C435407CB01BB34FA88F7772 /* CybokronLimitGuard.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		07B9FD18CD81775CD0BC84F9 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					24D7CCE10BF09145E4E129CA = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Manual;
+					};
+					5FE11EBD0EF8B075397A8B73 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Manual;
+					};
+					90E07C8FF5DA62E72A106EC4 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Manual;
+					};
+				};
+			};
+			buildConfigurationList = B9CA03A5ABB5EF13DCA432E0 /* Build configuration list for PBXProject "CybokronLimitGuard" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+				tr,
+			);
+			mainGroup = 47687FBDD03407F0D66C98F0;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 84AD14D01CF098CB498E840A /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				24D7CCE10BF09145E4E129CA /* LimitGuardCore */,
+				90E07C8FF5DA62E72A106EC4 /* CybokronLimitGuard */,
+				5FE11EBD0EF8B075397A8B73 /* LimitGuardCoreTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F37C866B970E0735D9B12131 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A75D2A42D60D4F3838E1850A /* Assets.xcassets in Resources */,
+				CB7A2669630D592407214029 /* Localizable.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		254C48B27913C9D1124D23C7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5536156CFC6183F37ED3B542 /* Localization.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9EE975E2A3FB28D940F32A62 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A18E90D321E13DB5923661D0 /* AppDelegate.swift in Sources */,
+				1BA88C675794529F6B2833D1 /* CybokronLimitGuardApp.swift in Sources */,
+				9122A9C6056C3147B55A1CC1 /* L10n.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A0443F4789FCFC508EF86F65 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5826BAE45E8D6A349B1F1344 /* LocalizationTests.swift in Sources */,
+				255E6C26122B4F50F792E982 /* TestSupport.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		1944CD0458B594A5934F8F61 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 24D7CCE10BF09145E4E129CA /* LimitGuardCore */;
+			targetProxy = 34F5C56F41A9E977D730F38F /* PBXContainerItemProxy */;
+		};
+		A24888AD52BCD7C680C01C40 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 24D7CCE10BF09145E4E129CA /* LimitGuardCore */;
+			targetProxy = 0234BED4A52CC0C282E33C60 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		901D6C70D1E0EFF47614FEDE /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				19BC1237BC32CCEBF96B96A6 /* en */,
+				883BF5688705D019C75536C1 /* tr */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		2758CFAC4E53050D2579DA36 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.cybokron.limitguard.core-tests";
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		49362967C6FDF7BA85F9926D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 100;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		7DA0F3146E9BA5759A321BE9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 100;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		83DFD8728469FB9CF610A2FC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Resources/CybokronLimitGuard.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_DEBUG_DYLIB = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.cybokron.limitguard;
+				PRODUCT_MODULE_NAME = CybokronLimitGuard;
+				PRODUCT_NAME = "Cybokron Limit Guard";
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		B08E7DA1DD873C0496924FD6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.cybokron.limitguard.core-tests";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		B4AA03415FFE38188201DF21 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				OTHER_LDFLAGS = "-lsqlite3";
+				PRODUCT_BUNDLE_IDENTIFIER = com.cybokron.LimitGuardCore;
+				PRODUCT_NAME = LimitGuardCore;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_INSTALL_OBJC_HEADER = NO;
+			};
+			name = Debug;
+		};
+		CC05DB1130ABD1A4187621C0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Resources/CybokronLimitGuard.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_DEBUG_DYLIB = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.cybokron.limitguard;
+				PRODUCT_MODULE_NAME = CybokronLimitGuard;
+				PRODUCT_NAME = "Cybokron Limit Guard";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		EF1280D83D66AF38BCDC8F71 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				OTHER_LDFLAGS = "-lsqlite3";
+				PRODUCT_BUNDLE_IDENTIFIER = com.cybokron.LimitGuardCore;
+				PRODUCT_NAME = LimitGuardCore;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_INSTALL_OBJC_HEADER = NO;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		79A7DAEC6054575E18D33E0D /* Build configuration list for PBXNativeTarget "LimitGuardCore" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B4AA03415FFE38188201DF21 /* Debug */,
+				EF1280D83D66AF38BCDC8F71 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		7F310BD67824A027BCC9C0CA /* Build configuration list for PBXNativeTarget "CybokronLimitGuard" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CC05DB1130ABD1A4187621C0 /* Debug */,
+				83DFD8728469FB9CF610A2FC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		A218FD549550B6F488E91C4E /* Build configuration list for PBXNativeTarget "LimitGuardCoreTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B08E7DA1DD873C0496924FD6 /* Debug */,
+				2758CFAC4E53050D2579DA36 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		B9CA03A5ABB5EF13DCA432E0 /* Build configuration list for PBXProject "CybokronLimitGuard" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7DA0F3146E9BA5759A321BE9 /* Debug */,
+				49362967C6FDF7BA85F9926D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 07B9FD18CD81775CD0BC84F9 /* Project object */;
+}

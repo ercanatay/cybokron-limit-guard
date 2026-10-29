@@ -1,0 +1,17 @@
+/*
+  Localizable.strings (English)
+  Cybokron Limit Guard
+
+  The English text of every key. Translations go in Resources/<language>.lproj/Localizable.strings
+  with exactly the same keys. Keep the placeholders: %@ is text, %ld a number, and %1$@, %2$ld …
+  are numbered so a translation can put them in another order. Keys ending in .one/.other are
+  the singular (count 1) and the plural text of a count. The app name "Cybokron Limit Guard",
+  "Codex", "Terminal", key symbols (⌘ ⌥ ⇧ ⌃ ↩ ⌫ esc) and file names stay as they are.
+  The texts are also in Sources (L10n.swift); LocalizationTests keep them equal.
+*/
+
+/* App */
+"app.name" = "Cybokron Limit Guard";
+
+/* Menu */
+"menu.quit" = "Quit %@";
