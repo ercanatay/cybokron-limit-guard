@@ -102,6 +102,8 @@ public final class Engine: ObservableObject {
     private var stateUnusable = false
     private var settings = Settings()
     private var bootstrapped = false
+    /// Guards without a pid were dropped from the loaded state; the file still has them.
+    private var legacyTabsDropped = false
     /// A spend ended with an unknown result: no automatic spend until relaunch.
     private var autoSpendBlocked = false
     private var lastGate: Bool?
@@ -143,7 +145,13 @@ public final class Engine: ObservableObject {
             service: dependencies.account, ledger: ledger, now: { clock.now },
             sleeper: dependencies.resetSleeper, log: { Self.logger.notice("\($0, privacy: .public)") })
         do {
-            state = try stateStore.load() ?? AppState()
+            let loaded = try stateStore.load() ?? AppState()
+            state = loaded
+            // Guards from before they were bound to the Codex process can't be told apart from a new
+            // tab on the same tty: they are dropped (saved at bootstrap).
+            state.guardedTabs.removeAll { $0.ref.pid == nil }
+            state.untickedTabs.removeAll { $0.pid == nil }
+            legacyTabsDropped = state != loaded
         } catch {
             Self.logger.error("state.json unusable: \(String(describing: error), privacy: .public)")
             stateUnusable = true
@@ -290,6 +298,10 @@ public final class Engine: ObservableObject {
         } catch {
             Self.logger.error("reset ledger not expired: \(String(describing: error), privacy: .public)")
         }
+        // Guards whose Codex process is gone (quit, reboot, update) never carry over to a new tab.
+        var next = state
+        if let listed = await dependencies.environment.terminalTabs() { next = pruned(next, present: listed) }
+        if next != state || legacyTabsDropped, !save(next) { state = next }
         let pending = try? await ledger.pending()
         if let result = await executor.resumePending() {
             await handleSpend(result, creditId: pending?.creditId ?? "?", reason: pending?.reason ?? .auto)
@@ -566,11 +578,7 @@ public final class Engine: ObservableObject {
         }
         // A failed listing keeps the last known tabs: nothing is pruned or auto-guarded on it.
         if let listed {
-            let present = Set(listed.map(\.ref))
-            var next = state
-            // A closed tab drops out, so a later tab on the same tty is not guarded by accident.
-            next.guardedTabs.removeAll { !present.contains($0.ref) }
-            next.untickedTabs.removeAll { !present.contains($0) }
+            var next = pruned(state, present: listed)
             if settings.guardNewTabsAutomatically {
                 for tab in listed where !next.guardedTabs.contains(where: { $0.ref == tab.ref }) && !next.untickedTabs.contains(tab.ref) {
                     next.guardedTabs.append(GuardedTab(ref: tab.ref, addedAt: now))
@@ -583,6 +591,16 @@ public final class Engine: ObservableObject {
         // All Codex tabs take part, so same-folder duplicates are seen; guarding filters afterwards.
         mapping = loadedCwds.map { TabMatcher.match(tabs: all, threads: waitingSessions(), loadedThreadCwds: $0) } ?? [:]
         publishTabs()
+    }
+
+    /// Drops guards and unticks whose Codex process is no longer listed. A ref includes the pid and the
+    /// start time, so a closed tab, or another process on the same tty, never inherits a guard.
+    private func pruned(_ current: AppState, present listed: [TerminalTab]) -> AppState {
+        let present = Set(listed.map(\.ref))
+        var next = current
+        next.guardedTabs.removeAll { !present.contains($0.ref) }
+        next.untickedTabs.removeAll { !present.contains($0) }
+        return next
     }
 
     private func isGuarded(_ tab: TabRef) -> Bool {

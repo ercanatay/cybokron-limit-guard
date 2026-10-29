@@ -1,14 +1,22 @@
 import Foundation
 
+/// A tab is the Codex TUI process on a tty: `pid` and `startTime` are part of its identity, so a guard
+/// (or an untick) never carries over to another process that later gets the same tty or pid.
 public struct TabRef: Codable, Hashable, Sendable {
     public var windowId: Int
     public var tabIndex: Int
     public var tty: String
+    /// The Codex TUI's pid; nil only in files written before guards were bound to the process.
+    public var pid: Int32?
+    /// The process start time exactly as `ps -o lstart=` prints it; compared, never parsed.
+    public var startTime: String?
 
-    public init(windowId: Int, tabIndex: Int, tty: String) {
+    public init(windowId: Int, tabIndex: Int, tty: String, pid: Int32? = nil, startTime: String? = nil) {
         self.windowId = windowId
         self.tabIndex = tabIndex
         self.tty = tty
+        self.pid = pid
+        self.startTime = startTime
     }
 }
 

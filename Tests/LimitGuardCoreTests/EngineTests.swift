@@ -147,11 +147,14 @@ private func finished(_ id: String = "th1", at: Date) -> SessionState {
         lastActivityAt: at, lastTurnDurations: [300], languageSample: turkishSample, seenClientMessageIds: [])
 }
 
-private func tab(_ tty: String = tty1, cwd: String? = "/p", pid: Int32 = 100) -> TerminalTab {
-    TerminalTab(ref: TabRef(windowId: 0, tabIndex: 0, tty: tty), title: "p", cwd: cwd, codexPid: pid, busy: false)
+private func tab(_ tty: String = tty1, cwd: String? = "/p", pid: Int32 = 100, started: String? = nil) -> TerminalTab {
+    TerminalTab(ref: ref(tty, pid: pid, started: started), title: "p", cwd: cwd, codexPid: pid, busy: false)
 }
 
-private func ref(_ tty: String = tty1) -> TabRef { TabRef(windowId: 0, tabIndex: 0, tty: tty) }
+/// The tab's identity: tty, Codex pid and that process's start time.
+private func ref(_ tty: String = tty1, pid: Int32 = 100, started: String? = nil) -> TabRef {
+    TabRef(windowId: 0, tabIndex: 0, tty: tty, pid: pid, startTime: started ?? "start-\(pid)")
+}
 
 /// One Engine with fakes for codex (reads + consume), the shared daemon (delivery), the sessions
 /// and the system, over a temporary data directory.
@@ -538,7 +541,7 @@ struct EngineTests {
         h.env.tabs.value = [tab(tty1, pid: 100), tab(tty2, pid: 200)]
         h.loaded(["th1", "th2"])
         h.engine.setGuarded(ref(tty1), true)
-        h.engine.setGuarded(ref(tty2), true)
+        h.engine.setGuarded(ref(tty2, pid: 200), true)
         h.limits(limitsJSON(allowed: true, five: 0))
         await h.engine.tick()
         await h.run(for: 600)
@@ -781,7 +784,7 @@ struct EngineTests {
         #expect(try h.storedState().untickedTabs.isEmpty)
         h.env.tabs.value = [tab(pid: 300)]
         await h.run(for: 30)
-        #expect(try h.storedState().guardedTabs.map(\.ref) == [ref()])
+        #expect(try h.storedState().guardedTabs.map(\.ref) == [ref(pid: 300)])
     }
 
     @Test func expiryReminderOncePerCredit() async throws {
@@ -858,6 +861,85 @@ struct EngineTests {
         h.env.tabs.value = []
         await h.run(for: 30)
         #expect(try h.storedState().guardedTabs.isEmpty)
+    }
+
+    // MARK: Guards across a relaunch (bound to the Codex process)
+
+    /// A Harness whose `state.json` already holds a guard (and untick) from an earlier run.
+    private func relaunched(guarded: [TabRef], unticked: [TabRef] = []) throws -> Harness {
+        try Harness { dir in
+            var state = AppState()
+            state.guardedTabs = guarded.map { GuardedTab(ref: $0, addedAt: t0.addingTimeInterval(-86_400)) }
+            state.untickedTabs = unticked
+            try JSONStore<AppState>(url: dir.appending(path: "state.json"), schemaVersion: 1).save(state)
+        }
+    }
+
+    private func waitAndAllow(_ h: Harness, tabs: [TerminalTab]) async {
+        h.sessions.current.value = [waiting()]
+        h.env.tabs.value = tabs
+        h.loaded(["th1"])
+        h.limits(limitsJSON(allowed: true, five: 0))
+        await h.engine.tick()
+        await h.run(for: 300, step: 10)
+    }
+
+    @Test func relaunchWithAnotherProcessOnTheSameTtyIsNotGuarded() async throws {
+        let h = try relaunched(guarded: [ref(pid: 100)])
+        await waitAndAllow(h, tabs: [tab(pid: 200)])
+        #expect(h.turnStarts().isEmpty)
+        #expect(h.engine.tabs.map(\.isGuarded) == [false])
+        #expect(try h.storedState().guardedTabs.isEmpty)
+    }
+
+    @Test func reusedPidWithAnotherStartTimeIsNotGuarded() async throws {
+        let h = try relaunched(guarded: [ref(pid: 100, started: "Mon Oct 27 09:00:00 2026")])
+        await waitAndAllow(h, tabs: [tab(pid: 100, started: "Wed Oct 29 10:00:00 2026")])
+        #expect(h.turnStarts().isEmpty)
+        #expect(h.engine.tabs.map(\.isGuarded) == [false])
+        #expect(try h.storedState().guardedTabs.isEmpty)
+    }
+
+    @Test func relaunchWithTheSameProcessKeepsTheGuard() async throws {
+        let h = try relaunched(guarded: [ref()])
+        await waitAndAllow(h, tabs: [tab()])
+        #expect(h.turnStarts().count == 1)
+        #expect(h.engine.tabs.map(\.isGuarded) == [true])
+        #expect(try h.storedState().guardedTabs.map(\.ref) == [ref()])
+    }
+
+    @Test func untickDoesNotCarryOverToAnotherProcess() async throws {
+        let h = try relaunched(guarded: [], unticked: [ref(pid: 100)])
+        h.settings.value = acceptedSettings { $0.guardNewTabsAutomatically = true }
+        await waitAndAllow(h, tabs: [tab(pid: 200)])
+        #expect(try h.storedState().untickedTabs.isEmpty)
+        #expect(try h.storedState().guardedTabs.map(\.ref) == [ref(pid: 200)])
+    }
+
+    @Test func legacyGuardWithoutPidIsDropped() async throws {
+        let legacy = TabRef(windowId: 0, tabIndex: 0, tty: tty1)
+        let h = try relaunched(guarded: [legacy], unticked: [legacy])
+        h.env.tabs.value = []
+        await h.engine.bootstrap()
+        #expect(try h.storedState().guardedTabs.isEmpty)
+        #expect(try h.storedState().untickedTabs.isEmpty)
+        await waitAndAllow(h, tabs: [tab()])
+        #expect(h.turnStarts().isEmpty)
+        #expect(h.engine.tabs.map(\.isGuarded) == [false])
+    }
+
+    @Test func guardOfAProcessGoneAtLaunchIsDropped() async throws {
+        let h = try relaunched(guarded: [ref()])
+        h.env.tabs.value = []
+        await h.engine.bootstrap()
+        #expect(try h.storedState().guardedTabs.isEmpty)
+    }
+
+    @Test func failedListingAtLaunchKeepsTheGuard() async throws {
+        let h = try relaunched(guarded: [ref()])
+        h.env.tabs.value = nil
+        await h.engine.bootstrap()
+        #expect(try h.storedState().guardedTabs.map(\.ref) == [ref()])
     }
 }
 

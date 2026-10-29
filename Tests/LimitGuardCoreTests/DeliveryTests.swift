@@ -251,15 +251,36 @@ struct CodexProcessListerTests {
     @Test func buildsTabsFromProcessesAndTheirCwd() async {
         let tools = ScriptedTools(outputs: [
             "/bin/ps -axo pid=,tty=,comm=": Self.psOutput,
+            "/bin/ps -o pid=,lstart= -p 8963,94848": " 8963 Wed Oct 29 10:00:01 2026\n94848 Çar 29 Eki 11:30:00 2026",
             "/usr/sbin/lsof -a -p 8963 -d cwd -Fn": "p8963\nfcwd\nn/Users/me/limit-guard",
         ])
         let tabs = await CodexProcessLister(tools: tools).tabs()
         #expect(tabs == [
-            TerminalTab(ref: TabRef(windowId: 0, tabIndex: 0, tty: "/dev/ttys003"), title: "limit-guard",
-                        cwd: "/Users/me/limit-guard", codexPid: 8963, busy: false),
-            TerminalTab(ref: TabRef(windowId: 0, tabIndex: 0, tty: "/dev/ttys009"), title: "ttys009",
-                        cwd: nil, codexPid: 94848, busy: false),
+            TerminalTab(ref: TabRef(windowId: 0, tabIndex: 0, tty: "/dev/ttys003", pid: 8963, startTime: "Wed Oct 29 10:00:01 2026"),
+                        title: "limit-guard", cwd: "/Users/me/limit-guard", codexPid: 8963, busy: false),
+            TerminalTab(ref: TabRef(windowId: 0, tabIndex: 0, tty: "/dev/ttys009", pid: 94848, startTime: "Çar 29 Eki 11:30:00 2026"),
+                        title: "ttys009", cwd: nil, codexPid: 94848, busy: false),
         ])
+    }
+
+    @Test func aProcessWithoutStartTimeIsLeftOut() async {
+        // 94848 exited between the two `ps` calls: `ps -p` exits 1 and lists only 8963.
+        let tools = ScriptedTools(outputs: [
+            "/bin/ps -axo pid=,tty=,comm=": Self.psOutput,
+            "/bin/ps -o pid=,lstart= -p 8963,94848": " 8963 Wed Oct 29 10:00:01 2026",
+        ])
+        let tabs = await CodexProcessLister(tools: tools).listTabs()
+        #expect(tabs?.map(\.ref.pid) == [8963])
+    }
+
+    @Test func aFailingStartTimeLookupFailsTheListing() async {
+        let tools = ScriptedTools(outputs: ["/bin/ps -axo pid=,tty=,comm=": Self.psOutput])
+        #expect(await CodexProcessLister(tools: tools).listTabs() == nil)
+    }
+
+    @Test func parsesStartTimesAsOpaqueText() {
+        let starts = CodexProcessLister.parseStartTimes("  499 Per 29 Eki 19:43:20 2026\n\n 12 Wed Oct 29 10:00:01 2026  \nbogus")
+        #expect(starts == [499: "Per 29 Eki 19:43:20 2026", 12: "Wed Oct 29 10:00:01 2026"])
     }
 
     @Test func aFailingPsGivesNoTabs() async {

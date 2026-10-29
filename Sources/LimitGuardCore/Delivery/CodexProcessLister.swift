@@ -31,15 +31,19 @@ public struct CodexProcessLister: Sendable {
     }
 
     /// `tabs()`, but nil when `ps` failed, so a caller can tell "no Codex tabs" from "couldn't list".
+    /// A process whose start time can't be read (it just exited) is left out.
     public func listTabs() async -> [TerminalTab]? {
         guard let processes = await listProcesses() else { return nil }
+        let starts = processes.isEmpty ? [:] : await startTimes(of: processes.map(\.pid))
+        guard let starts else { return nil }
         var tabs: [TerminalTab] = []
         for process in processes {
+            guard let startTime = starts[process.pid] else { continue }
             let cwd = await cwd(of: process.pid)
             let title = cwd.map { ($0 as NSString).lastPathComponent }
                 ?? (process.tty as NSString).lastPathComponent
             tabs.append(TerminalTab(
-                ref: TabRef(windowId: 0, tabIndex: 0, tty: process.tty),
+                ref: TabRef(windowId: 0, tabIndex: 0, tty: process.tty, pid: process.pid, startTime: startTime),
                 title: title, cwd: cwd, codexPid: process.pid, busy: false))
         }
         return tabs
@@ -55,6 +59,16 @@ public struct CodexProcessLister: Sendable {
             return nil
         }
         return Self.parseProcessList(result.output)
+    }
+
+    /// pid → start time (`ps -o lstart=`); nil when `ps` failed.
+    public func startTimes(of pids: [Int32]) async -> [Int32: String]? {
+        let list = pids.map(String.init).joined(separator: ",")
+        guard let result = try? await tools.run(Self.ps, arguments: ["-o", "pid=,lstart=", "-p", list]) else { return nil }
+        let starts = Self.parseStartTimes(result.output)
+        // `ps -p` exits 1 when one of the processes is gone; the lines of the others are still valid.
+        // A failure without any line counts as a failed listing, so no guard is pruned on it.
+        return result.succeeded || !starts.isEmpty ? starts : nil
     }
 
     public func cwd(of pid: Int32) async -> String? {
@@ -80,6 +94,19 @@ public struct CodexProcessLister: Sendable {
             byTty[device] = CodexProcess(pid: pid, tty: device, executable: command)
         }
         return byTty.values.sorted { $0.tty < $1.tty }
+    }
+
+    /// `ps -o pid=,lstart=` output → pid → the rest of the line, trimmed. The text depends on the
+    /// locale, so it is only ever compared with itself.
+    public static func parseStartTimes(_ text: String) -> [Int32: String] {
+        var starts: [Int32: String] = [:]
+        for line in text.split(whereSeparator: \.isNewline) {
+            let fields = line.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
+            guard fields.count == 2, let pid = Int32(fields[0]) else { continue }
+            let start = fields[1].trimmingCharacters(in: .whitespaces)
+            if !start.isEmpty { starts[pid] = start }
+        }
+        return starts
     }
 
     /// `lsof -a -p <pid> -d cwd -Fn` output → the `n` line of the `fcwd` file.
