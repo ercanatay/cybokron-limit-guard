@@ -44,4 +44,17 @@ public enum DowngradeProtection {
         try makePreDowngradeCopies(in: directory, timestamp: timestamp(now))
         return true
     }
+
+    /// Runs `replace` only after the copies of `preserveCopies` are in place: when they fail, the
+    /// error is thrown and `replace` never runs, so nothing is installed.
+    public static func replacing<T>(
+        in directory: URL = DowngradeProtection.dataDirectory,
+        installing target: SemanticVersion,
+        over current: SemanticVersion?,
+        now: Date = Date(),
+        replace: () async throws -> T
+    ) async throws -> T {
+        try preserveCopies(in: directory, installing: target, over: current, now: now)
+        return try await replace()
+    }
 }

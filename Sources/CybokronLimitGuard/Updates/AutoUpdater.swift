@@ -336,6 +336,7 @@ final class AutoUpdater: ObservableObject {
         let progress: @Sendable (Double) -> Void = { [weak self] fraction in
             Task { @MainActor in self?.downloadProgressed(fraction) }
         }
+        let currentVersion = self.currentVersion
         Task { @MainActor [weak self, installer, isDryRun] in
             do {
                 let diskImage = try await installer.download(asset, progress: progress)
@@ -360,20 +361,19 @@ final class AutoUpdater: ObservableObject {
                     expectedTeamIdentifier: runningTeam
                 )
                 // Going back to an older version: a copy of the data files first, which that version
-                // may not understand. Without the copies, nothing is installed.
-                if let self {
-                    if try DowngradeProtection.preserveCopies(installing: release.version, over: self.currentVersion) {
-                        self.logger.notice("Copied the data files before installing \(release.version, privacy: .public)")
-                    }
+                // may not understand. Without the copies, nothing is installed. The current version
+                // is captured up front, so the copy step never depends on `self` being alive.
+                let backup: URL? = try await DowngradeProtection.replacing(installing: release.version, over: currentVersion) {
+                    if isDryRun { return nil }
+                    return try await Task.detached {
+                        try installer.replace(installedApp: appURL, with: staged)
+                    }.value
                 }
-                if isDryRun {
+                guard let backup else {
                     self?.logger.notice("Dry run: staged \(staged.path, privacy: .public); nothing replaced")
                     self?.status = .stagedForDryRun(release, path: staged.path)
                     return
                 }
-                let backup = try await Task.detached {
-                    try installer.replace(installedApp: appURL, with: staged)
-                }.value
                 self?.logger.notice("Installed \(release.version, privacy: .public); previous version at \(backup.path, privacy: .public)")
                 self?.updateSkippedVersions(afterInstalling: release)
                 self?.status = .restarting(release)

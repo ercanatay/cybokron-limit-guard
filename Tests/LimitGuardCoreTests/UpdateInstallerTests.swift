@@ -521,4 +521,52 @@ struct PreDowngradeCopyTests {
         #expect(try String(contentsOf: copy, encoding: .utf8).contains(#""a": 2"#))
         #expect(try FileManager.default.contentsOfDirectory(atPath: temporary.url.path).count == 2)
     }
+
+    /// A copy target that can't be replaced (a non-empty directory where the copy goes).
+    private func blockedFolder() throws -> (TemporaryDirectory, now: Date) {
+        let temporary = try TemporaryDirectory()
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        try Data(#"{"schemaVersion": 1}"#.utf8).write(to: temporary.url.appending(path: "settings.json"))
+        let blocker = temporary.url.appending(path: "settings.pre-downgrade-\(DowngradeProtection.timestamp(now)).json", directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: blocker.appending(path: "inner"), withIntermediateDirectories: true)
+        try FileManager.default.setAttributes([.posixPermissions: 0o555], ofItemAtPath: blocker.path)
+        return (temporary, now)
+    }
+
+    private func unblock(_ temporary: TemporaryDirectory) {
+        let blocker = (try? FileManager.default.contentsOfDirectory(at: temporary.url, includingPropertiesForKeys: nil)) ?? []
+        for url in blocker { try? FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: url.path) }
+        temporary.remove()
+    }
+
+    @Test func aFailingCopyThrows() throws {
+        let (temporary, now) = try blockedFolder()
+        defer { unblock(temporary) }
+        #expect(throws: (any Error).self) {
+            try DowngradeProtection.preserveCopies(in: temporary.url, installing: Self.version("0.1.0"), over: Self.version("0.2.0"), now: now)
+        }
+    }
+
+    @Test func aFailingCopyPreventsTheReplace() async throws {
+        let (temporary, now) = try blockedFolder()
+        defer { unblock(temporary) }
+        var replaced = false
+        await #expect(throws: (any Error).self) {
+            try await DowngradeProtection.replacing(in: temporary.url, installing: Self.version("0.1.0"), over: Self.version("0.2.0"), now: now) {
+                replaced = true
+            }
+        }
+        #expect(!replaced)
+    }
+
+    @Test func replaceRunsAfterTheCopies() async throws {
+        let temporary = try TemporaryDirectory()
+        defer { temporary.remove() }
+        try Data(#"{"schemaVersion": 1}"#.utf8).write(to: temporary.url.appending(path: "settings.json"))
+        var copiesExistedAtReplace = false
+        try await DowngradeProtection.replacing(in: temporary.url, installing: Self.version("0.1.0"), over: Self.version("0.2.0")) {
+            copiesExistedAtReplace = ((try? FileManager.default.contentsOfDirectory(atPath: temporary.url.path)) ?? []).count == 2
+        }
+        #expect(copiesExistedAtReplace)
+    }
 }
