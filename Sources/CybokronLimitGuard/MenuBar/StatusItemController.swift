@@ -118,6 +118,9 @@ final class StatusItemController: NSObject, NSPopoverDelegate {
     private let settingsStatus: () -> SettingsFileStatus
     /// "Show percentage in menu bar", read again only when the settings change.
     private var showPercent: Bool
+    #if DEBUG
+    private var screenshotAnchor: NSWindow?
+    #endif
 
     init(
         actions: PopoverActions, notifier: Notifier, loadSettings: @escaping () -> LimitGuardCore.Settings,
@@ -266,4 +269,33 @@ final class StatusItemController: NSObject, NSPopoverDelegate {
     func close() {
         popover.performClose(nil)
     }
+
+    #if DEBUG
+    /// `ScreenshotMode`: the popover in the given appearance, kept open whatever has focus. It hangs
+    /// from a 1-point window under the top of the screen: the menu bar may have no room for the item.
+    func showForScreenshot(dark: Bool) -> NSWindow? {
+        guard let screen = NSScreen.main?.visibleFrame else { return nil }
+        let anchor = NSWindow(
+            contentRect: NSRect(x: screen.midX, y: screen.maxY - 1, width: 1, height: 1),
+            styleMask: .borderless, backing: .buffered, defer: false)
+        anchor.isOpaque = false
+        anchor.backgroundColor = .clear
+        anchor.isReleasedWhenClosed = false
+        anchor.orderFrontRegardless()
+        screenshotAnchor = anchor
+        guard let anchorView = anchor.contentView else { return nil }
+
+        popover.behavior = .applicationDefined
+        popover.appearance = NSAppearance(named: dark ? .darkAqua : .aqua)
+        model.setSettingsUnreadable(settingsStatus() == .unreadable)
+        model.setAutoContinue(loadSettings().autoContinue)
+        if let view = popover.contentViewController?.view {
+            view.layoutSubtreeIfNeeded()
+            popover.contentSize = view.fittingSize
+        }
+        NSApp.activate(ignoringOtherApps: true)
+        popover.show(relativeTo: anchorView.bounds, of: anchorView, preferredEdge: .minY)
+        return popover.contentViewController?.view.window
+    }
+    #endif
 }

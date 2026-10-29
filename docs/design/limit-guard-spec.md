@@ -256,7 +256,7 @@ never continued.
 default. The popover has a **Guarded tabs** section listing every open Terminal tab that runs a
 Codex TUI (window/tab title, working directory, tty, short thread title when known) with a
 checkbox each; several can be ticked. Auto-continue only ever sends to the conversation of a
-ticked tab; an unticked tab that stops on the limit is shown as "waiting (not guarded)" with a
+ticked tab; an unticked tab that stops on the limit is shown as "Waiting (not guarded)" with a
 one-click **Continue now** button. The choice is kept per tab for as long as the tab lives. A tab
 is the Codex TUI process on a tty: tty + Codex pid + that process's start time (`ps -o lstart=`).
 A closed tab drops out, and a new Codex process on the same tty (after a quit, reboot or update

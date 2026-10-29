@@ -84,7 +84,8 @@ public enum CreditPresentation {
     private static let formatterLock = NSLock()
     nonisolated(unsafe) private static var formatters: [String: DateFormatter] = [:]
 
-    /// One formatter per locale and time zone. `DateFormatter` is thread-safe for formatting; the
+    /// One formatter per locale and time zone. The `j` template follows the locale's 12/24-hour clock,
+    /// as the popover's other times do. `DateFormatter` is thread-safe for formatting; the
     /// lock guards the cache.
     static func expiryFormatter(locale: Locale, timeZone: TimeZone) -> DateFormatter {
         let key = "\(locale.identifier)|\(timeZone.identifier)"
@@ -93,7 +94,7 @@ public enum CreditPresentation {
             let formatter = DateFormatter()
             formatter.locale = locale
             formatter.timeZone = timeZone
-            formatter.setLocalizedDateFormatFromTemplate("dMMMHHmm")
+            formatter.setLocalizedDateFormatFromTemplate("dMMMjmm")
             formatters[key] = formatter
             return formatter
         }

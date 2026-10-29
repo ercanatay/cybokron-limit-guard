@@ -8,7 +8,33 @@ before the weekly limit runs out.
 
 ## Screenshots
 
-Screenshots will be added here (`docs/screenshots/`) before the first release.
+<p align="center">
+  <img src="docs/screenshots/popover-light.png" alt="The menu bar popover in light mode: 5-hour and weekly limits, the next continue counting down, two reset credits and two Codex sessions" width="380">
+  &nbsp;
+  <img src="docs/screenshots/popover-dark.png" alt="The same popover in dark mode" width="380">
+</p>
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/settings-resets-light.png" alt="Settings, Resets: automatic reset spending and expiry reminders"></td>
+    <td width="50%"><img src="docs/screenshots/activity-light.png" alt="The Activity window: limit, continue and reset credit events"></td>
+  </tr>
+  <tr>
+    <td align="center">Settings → Resets</td>
+    <td align="center">Activity</td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/chart-light.png" alt="The Usage Chart: daily tokens for 30 days and the 5-hour and weekly limit history"></td>
+    <td width="50%"><img src="docs/screenshots/about-light.png" alt="The About window"></td>
+  </tr>
+  <tr>
+    <td align="center">Usage chart</td>
+    <td align="center">About</td>
+  </tr>
+</table>
+
+The data in the screenshots is made up. All screenshots, in light and dark mode, are in
+[docs/screenshots](docs/screenshots/README.md).
 
 ## Features
 

@@ -451,7 +451,7 @@
 "popover.sessions.waitingGuarded" = "Waiting on the limit. Continues automatically.";
 "popover.sessions.pausedResume" = "Paused — continues after you press Resume";
 "popover.sessions.autoContinueOff" = "Auto-continue is off";
-"popover.sessions.waitingNotGuarded" = "waiting (not guarded)";
+"popover.sessions.waitingNotGuarded" = "Waiting (not guarded)";
 "popover.sessions.confirming" = "Continue sent. Waiting for Codex to confirm it.";
 "popover.sessions.unconfirmed" = "Codex didn’t confirm the continue. It isn’t sent again on its own.";
 "popover.sessions.sendAgain" = "Send again";

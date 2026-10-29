@@ -445,7 +445,7 @@
 "popover.sessions.waitingGuarded" = "Limit bekleniyor. Kendiliğinden devam edecek.";
 "popover.sessions.pausedResume" = "Duraklatıldı — Sürdür'e basınca devam eder";
 "popover.sessions.autoContinueOff" = "Otomatik devam kapalı";
-"popover.sessions.waitingNotGuarded" = "bekliyor (korunmuyor)";
+"popover.sessions.waitingNotGuarded" = "Bekliyor (korunmuyor)";
 "popover.sessions.confirming" = "Devam mesajı gönderildi. Codex'in onaylaması bekleniyor.";
 "popover.sessions.unconfirmed" = "Codex devam mesajını onaylamadı. Kendiliğinden yeniden gönderilmez.";
 "popover.sessions.sendAgain" = "Tekrar gönder";

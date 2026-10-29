@@ -91,12 +91,12 @@ private struct CreditRowView: View {
 
     @ViewBuilder private var expiry: some View {
         if let date = row.expiryText, let zone = row.timeZoneLabel {
-            HStack(spacing: 6) {
+            // The pill gets a line of its own and the date may wrap, so neither is ever cut off.
+            VStack(alignment: .leading, spacing: 4) {
                 Text(L10n.Popover.Resets.expires(date, zone))
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(palette.secondaryText)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
+                    .fixedSize(horizontal: false, vertical: true)
                 if let day = row.expiryDay {
                     Pill(text: day == .today ? L10n.Popover.Resets.expiresToday : L10n.Popover.Resets.expiresTomorrow, tint: .orange)
                 }

@@ -18,7 +18,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         load: { (try? ActivityLog(url: AppPaths.activityURL).entries()) ?? [] },
         clear: { try? ActivityLog(url: AppPaths.activityURL).clear() }
     )
-    private lazy var chartWindow = UsageChartWindowController(load: { await StoredChartFeed.load() })
+    private lazy var chartWindow = UsageChartWindowController(load: {
+        #if DEBUG
+        if ScreenshotMode.isActive { return ScreenshotMode.chartContent() }
+        #endif
+        return await StoredChartFeed.load()
+    })
     private let settingsStore = JSONStore<Settings>(url: AppPaths.settingsURL, schemaVersion: 1)
     private lazy var settingsWindow = SettingsWindowController(
         store: settingsStore,
@@ -30,6 +35,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var subscriptions = Set<AnyCancellable>()
 
     func applicationWillFinishLaunching(_ notification: Notification) {
+        #if DEBUG
+        // Runs beside an installed copy without handing anything over to it.
+        if ScreenshotMode.isActive { return }
+        #endif
         // Decided before any URL arrives, so a second copy never handles one itself.
         secondCopyHandoff = SecondCopyHandoff.toOlderRunningCopy()
     }
@@ -39,10 +48,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             if !handedOffURLs { handoff.handOff([]) }
             return
         }
+        #if DEBUG
+        let screenshot = ScreenshotMode.isActive
+        #else
+        let screenshot = false
+        #endif
         updater.showWindow = { [weak self] in self?.updateWindow.show() }
         updater.closeWindow = { [weak self] in self?.updateWindow.close() }
         updater.isWindowShown = { [weak self] in self?.updateWindow.window?.isVisible ?? false }
-        updater.start()
+        if !screenshot { updater.start() }
 
         let store = settingsStore
         let item = StatusItemController(
@@ -64,6 +78,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             .sink { [weak item] _ in item?.settingsChanged() }
             .store(in: &subscriptions)
 
+        #if DEBUG
+        if screenshot {
+            startScreenshotScene()
+            return
+        }
+        #endif
         // After launch has finished, so the modal notice doesn't hold it up.
         engineHost.onChange = { [weak self] in self?.updateEngineStatus() }
         DispatchQueue.main.async { [weak self, settingsStore] in
@@ -109,6 +129,56 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             statusItem?.show()
         }
     }
+
+    #if DEBUG
+    /// `ScreenshotMode`: the Engine on made-up data, then the scene's window.
+    private func startScreenshotScene() {
+        guard let scene = ScreenshotMode.scene, let statusItem else { return }
+        ScreenshotMode.applyAppearance()
+        let engine = ScreenshotMode.makeEngine()
+        engine.objectWillChange
+            .receive(on: DispatchQueue.main)
+            .sink { [weak statusItem, weak engine] _ in statusItem?.update(engine: engine, codexFound: true) }
+            .store(in: &subscriptions)
+        statusItem.update(engine: engine, codexFound: true)
+        engine.start()
+        DispatchQueue.main.async { [self] in
+            switch scene {
+            case .popover:
+                // Once the first tick has published the countdown and the tabs.
+                Task { @MainActor in
+                    var waited = 0
+                    while engine.nextAction == nil || engine.tabs.isEmpty, waited < 100 {
+                        try? await Task.sleep(for: .milliseconds(50))
+                        waited += 1
+                    }
+                    ScreenshotMode.showBackdrop()
+                    let window = statusItem.showForScreenshot(dark: ScreenshotMode.isDark)
+                    ScreenshotMode.announce({ window })
+                }
+            case .settingsGeneral, .settingsContinue, .settingsResets:
+                settingsWindow.show()
+                ScreenshotMode.announce({ [weak self] in self?.settingsWindow.window })
+            case .activity:
+                // After the Engine's first tick has logged its notes.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [self] in
+                    activityWindow.show()
+                    ScreenshotMode.announce({ [weak self] in self?.activityWindow.window })
+                }
+            case .chart:
+                chartWindow.show()
+                ScreenshotMode.announce({ [weak self] in self?.chartWindow.window })
+            case .about:
+                aboutWindow.show()
+                ScreenshotMode.announce({ [weak self] in self?.aboutWindow.window })
+            case .notice:
+                ScreenshotMode.showBackdrop()
+                ScreenshotMode.announce({ NSApp.modalWindow })
+                LegalNoticeWindow.runAtLaunch(store: settingsStore)
+            }
+        }
+    }
+    #endif
 
     private func updateEngineStatus() {
         statusItem?.update(engine: engineHost.engine, codexFound: engineHost.codexFound)
