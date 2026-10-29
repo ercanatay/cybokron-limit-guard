@@ -120,6 +120,8 @@ public final class Engine: ObservableObject {
     private var wantAwake = false
     private var keepAwakeOn = false
     private var notedKeys: Set<String> = []
+    /// Stops (thread|turn) that already had their extra read.
+    private var forcedReadStops: Set<String> = []
     private var unconfirmedNoted: Set<UUID> = []
     private var busy = false
     private var waiters: [CheckedContinuation<Void, Never>] = []
@@ -434,11 +436,17 @@ public final class Engine: ObservableObject {
         if changed { saveState() }
     }
 
+    /// True once per stop that is not classified yet: it gets one extra read, never a read every tick
+    /// while reads fail or stay read-only (the spec §5 cadence applies after that).
     private func hasUnrecordedStop() -> Bool {
-        sessions.contains { session in
-            guard case let .usageLimit(at, turn) = session.lastStop, !session.userActivityAfterStop else { return false }
-            return state.stops[session.threadId]?.turnId != turn && now.timeIntervalSince(at) <= ContinuePolicy.maxStopAge
+        var found = false
+        for session in sessions {
+            guard case let .usageLimit(at, turn) = session.lastStop, !session.userActivityAfterStop,
+                  state.stops[session.threadId]?.turnId != turn, now.timeIntervalSince(at) <= ContinuePolicy.maxStopAge
+            else { continue }
+            if forcedReadStops.insert("\(session.threadId)|\(turn)").inserted { found = true }
         }
+        return found
     }
 
     private func resetLoop(_ threadId: String) {

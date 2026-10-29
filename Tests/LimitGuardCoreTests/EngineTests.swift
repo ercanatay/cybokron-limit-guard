@@ -581,6 +581,31 @@ struct EngineTests {
         #expect(h.notes.contains(.runawayStopped(threadId: "th1")))
     }
 
+    @Test func unclassifiableStopKeepsTheCadence() async throws {
+        let h = try Harness()
+        h.standardWaitingSetup()
+        // No `ordinaryUsageAllowed`: read-only, so the stop can never be classified.
+        h.limits(limitsJSON(allowed: nil, five: 10, weekly: 10))
+        await h.engine.tick()
+        await h.run(for: 600)
+        let reads = h.account.requests.filter { $0.method == limitsMethod }.count
+        // Every 5 min plus the one extra read for the new stop; never one per 30 s tick.
+        #expect(reads <= 4)
+        #expect(h.turnStarts().isEmpty)
+    }
+
+    @Test func concurrentTickAndContinueNowSendOnce() async throws {
+        let h = try Harness()
+        h.standardWaitingSetup()
+        h.limits(limitsJSON(allowed: true, five: 0))
+        await h.engine.tick()
+        h.clock.advance(by: 130)
+        async let tick: Void = h.engine.tick()
+        async let manual: Void = h.engine.continueNow(threadId: "th1")
+        _ = await (tick, manual)
+        #expect(h.turnStarts().count == 1)
+    }
+
     @Test func expiryReminderOncePerCredit() async throws {
         let h = try Harness()
         h.limits(limitsJSON(allowed: true, five: 0, credits: [("c-soon", t0.addingTimeInterval(10 * 3600)), ("c-later", t0.addingTimeInterval(5 * 86_400))]))
