@@ -12,6 +12,8 @@
 		18BAC8200314D6AD9AF27A8D /* CodexLocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42EF2FD21E8FA2AE43227DFC /* CodexLocator.swift */; };
 		1BA88C675794529F6B2833D1 /* CybokronLimitGuardApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C588758D3C1F8A25EED039CF /* CybokronLimitGuardApp.swift */; };
 		255E6C26122B4F50F792E982 /* TestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 416127CEA9CE887B64367BC9 /* TestSupport.swift */; };
+		3CC27096C5DA9C7338D8DC95 /* CodexAccountService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F82F7F378F85074B43A4633 /* CodexAccountService.swift */; };
+		3D5C76D52FD2E5B7B377E671 /* CodexAccountServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0D60B70220BA0A0C16F88CB /* CodexAccountServiceTests.swift */; };
 		52FA8BFADB3C6980219B936D /* ProtocolGuard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FD67161FFC9FE7FF8BC5CE /* ProtocolGuard.swift */; };
 		5536156CFC6183F37ED3B542 /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C2481B9587399CE3E3E73AE /* Localization.swift */; };
 		5826BAE45E8D6A349B1F1344 /* LocalizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAAD0ABED822F52203247300 /* LocalizationTests.swift */; };
@@ -51,6 +53,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0F82F7F378F85074B43A4633 /* CodexAccountService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexAccountService.swift; sourceTree = "<group>"; };
 		12C6F8197E931DBEAC9A5B26 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		19BC1237BC32CCEBF96B96A6 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		1DC0DF6809DD598F647324E6 /* AccountModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountModels.swift; sourceTree = "<group>"; };
@@ -68,6 +71,7 @@
 		763F3F23B0DB9A1DB5D84D9E /* libLimitGuardCore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libLimitGuardCore.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		7C2F971ED26D8DABEAD27A4E /* AppServerClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppServerClientTests.swift; sourceTree = "<group>"; };
 		883BF5688705D019C75536C1 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A0D60B70220BA0A0C16F88CB /* CodexAccountServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexAccountServiceTests.swift; sourceTree = "<group>"; };
 		A3844A4ADB2C0E1B7335D587 /* rate-limits-live.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "rate-limits-live.json"; sourceTree = "<group>"; };
 		B032CFD6A7C44629BED8C436 /* CybokronLimitGuard.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CybokronLimitGuard.entitlements; sourceTree = "<group>"; };
 		C12E910A58545D3FF0949B99 /* usage-live.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "usage-live.json"; sourceTree = "<group>"; };
@@ -183,6 +187,7 @@
 				1DC0DF6809DD598F647324E6 /* AccountModels.swift */,
 				71A8739D72F48A58C880A67C /* AppServerClient.swift */,
 				2E41A078E7DA11CF7F2DFFAB /* AppServerTransport.swift */,
+				0F82F7F378F85074B43A4633 /* CodexAccountService.swift */,
 				42EF2FD21E8FA2AE43227DFC /* CodexLocator.swift */,
 				C8FD67161FFC9FE7FF8BC5CE /* ProtocolGuard.swift */,
 			);
@@ -221,6 +226,7 @@
 				9881810E3FCF25FE3246CFF4 /* Fixtures */,
 				5736AC2527EBD8ADA0937864 /* AccountModelsTests.swift */,
 				7C2F971ED26D8DABEAD27A4E /* AppServerClientTests.swift */,
+				A0D60B70220BA0A0C16F88CB /* CodexAccountServiceTests.swift */,
 				E298AE4099E91A6638CD0418 /* CodexLocatorTests.swift */,
 				5E9828F3042C0132724AC9BC /* FakeAppServer.swift */,
 				FAAD0ABED822F52203247300 /* LocalizationTests.swift */,
@@ -366,6 +372,7 @@
 				F5F85D7FE769C8FAED8A0010 /* AccountModels.swift in Sources */,
 				00FE5A6CF6FA1B3C15956579 /* AppServerClient.swift in Sources */,
 				D0265EEECEB485F31FBFA01C /* AppServerTransport.swift in Sources */,
+				3CC27096C5DA9C7338D8DC95 /* CodexAccountService.swift in Sources */,
 				18BAC8200314D6AD9AF27A8D /* CodexLocator.swift in Sources */,
 				5536156CFC6183F37ED3B542 /* Localization.swift in Sources */,
 				52FA8BFADB3C6980219B936D /* ProtocolGuard.swift in Sources */,
@@ -388,6 +395,7 @@
 			files = (
 				B83EA9FD5773046AA9470512 /* AccountModelsTests.swift in Sources */,
 				877BFDF17EC7E5F97AC0C793 /* AppServerClientTests.swift in Sources */,
+				3D5C76D52FD2E5B7B377E671 /* CodexAccountServiceTests.swift in Sources */,
 				0B45B46DE0C16D47C05DB19A /* CodexLocatorTests.swift in Sources */,
 				E608DD630A8B9E45D108B9C2 /* FakeAppServer.swift in Sources */,
 				5826BAE45E8D6A349B1F1344 /* LocalizationTests.swift in Sources */,
