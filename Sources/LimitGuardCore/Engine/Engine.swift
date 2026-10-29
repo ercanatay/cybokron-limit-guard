@@ -113,8 +113,9 @@ public final class Engine: ObservableObject {
     /// threadId → cwd of the daemon's loaded threads; nil when the daemon could not be reached.
     private var loadedCwds: [String: String]?
     private var mapping: [TabRef: String] = [:]
-    private var knownTabs: Set<TabRef> = []
     private var countdown: Countdown?
+    /// The thread whose continue is being delivered right now.
+    private var sendingThread: String?
     private var nextContinue: ContinueTarget?
     private var waitsForContinue = false
     private var wantAwake = false
@@ -190,8 +191,19 @@ public final class Engine: ObservableObject {
     }
 
     /// Cancels the countdown or the scheduled continue; that stop is not continued automatically again.
+    /// Acts only on the continue the next action shows. Once its send has started, the cancel changes
+    /// nothing and the activity log says the message was already sent.
     public func cancelNextAction() {
-        guard let target = nextContinue else { return }
+        guard let target = nextContinue else {
+            if let thread = sendingThread {
+                appendActivity(ActivityEntry(
+                    date: now, kind: .continueCancelled, threadId: thread,
+                    detail: Localization.string("engine.cancel.tooLate", "Too late to cancel: the continue was already sent."),
+                    codexVersion: dependencies.codexVersion))
+            }
+            return
+        }
+        if let countdown, countdown.threadId != target.threadId { return }
         countdown = nil
         nextContinue = nil
         nextAction = nil
@@ -209,13 +221,17 @@ public final class Engine: ObservableObject {
 
     /// "Continue now" for a waiting session (unguarded tab, or "Send again" after an unconfirmed
     /// continue): skips the countdown and the guarded check, never the gate or the confirmation.
+    /// As an explicit owner action it also skips the loop guard and the minimum gap, and Pause does
+    /// not block it (Pause stops automatic actions only). The notice, read-only and age rules still apply.
     public func continueNow(threadId: String) async {
         await exclusive { await self.runContinueNow(threadId) }
     }
 
     public func setGuarded(_ tab: TabRef, _ on: Bool) {
         state.guardedTabs.removeAll { $0.ref == tab }
-        if on { state.guardedTabs.append(GuardedTab(ref: tab, addedAt: now)) }
+        state.untickedTabs.removeAll { $0 == tab }
+        // An untick sticks while the tab lives, also against "guard new tabs automatically".
+        if on { state.guardedTabs.append(GuardedTab(ref: tab, addedAt: now)) } else { state.untickedTabs.append(tab) }
         saveState()
         publishTabs()
     }
@@ -376,11 +392,8 @@ public final class Engine: ObservableObject {
             let request = ContinueRequest(
                 threadId: pending.threadId, text: pending.text, clientMessageId: pending.clientMessageId, tab: nil)
             if let session = byId[pending.threadId], DeliveryConfirmer.isConfirmed(request: request, session: session) {
+                // Counted when sent (spec §7.4); confirmation only verifies the delivery.
                 state.pendingDeliveries.removeAll { $0.clientMessageId == pending.clientMessageId }
-                var loop = state.loop[pending.threadId] ?? LoopRecord()
-                loop.consecutive += 1
-                loop.lastSentAt = pending.sentAt
-                state.loop[pending.threadId] = loop
                 state.stops[pending.threadId] = nil
                 state.settledStops[pending.threadId] = nil
                 changed = true
@@ -418,9 +431,11 @@ public final class Engine: ObservableObject {
                     }
                 }
             } else if state.stops[id] != nil, !confirming {
-                // Superseded by a turn that is not our confirmed continue: the owner typed, or it finished.
+                // Superseded. Activity while our continue is still pending (even unconfirmed) is taken as
+                // ours, so a Codex that never writes our client id cannot reset the loop guard.
+                let ours = state.pendingDeliveries.contains { $0.threadId == id }
                 state.stops[id] = nil
-                if session.userActivityAfterStop || session.lastStop == .none { resetLoop(id) }
+                if session.lastStop == .none || (session.userActivityAfterStop && !ours) { resetLoop(id) }
                 changed = true
             }
             if session.lastStop == .none, let loop = state.loop[id], loop.consecutive != 0 || loop.shortTurnsInARow != 0 {
@@ -538,28 +553,29 @@ public final class Engine: ObservableObject {
     // MARK: - Tabs
 
     private func refreshTabs() async {
-        let all = await dependencies.environment.terminalTabs()
+        let listed = await dependencies.environment.terminalTabs()
         do {
             loadedCwds = try await dependencies.delivery.loadedThreadCwds()
         } catch {
             loadedCwds = nil
             Self.logger.notice("daemon not reachable: \(AppServerDelivery.describe(error), privacy: .public)")
         }
-        let present = Set(all.map(\.ref))
-        var changed = false
-        // A closed tab drops out, so a later tab on the same tty is not guarded by accident.
-        let guardedBefore = state.guardedTabs.count
-        state.guardedTabs.removeAll { !present.contains($0.ref) }
-        if state.guardedTabs.count != guardedBefore { changed = true }
-        knownTabs.formIntersection(present)
-        for tab in all where knownTabs.insert(tab.ref).inserted {
-            if settings.guardNewTabsAutomatically, !isGuarded(tab.ref) {
-                state.guardedTabs.append(GuardedTab(ref: tab.ref, addedAt: now))
-                changed = true
+        // A failed listing keeps the last known tabs: nothing is pruned or auto-guarded on it.
+        if let listed {
+            let present = Set(listed.map(\.ref))
+            var next = state
+            // A closed tab drops out, so a later tab on the same tty is not guarded by accident.
+            next.guardedTabs.removeAll { !present.contains($0.ref) }
+            next.untickedTabs.removeAll { !present.contains($0) }
+            if settings.guardNewTabsAutomatically {
+                for tab in listed where !next.guardedTabs.contains(where: { $0.ref == tab.ref }) && !next.untickedTabs.contains(tab.ref) {
+                    next.guardedTabs.append(GuardedTab(ref: tab.ref, addedAt: now))
+                }
             }
+            if next != state, !save(next) { state = next }
+            currentTabs = listed
         }
-        if changed { saveState() }
-        currentTabs = all
+        let all = currentTabs
         // All Codex tabs take part, so same-folder duplicates are seen; guarding filters afterwards.
         mapping = loadedCwds.map { TabMatcher.match(tabs: all, threads: waitingSessions(), loadedThreadCwds: $0) } ?? [:]
         publishTabs()
@@ -699,6 +715,8 @@ public final class Engine: ObservableObject {
         let decision = ContinuePolicy.decide(inputs(session, read, settings: settings, loop: state.loop[id] ?? LoopRecord(), paused: isPaused))
         switch decision {
         case .countdown, .send:
+            // Cancelled while this tick was waiting on something: nothing is sent.
+            guard state.settledStops[id] != turn else { return }
             await send(threadId: id, turn: turn, text: text, tab: tab, reuse: nil)
         case .waitUntil, .waitForGate:
             // The gate closed again: the normal flow takes over on a later tick.
@@ -783,8 +801,28 @@ public final class Engine: ObservableObject {
             return
         }
         unconfirmedNoted.remove(pending.clientMessageId)
+        // From here a cancel is too late: the next action no longer points at this continue.
+        if countdown?.threadId == threadId { countdown = nil }
+        if nextContinue?.threadId == threadId {
+            nextContinue = nil
+            nextAction = nil
+        }
+        sendingThread = threadId
         let request = ContinueRequest(threadId: threadId, text: pending.text, clientMessageId: pending.clientMessageId, tab: tab)
-        switch await dependencies.delivery.deliver(request) {
+        let result = await dependencies.delivery.deliver(request)
+        sendingThread = nil
+        switch result {
+        case .sent, .failed:
+            // A continue that may have reached Codex counts against the loop guard, confirmed or not.
+            var loop = state.loop[threadId] ?? LoopRecord()
+            loop.consecutive += 1
+            loop.lastSentAt = pending.sentAt
+            state.loop[threadId] = loop
+            saveState()
+        case .refused:
+            break
+        }
+        switch result {
         case .sent:
             await note(.continueSent(threadId: threadId), text: pending.text, tab: tab)
         case let .refused(reason):

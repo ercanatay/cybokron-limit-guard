@@ -45,13 +45,56 @@ private final class FakeSessions: SessionSource, @unchecked Sendable {
 }
 
 private final class FakeEnvironment: EngineEnvironment, @unchecked Sendable {
-    let tabs = Box<[TerminalTab]>([])
+    /// nil: the process listing fails.
+    let tabs = Box<[TerminalTab]?>([])
     let notes = Box<[EngineNote]>([])
     let keepAwake = Box<[Bool]>([])
 
-    func terminalTabs() async -> [TerminalTab] { tabs.value }
+    func terminalTabs() async -> [TerminalTab]? { tabs.value }
     func notify(_ note: EngineNote) async { notes.value.append(note) }
     func setKeepAwake(_ on: Bool) async { keepAwake.value.append(on) }
+}
+
+/// A delivery whose `deliver` waits until `release()`, to hold a send in flight.
+private final class SuspendingDelivery: EngineDelivery, @unchecked Sendable {
+    let cwds: [String: String]
+    let requests = Box<[ContinueRequest]>([])
+    private let lock = NSLock()
+    private var waiting: [CheckedContinuation<Void, Never>] = []
+    private var released = false
+
+    init(cwds: [String: String]) { self.cwds = cwds }
+
+    func loadedThreadCwds() async throws -> [String: String] { cwds }
+
+    func deliver(_ request: ContinueRequest) async -> DeliveryResult {
+        requests.value.append(request)
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            let go = lock.withLock { () -> Bool in
+                if released { return true }
+                waiting.append(continuation)
+                return false
+            }
+            if go { continuation.resume() }
+        }
+        return .sent
+    }
+
+    func release() {
+        let all = lock.withLock { () -> [CheckedContinuation<Void, Never>] in
+            released = true
+            defer { waiting = [] }
+            return waiting
+        }
+        all.forEach { $0.resume() }
+    }
+}
+
+/// Polls until `condition` holds (at most about 2 s).
+@MainActor
+private func waitUntil(_ condition: () -> Bool) async throws {
+    for _ in 0..<2000 where !condition() { try await Task.sleep(for: .milliseconds(1)) }
+    #expect(condition())
 }
 
 private func acceptedSettings(_ change: (inout Settings) -> Void = { _ in }) -> Settings {
@@ -123,7 +166,7 @@ private final class Harness {
     let settings: Box<Settings>
     let engine: Engine
 
-    init(settings: Settings = acceptedSettings(), prepare: (URL) throws -> Void = { _ in }) throws {
+    init(settings: Settings = acceptedSettings(), delivery: EngineDelivery? = nil, prepare: (URL) throws -> Void = { _ in }) throws {
         dir = try TemporaryDirectory()
         try prepare(dir.url)
         self.settings = Box(settings)
@@ -133,7 +176,7 @@ private final class Harness {
         let service = CodexAccountService(
             client: AppServerClient(transportFactory: { account }, clientName: "test", clientVersion: "0", backoff: [.zero]),
             now: { clock.now })
-        let delivery = AppServerDelivery(
+        let delivery = delivery ?? AppServerDelivery(
             client: AppServerClient(transportFactory: { daemon }, clientName: "test", clientVersion: "0", backoff: [.zero]))
         let box = self.settings
         engine = Engine(Engine.Dependencies(
@@ -594,16 +637,136 @@ struct EngineTests {
         #expect(h.turnStarts().isEmpty)
     }
 
-    @Test func concurrentTickAndContinueNowSendOnce() async throws {
+    @Test func sendsAreSerialised() async throws {
+        let delivery = SuspendingDelivery(cwds: ["th1": "/p"])
+        let h = try Harness(settings: acceptedSettings { $0.countdownSeconds = 0 }, delivery: delivery)
+        h.standardWaitingSetup()
+        h.limits(limitsJSON(allowed: true, five: 0))
+        let first = Task { await h.engine.tick() }
+        try await waitUntil { delivery.requests.value.count == 1 }
+
+        let secondDone = Box(false)
+        let second = Task { await h.engine.tick(); secondDone.value = true }
+        let third = Task { await h.engine.tick() }
+        let manual = Task { await h.engine.continueNow(threadId: "th1") }
+        try await Task.sleep(for: .milliseconds(50))
+        // Nothing else runs while the first send is in flight.
+        #expect(secondDone.value == false)
+        delivery.release()
+        _ = await (first.value, second.value, third.value, manual.value)
+        #expect(secondDone.value)
+        #expect(delivery.requests.value.count == 1)
+    }
+
+    @Test func cancelDuringSendIsTooLate() async throws {
+        let delivery = SuspendingDelivery(cwds: ["th1": "/p"])
+        let h = try Harness(delivery: delivery)
+        h.standardWaitingSetup()
+        h.limits(limitsJSON(allowed: true, five: 0))
+        await h.engine.tick()
+        #expect(h.engine.nextAction != nil)
+        h.clock.advance(by: 10)
+        let firing = Task { await h.engine.tick() }
+        try await waitUntil { delivery.requests.value.count == 1 }
+        #expect(h.engine.nextAction == nil)
+        h.engine.cancelNextAction()
+        delivery.release()
+        await firing.value
+        #expect(delivery.requests.value.count == 1)
+        #expect(h.notes.contains(.continueSent(threadId: "th1")))
+        let cancels = try h.activity().filter { $0.kind == .continueCancelled }
+        #expect(cancels.count == 1)
+        #expect(cancels.first?.detail == "Too late to cancel: the continue was already sent.")
+    }
+
+    @Test func cancelBetweenFireAndSendSendsNothing() async throws {
         let h = try Harness()
         h.standardWaitingSetup()
         h.limits(limitsJSON(allowed: true, five: 0))
         await h.engine.tick()
-        h.clock.advance(by: 130)
-        async let tick: Void = h.engine.tick()
-        async let manual: Void = h.engine.continueNow(threadId: "th1")
-        _ = await (tick, manual)
-        #expect(h.turnStarts().count == 1)
+        // Cancel while the firing tick waits on the limits read.
+        h.account.script(limitsMethod, result: limitsJSON(allowed: true, five: 0), delay: .milliseconds(100))
+        h.clock.advance(by: 10)
+        let firing = Task { await h.engine.tick() }
+        try await Task.sleep(for: .milliseconds(30))
+        h.engine.cancelNextAction()
+        await firing.value
+        await h.run(for: 300)
+        #expect(h.turnStarts().isEmpty)
+    }
+
+    /// Each continue is followed by owner-looking activity without our client id, then a new stop.
+    private func runUnconfirmedCycles(_ h: Harness, stops: Int, duration: TimeInterval) async {
+        for turn in 1...stops {
+            h.clock.advance(by: 130)
+            let stopAt = h.clock.now
+            h.sessions.current.value = [waiting(at: stopAt, turn: "turn-\(turn)", durations: [duration])]
+            let before = h.turnStarts().count
+            await h.engine.tick()
+            // Only our own continue starts a turn; a stop we did not continue stays as it is.
+            guard h.turnStarts().count > before else {
+                await h.run(for: 150)
+                continue
+            }
+            h.clock.advance(by: 5)
+            h.sessions.current.value = [waiting(at: stopAt, turn: "turn-\(turn)", durations: [duration], activity: true)]
+            await h.run(for: 150)
+        }
+    }
+
+    @Test func loopGuardHoldsWithoutConfirmation() async throws {
+        let h = try Harness(settings: acceptedSettings { $0.countdownSeconds = 0 })
+        h.standardWaitingSetup()
+        h.limits(limitsJSON(allowed: true, five: 0))
+        await runUnconfirmedCycles(h, stops: 4, duration: 300)
+        await h.run(for: 600)
+        #expect(h.turnStarts().count == 3)
+        #expect(h.notes.filter { $0 == .loopStopped(threadId: "th1") }.count == 1)
+    }
+
+    @Test func runawayBrakeHoldsWithoutConfirmation() async throws {
+        let h = try Harness(settings: acceptedSettings { $0.countdownSeconds = 0; $0.maxContinues = 10 })
+        h.standardWaitingSetup()
+        h.limits(limitsJSON(allowed: true, five: 0))
+        await runUnconfirmedCycles(h, stops: 4, duration: 5)
+        #expect(h.turnStarts().count == 3)
+        #expect(h.notes.filter { $0 == .runawayStopped(threadId: "th1") }.count == 1)
+    }
+
+    @Test func psFailureKeepsGuardedTabs() async throws {
+        let h = try Harness()
+        h.standardWaitingSetup()
+        h.limits(limitsJSON(allowed: false))
+        await h.engine.tick()
+        h.env.tabs.value = nil
+        await h.run(for: 120)
+        #expect(try h.storedState().guardedTabs.map(\.ref) == [ref()])
+        #expect(h.engine.tabs.map(\.tab.ref) == [ref()])
+        h.env.tabs.value = [tab()]
+        await h.run(for: 30)
+        #expect(try h.storedState().guardedTabs.map(\.ref) == [ref()])
+    }
+
+    @Test func untickSticksWithAutoGuard() async throws {
+        let h = try Harness(settings: acceptedSettings { $0.guardNewTabsAutomatically = true })
+        h.standardWaitingSetup(guarded: false)
+        h.limits(limitsJSON(allowed: false))
+        await h.engine.tick()
+        #expect(try h.storedState().guardedTabs.map(\.ref) == [ref()])
+        h.engine.setGuarded(ref(), false)
+        #expect(try h.storedState().untickedTabs == [ref()])
+        h.env.tabs.value = nil
+        await h.run(for: 60)
+        h.env.tabs.value = [tab()]
+        await h.run(for: 60)
+        #expect(try h.storedState().guardedTabs.isEmpty)
+        // Once the tab is gone the untick is forgotten; a new tab on that tty is guarded automatically.
+        h.env.tabs.value = []
+        await h.run(for: 30)
+        #expect(try h.storedState().untickedTabs.isEmpty)
+        h.env.tabs.value = [tab(pid: 300)]
+        await h.run(for: 30)
+        #expect(try h.storedState().guardedTabs.map(\.ref) == [ref()])
     }
 
     @Test func expiryReminderOncePerCredit() async throws {

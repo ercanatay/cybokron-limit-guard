@@ -120,8 +120,8 @@ public struct EngineForecast: Equatable, Sendable {
 
 /// The system around the Engine: Terminal tabs, notifications, keep-awake.
 public protocol EngineEnvironment: Sendable {
-    /// Every Terminal tab with a Codex TUI (`CodexProcessLister.tabs()`).
-    func terminalTabs() async -> [TerminalTab]
+    /// Every Terminal tab with a Codex TUI (`CodexProcessLister.listTabs()`); nil when the listing failed.
+    func terminalTabs() async -> [TerminalTab]?
     func notify(_ note: EngineNote) async
     func setKeepAwake(_ on: Bool) async
 }

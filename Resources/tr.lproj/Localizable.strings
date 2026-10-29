@@ -351,3 +351,4 @@
 "engine.skip.limitNotBack" = "Codex still reports the limit as reached.";
 "engine.skip.loopGuard" = "Stopped after the maximum number of tries.";
 "engine.skip.runaway" = "Stopped: the last continued turns each ended within a minute.";
+"engine.cancel.tooLate" = "Too late to cancel: the continue was already sent.";

@@ -27,8 +27,14 @@ public struct CodexProcessLister: Sendable {
 
     /// One tab per tty with a Codex process; `cwd` is nil when `lsof` cannot tell.
     public func tabs() async -> [TerminalTab] {
+        await listTabs() ?? []
+    }
+
+    /// `tabs()`, but nil when `ps` failed, so a caller can tell "no Codex tabs" from "couldn't list".
+    public func listTabs() async -> [TerminalTab]? {
+        guard let processes = await listProcesses() else { return nil }
         var tabs: [TerminalTab] = []
-        for process in await processes() {
+        for process in processes {
             let cwd = await cwd(of: process.pid)
             let title = cwd.map { ($0 as NSString).lastPathComponent }
                 ?? (process.tty as NSString).lastPathComponent
@@ -40,8 +46,13 @@ public struct CodexProcessLister: Sendable {
     }
 
     public func processes() async -> [CodexProcess] {
+        await listProcesses() ?? []
+    }
+
+    /// Nil when `ps` could not run or failed.
+    public func listProcesses() async -> [CodexProcess]? {
         guard let result = try? await tools.run(Self.ps, arguments: ["-axo", "pid=,tty=,comm="]), result.succeeded else {
-            return []
+            return nil
         }
         return Self.parseProcessList(result.output)
     }

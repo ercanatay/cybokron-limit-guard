@@ -264,5 +264,8 @@ struct CodexProcessListerTests {
 
     @Test func aFailingPsGivesNoTabs() async {
         #expect(await CodexProcessLister(tools: ScriptedTools(outputs: [:])).tabs().isEmpty)
+        #expect(await CodexProcessLister(tools: ScriptedTools(outputs: [:])).listTabs() == nil)
+        let empty = ScriptedTools(outputs: ["/bin/ps -axo pid=,tty=,comm=": ""])
+        #expect(await CodexProcessLister(tools: empty).listTabs() == [])
     }
 }
