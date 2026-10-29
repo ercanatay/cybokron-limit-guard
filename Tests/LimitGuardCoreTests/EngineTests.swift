@@ -550,6 +550,36 @@ struct EngineTests {
         #expect(h.skips("th2").count == 1)
     }
 
+    /// The empty thread a TUI opens at start stays loaded after `/resume`; the scanner does not know it,
+    /// so the tab pairs with the real session, and the popover shows the same pairing.
+    @Test func unknownLoadedThreadDoesNotMakeTheTabAmbiguous() async throws {
+        let h = try Harness()
+        h.sessions.current.value = [waiting("th1")]
+        h.env.tabs.value = [tab()]
+        h.loaded(["th1", "empty-thread"])
+        h.limits(limitsJSON(allowed: true, five: 0))
+        await h.engine.tick()
+        #expect(h.engine.tabs.first?.threadId == "th1")
+        let rows = SessionsPresentation.rows(
+            tabs: h.engine.tabs, sessions: h.engine.sessions, snapshot: h.engine.snapshot, now: h.clock.now)
+        #expect(rows.map(\.state) == [.waitingNotGuarded])
+        #expect(rows.first?.threadId == "th1")
+    }
+
+    /// Two real sessions in the tab's folder stay ambiguous (D18), in the Engine and in the popover.
+    @Test func twoKnownThreadsInOneFolderStayAmbiguous() async throws {
+        let h = try Harness()
+        h.sessions.current.value = [waiting("th1"), finished("th2", at: t0)]
+        h.env.tabs.value = [tab()]
+        h.loaded(["th1", "th2", "empty-thread"])
+        h.limits(limitsJSON(allowed: true, five: 0))
+        await h.engine.tick()
+        #expect(h.engine.tabs.first?.threadId == nil)
+        let rows = SessionsPresentation.rows(
+            tabs: h.engine.tabs, sessions: h.engine.sessions, snapshot: h.engine.snapshot, now: h.clock.now)
+        #expect(rows.map(\.state) == [.ambiguous])
+    }
+
     @Test func daemonUnreachableSkipsWithNote() async throws {
         let h = try Harness()
         h.sessions.current.value = [waiting()]

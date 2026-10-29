@@ -151,47 +151,47 @@ struct DeliveryConfirmerTests {
 struct TabMatcherTests {
     @Test func oneTabOneThreadPairs() {
         let threads = [session("t1", cwd: "/p/a")]
-        #expect(TabMatcher.match(tabs: [tab("/dev/ttys003", cwd: nil)], threads: threads, loadedThreadCwds: ["t1": "/p/a"])
+        #expect(TabMatcher.match(tabs: [tab("/dev/ttys003", cwd: nil)], threads: threads, loadedThreadCwds: ["t1": "/p/a"], knownThreadIds: ["t1"])
             == [TabRef(windowId: 0, tabIndex: 0, tty: "/dev/ttys003"): "t1"])
-        #expect(TabMatcher.match(single: tab("/dev/ttys003", cwd: "/p/a/"), threads: threads, loadedThreadCwds: ["t1": "/p/a"]) == "t1")
+        #expect(TabMatcher.match(single: tab("/dev/ttys003", cwd: "/p/a/"), threads: threads, loadedThreadCwds: ["t1": "/p/a"], knownThreadIds: ["t1"]) == "t1")
     }
 
     @Test func oneTabOneThreadWithDifferentCwdsDoesNotPair() {
         let threads = [session("t1", cwd: "/p/a")]
-        #expect(TabMatcher.match(tabs: [tab("/dev/ttys003", cwd: "/p/b")], threads: threads, loadedThreadCwds: ["t1": "/p/a"]).isEmpty)
+        #expect(TabMatcher.match(tabs: [tab("/dev/ttys003", cwd: "/p/b")], threads: threads, loadedThreadCwds: ["t1": "/p/a"], knownThreadIds: ["t1"]).isEmpty)
     }
 
     @Test func singleTabWithSecondLoadedThreadInSameCwdIsAmbiguous() {
         let threads = [session("t1", cwd: "/p/a")]
         let loaded = ["t1": "/p/a", "t2": "/p/a"]
-        #expect(TabMatcher.match(tabs: [tab("/dev/ttys003", cwd: "/p/a")], threads: threads, loadedThreadCwds: loaded).isEmpty)
+        #expect(TabMatcher.match(tabs: [tab("/dev/ttys003", cwd: "/p/a")], threads: threads, loadedThreadCwds: loaded, knownThreadIds: Set(loaded.keys)).isEmpty)
     }
 
     @Test func nilCwdTabWithTwoLoadedThreadsIsAmbiguous() {
         let threads = [session("t1", cwd: "/p/a")]
         let loaded = ["t1": "/p/a", "t2": "/p/b"]
-        #expect(TabMatcher.match(tabs: [tab("/dev/ttys003", cwd: nil)], threads: threads, loadedThreadCwds: loaded).isEmpty)
+        #expect(TabMatcher.match(tabs: [tab("/dev/ttys003", cwd: nil)], threads: threads, loadedThreadCwds: loaded, knownThreadIds: Set(loaded.keys)).isEmpty)
     }
 
     @Test func cwdSeparatesTwoTabs() {
         let tabs = [tab("/dev/ttys003", cwd: "/p/a"), tab("/dev/ttys004", cwd: "/p/b", pid: 101)]
         let threads = [session("t1", cwd: "/p/a"), session("t2", cwd: "/p/b")]
-        let map = TabMatcher.match(tabs: tabs, threads: threads, loadedThreadCwds: ["t1": "/p/a", "t2": "/p/b"])
+        let map = TabMatcher.match(tabs: tabs, threads: threads, loadedThreadCwds: ["t1": "/p/a", "t2": "/p/b"], knownThreadIds: ["t1", "t2"])
         #expect(map == [tabs[0].ref: "t1", tabs[1].ref: "t2"])
     }
 
     @Test func ambiguousMappingReturnsNil() {
         let tabs = [tab("/dev/ttys003", cwd: "/p/a"), tab("/dev/ttys004", cwd: "/p/a", pid: 101)]
         let threads = [session("t1", cwd: "/p/a"), session("t2", cwd: "/p/a")]
-        #expect(TabMatcher.match(tabs: tabs, threads: threads, loadedThreadCwds: ["t1": "/p/a", "t2": "/p/a"]).isEmpty)
-        #expect(TabMatcher.match(single: tabs[0], threads: threads, loadedThreadCwds: ["t1": "/p/a", "t2": "/p/a"]) == nil)
+        #expect(TabMatcher.match(tabs: tabs, threads: threads, loadedThreadCwds: ["t1": "/p/a", "t2": "/p/a"], knownThreadIds: ["t1", "t2"]).isEmpty)
+        #expect(TabMatcher.match(single: tabs[0], threads: threads, loadedThreadCwds: ["t1": "/p/a", "t2": "/p/a"], knownThreadIds: ["t1", "t2"]) == nil)
     }
 
     @Test func aSecondLoadedThreadInTheSameCwdMakesItAmbiguous() {
         // t2 is loaded (some other TUI) but not a candidate; the /p/a tab could belong to either.
         let tabs = [tab("/dev/ttys003", cwd: "/p/a"), tab("/dev/ttys004", cwd: "/p/b", pid: 101)]
         let threads = [session("t1", cwd: "/p/a")]
-        let map = TabMatcher.match(tabs: tabs, threads: threads, loadedThreadCwds: ["t1": "/p/a", "t2": "/p/a"])
+        let map = TabMatcher.match(tabs: tabs, threads: threads, loadedThreadCwds: ["t1": "/p/a", "t2": "/p/a"], knownThreadIds: ["t1", "t2"])
         #expect(map.isEmpty)
     }
 
@@ -199,14 +199,30 @@ struct TabMatcherTests {
         let tabs = [tab("/dev/ttys003", cwd: "/p/a"), tab("/dev/ttys004", cwd: "/p/b", pid: nil)]
         let threads = [session("t1", cwd: "/p/a"), session("t2", cwd: "/p/b"), session("t3", cwd: "/p/c", originator: "codex_exec")]
         // t2 is not loaded; the ttys004 tab has no Codex process; t3 is not a TUI thread.
-        let map = TabMatcher.match(tabs: tabs, threads: threads, loadedThreadCwds: ["t1": "/p/a", "t3": "/p/c"])
+        let map = TabMatcher.match(tabs: tabs, threads: threads, loadedThreadCwds: ["t1": "/p/a", "t3": "/p/c"], knownThreadIds: ["t1", "t3"])
         #expect(map == [tabs[0].ref: "t1"])
+    }
+
+    @Test func aLoadedThreadTheScannerDoesNotKnowIsIgnored() {
+        // The empty thread a TUI opens at start stays loaded after `/resume` switched to t1.
+        let threads = [session("t1", cwd: "/p/a")]
+        let loaded = ["t1": "/p/a", "empty": "/p/a"]
+        #expect(TabMatcher.match(tabs: [tab("/dev/ttys003", cwd: "/p/a")], threads: threads, loadedThreadCwds: loaded, knownThreadIds: ["t1"])
+            == [TabRef(windowId: 0, tabIndex: 0, tty: "/dev/ttys003"): "t1"])
+        #expect(TabMatcher.match(single: tab("/dev/ttys003", cwd: nil), threads: threads, loadedThreadCwds: loaded, knownThreadIds: ["t1"]) == "t1")
+    }
+
+    @Test func twoKnownThreadsInTheSameCwdStayAmbiguous() {
+        // t2 is a real session that is not waiting: the tab could still be either (D18).
+        let threads = [session("t1", cwd: "/p/a")]
+        let loaded = ["t1": "/p/a", "t2": "/p/a", "empty": "/p/a"]
+        #expect(TabMatcher.match(tabs: [tab("/dev/ttys003", cwd: "/p/a")], threads: threads, loadedThreadCwds: loaded, knownThreadIds: ["t1", "t2"]).isEmpty)
     }
 
     @Test func usesTheLiveCwdFromThreadRead() {
         let tabs = [tab("/dev/ttys003", cwd: "/p/new"), tab("/dev/ttys004", cwd: "/p/b", pid: 101)]
         let threads = [session("t1", cwd: "/p/old"), session("t2", cwd: "/p/b")]
-        let map = TabMatcher.match(tabs: tabs, threads: threads, loadedThreadCwds: ["t1": "/p/new", "t2": "/p/b"])
+        let map = TabMatcher.match(tabs: tabs, threads: threads, loadedThreadCwds: ["t1": "/p/new", "t2": "/p/b"], knownThreadIds: ["t1", "t2"])
         #expect(map == [tabs[0].ref: "t1", tabs[1].ref: "t2"])
     }
 }

@@ -599,8 +599,12 @@ public final class Engine: ObservableObject {
             currentTabs = listed
         }
         let all = currentTabs
-        // All Codex tabs take part, so same-folder duplicates are seen; guarding filters afterwards.
-        mapping = loadedCwds.map { TabMatcher.match(tabs: all, threads: waitingSessions(), loadedThreadCwds: $0) } ?? [:]
+        // All Codex tabs take part, so same-folder duplicates are seen; guarding filters afterwards. Only
+        // loaded threads the scanner knows count, as in the popover's SessionsPresentation.
+        let known = Set(sessions.map(\.threadId))
+        mapping = loadedCwds.map {
+            TabMatcher.match(tabs: all, threads: waitingSessions(), loadedThreadCwds: $0, knownThreadIds: known)
+        } ?? [:]
         publishTabs()
     }
 

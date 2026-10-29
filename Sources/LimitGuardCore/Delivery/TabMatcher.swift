@@ -26,10 +26,14 @@ public enum TabMatcher {
 
     /// `tabs`: every Terminal tab with a Codex TUI, guarded or not, so that same-cwd duplicates are seen.
     /// `threads`: the eligible threads. `loadedThreadCwds`: threadId → cwd from `thread/loaded/list` +
-    /// `thread/read` (non-ephemeral). Only loaded TUI threads and tabs with a Codex process take part.
-    public static func match(tabs: [TerminalTab], threads: [SessionState], loadedThreadCwds: [String: String]) -> [TabRef: String] {
+    /// `thread/read` (non-ephemeral). `knownThreadIds`: the scanned TUI sessions; a loaded thread outside
+    /// it (the empty thread a TUI opens before `/resume`, other originators, sub-agents) is ignored, also
+    /// for ambiguity. Only loaded TUI threads and tabs with a Codex process take part.
+    public static func match(
+        tabs: [TerminalTab], threads: [SessionState], loadedThreadCwds: [String: String], knownThreadIds: Set<String>
+    ) -> [TabRef: String] {
         let candidateTabs = tabs.filter { $0.codexPid != nil }
-        let loaded = loadedThreadCwds.mapValues(normalize)
+        let loaded = loadedThreadCwds.filter { knownThreadIds.contains($0.key) }.mapValues(normalize)
         let candidates = threads.filter { $0.originator == tuiOriginator && loaded[$0.threadId] != nil }
         let candidateIds = Set(candidates.map(\.threadId))
 
@@ -67,8 +71,10 @@ public enum TabMatcher {
     }
 
     /// The thread for `tab` when it is the only Codex tab.
-    public static func match(single tab: TerminalTab, threads: [SessionState], loadedThreadCwds: [String: String]) -> String? {
-        match(tabs: [tab], threads: threads, loadedThreadCwds: loadedThreadCwds)[tab.ref]
+    public static func match(
+        single tab: TerminalTab, threads: [SessionState], loadedThreadCwds: [String: String], knownThreadIds: Set<String>
+    ) -> String? {
+        match(tabs: [tab], threads: threads, loadedThreadCwds: loadedThreadCwds, knownThreadIds: knownThreadIds)[tab.ref]
     }
 
     static func normalize(_ path: String) -> String {
