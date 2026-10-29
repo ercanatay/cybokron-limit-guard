@@ -60,11 +60,11 @@
 "settings.otherVersions.confirm.quits" = "%1$@ kapanır ve %2$@ sürümü olarak yeniden açılır.";
 "settings.otherVersions.confirm.cantUpdate" = "%@ sürümü kendini güncelleyemez: geri dönmek için sürümler sayfasından daha yeni bir sürüm indirin.";
 "settings.otherVersions.confirm.skips" = "Bundan sonra otomatik denetimler daha yeni sürümleri atlar (%@); Güncellemeleri Denetle… yine de onları önerir.";
-"settings.otherVersions.confirm.older" = "An older version may not know about features added since.";
+"settings.otherVersions.confirm.older" = "Daha eski bir sürüm, o sürümden sonra eklenen özellikleri bilmiyor olabilir.";
 "settings.otherVersions.busy.title" = "Bir güncelleme devam ediyor";
 "settings.otherVersions.busy.message" = "%@ şu anda bir güncelleme arıyor veya yüklüyor. Tamamlandıktan sonra tekrar deneyin.";
 "settings.otherVersions.confirm.upgrade" = "Atlanan sürümler temizlenir; böylece otomatik denetimler her yeni sürümü yeniden önerir.";
-"settings.otherVersions.dataCopies" = "Copies of your data files are kept next to them before it's installed, in case that version can't read the newer ones.";
+"settings.otherVersions.dataCopies" = "Kurulumdan önce veri dosyalarınızın kopyaları yanlarına kaydedilir; o sürüm daha yeni dosyaları okuyamazsa diye.";
 
 /* updates */
 "updates.otherVersions.preSafety.title" = "Bu sürümde güvenlik düzeltmeleri yok";
@@ -127,8 +127,8 @@
 "about.sourceCode" = "Kaynak Kodu";
 "about.license" = "Lisans";
 "about.reportBug" = "Bir hata mı buldunuz? Issue açın";
-"about.project.limitGuard" = "This app · Codex usage limits in the macOS menu bar";
-"about.project.dockGroups" = "Dock groups for macOS";
+"about.project.limitGuard" = "Bu uygulama · macOS menü çubuğunda Codex kullanım limitleri";
+"about.project.dockGroups" = "macOS için Dock grupları";
 "about.project.intelComputerUse" = "Intel Mac'ler için MCP üzerinden yerel macOS masaüstü otomasyonu.";
 "about.project.exchangeRate" = "Canlı veri çekmeli PHP/MySQL döviz kuru ve portföy takipçisi + GitHub sürüm güncellemeleri.";
 "about.project.backlinkChecker" = "Backlink'lerin ankrajlarını, dofollow/nofollow ve HTTP durumlarını denetler.";
@@ -199,7 +199,7 @@
 "diagnostics.keepAwake.fix" = "Limit Guard bir limitin yeniden açılmasını beklerken açılır.";
 "diagnostics.report.header" = "Cybokron Limit Guard %@ tanılama raporu";
 "notice.title" = "Cybokron Limit Guard'ı kullanmadan önce";
-"notice.body" = "Bu, bağımsız ve açık kaynaklı bir araçtır. OpenAI veya başka bir yapay zekâ platformu tarafından üretilmez, onaylanmaz ya da desteklenmez. Sizin adınıza işlem yapar: yalnızca izin verirseniz Codex oturumlarınıza mesaj gönderebilir ve kullanım limiti sıfırlama kredilerinizi kullanabilir. Otomatik kullanım veya bu araçtaki bir hata, yapay zekâ platformu hesabınızın kullanım politikalarıyla çelişebilir; bu durumda hesabınıza kısıtlamalar, limitler veya askıya almalar uygulanabilir. Bu aracı kendi sorumluluğunuzda kullanırsınız; yazılım \"olduğu gibi\", herhangi bir garanti verilmeksizin sunulmaktadır (MIT Lisansı). Otomatik işlemleri etkinleştirmeden önce platformunuzun koşullarını gözden geçirin.";
+"notice.body" = "Bu, bağımsız ve açık kaynaklı bir araçtır. OpenAI veya başka bir yapay zekâ platformu tarafından üretilmez, onaylanmaz ya da desteklenmez. Sizin adınıza işlem yapar: Codex oturumlarınıza mesaj gönderebilir ve yalnızca izin verirseniz kullanım limiti sıfırlama haklarınızı kullanabilir. Otomatik kullanım veya bu araçtaki bir hata, yapay zekâ platformu hesabınızın kullanım politikalarıyla çelişebilir; bu durumda hesabınıza kısıtlamalar, limitler veya askıya almalar uygulanabilir. Bu aracı kendi sorumluluğunuzda kullanırsınız; yazılım \"olduğu gibi\", herhangi bir garanti verilmeksizin sunulmaktadır (MIT Lisansı). Otomatik işlemleri etkinleştirmeden önce platformunuzun koşullarını gözden geçirin.";
 "notice.understand" = "Anlıyorum";
 "notice.quit" = "Çık";
 "diagnostics.title" = "Tanılama";
@@ -322,28 +322,28 @@
 "chart.axis.window" = "Pencere";
 
 /* Engine (LimitGuardCore) */
-"engine.readOnly.state" = "The app's state file can't be used (it may be from a newer version), so automatic actions are paused.";
-"engine.readOnly.autoSpend" = "A reset credit spend has an unknown result, so automatic spending is paused until the app restarts.";
-"engine.skip.sessionChanged" = "The session changed during the countdown.";
-"engine.skip.tabChanged" = "The Terminal tab changed, so nothing was sent.";
-"engine.skip.daemonUnreachable" = "Codex daemon not reachable";
-"engine.skip.ambiguous" = "Several Codex tabs could be this session; continue it by hand.";
-"engine.skip.notWaiting" = "This session isn't waiting on the usage limit.";
-"engine.skip.confirming" = "The last continue is still being confirmed.";
-"engine.skip.stateNotSaved" = "The app's state couldn't be saved, so nothing was sent.";
-"engine.skip.finished" = "The session's last turn finished.";
-"engine.skip.otherError" = "The session stopped with another error.";
-"engine.skip.userActed" = "You typed in the session after the stop.";
-"engine.skip.tooOld" = "The stop is too old to continue.";
-"engine.skip.notGuarded" = "The tab isn't guarded.";
-"engine.skip.paused" = "Limit Guard is paused.";
-"engine.skip.readOnly" = "Codex changed how it reports usage, so automatic actions are paused.";
-"engine.skip.notice" = "The legal notice hasn't been accepted yet.";
-"engine.skip.autoContinueOff" = "Auto-continue is off.";
-"engine.skip.limitNotBack" = "Codex still reports the limit as reached.";
-"engine.skip.loopGuard" = "Stopped after the maximum number of tries.";
-"engine.skip.runaway" = "Stopped: the last continued turns each ended within a minute.";
-"engine.cancel.tooLate" = "Too late to cancel: the continue was already sent.";
+"engine.readOnly.state" = "Uygulamanın durum dosyası kullanılamıyor (daha yeni bir sürümden kalmış olabilir), bu yüzden otomatik işlemler duraklatıldı.";
+"engine.readOnly.autoSpend" = "Bir sıfırlama hakkı harcamasının sonucu bilinmiyor, bu yüzden uygulama yeniden başlatılana kadar otomatik harcama duraklatıldı.";
+"engine.skip.sessionChanged" = "Geri sayım sırasında oturum değişti.";
+"engine.skip.tabChanged" = "Terminal sekmesi değişti, bu yüzden hiçbir şey gönderilmedi.";
+"engine.skip.daemonUnreachable" = "Codex arka plan sürecine ulaşılamıyor";
+"engine.skip.ambiguous" = "Bu oturum birden fazla Codex sekmesine ait olabilir; elle devam edin.";
+"engine.skip.notWaiting" = "Bu oturum kullanım limitini beklemiyor.";
+"engine.skip.confirming" = "Son devam mesajı hâlâ onaylanıyor.";
+"engine.skip.stateNotSaved" = "Uygulamanın durumu kaydedilemedi, bu yüzden hiçbir şey gönderilmedi.";
+"engine.skip.finished" = "Oturumun son turu normal şekilde bitti.";
+"engine.skip.otherError" = "Oturum başka bir hatayla durdu.";
+"engine.skip.userActed" = "Limit duraklamasından sonra oturuma siz yazdınız.";
+"engine.skip.tooOld" = "Duraklama devam ettirilemeyecek kadar eski.";
+"engine.skip.notGuarded" = "Sekme korunmuyor.";
+"engine.skip.paused" = "Limit Guard duraklatıldı.";
+"engine.skip.readOnly" = "Codex kullanımı raporlama biçimini değiştirdi, bu yüzden otomatik işlemler duraklatıldı.";
+"engine.skip.notice" = "Yasal bildirim henüz kabul edilmedi.";
+"engine.skip.autoContinueOff" = "Otomatik devam kapalı.";
+"engine.skip.limitNotBack" = "Codex limitin hâlâ dolu olduğunu bildiriyor.";
+"engine.skip.loopGuard" = "En fazla deneme sayısına ulaşıldığı için durduruldu.";
+"engine.skip.runaway" = "Durduruldu: son devam ettirilen turların her biri bir dakika içinde bitti.";
+"engine.cancel.tooLate" = "İptal etmek için çok geç: devam mesajı zaten gönderildi.";
 
 /* Bildirimler ve motor durumu (görev 11b) */
 "notify.permission.title" = "Bildirimlere izin verilsin mi?";
