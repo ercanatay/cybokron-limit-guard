@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.1.0] - Unreleased
+## [0.1.0] - 2026-10-29
 
 First release (Phase 1: Codex CLI).
 
@@ -29,3 +29,5 @@ First release (Phase 1: Codex CLI).
 - English and Turkish interface.
 - Project documentation: README, SECURITY, CONTRIBUTING, AGENTS.
 - Project scaffold: SwiftPM and XcodeGen builds, string tables and CI.
+
+[0.1.0]: https://github.com/ercanatay/cybokron-limit-guard/releases/tag/v0.1.0
