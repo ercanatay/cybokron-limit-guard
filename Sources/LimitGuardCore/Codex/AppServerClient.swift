@@ -136,13 +136,15 @@ public actor AppServerClient {
             notBefore = nil
         } catch {
             // A restart may have replaced the transport (and its handshake) while we were suspended.
-            if transport === started { handshake = nil }
-            if let rpc = error as? AppServerError, rpc == .timeout {
-                // The server may still answer `initialize` later; a fresh transport is the only clean retry.
-                let current = transport
-                noteFailure()
-                tearDown(failWith: .timeout)
-                current?.stop()
+            if transport === started {
+                handshake = nil
+                if let rpc = error as? AppServerError, rpc == .timeout {
+                    // The server may still answer `initialize` later; a fresh transport is the only clean retry.
+                    let current = transport
+                    noteFailure()
+                    tearDown(failWith: .timeout)
+                    current?.stop()
+                }
             }
             throw error
         }

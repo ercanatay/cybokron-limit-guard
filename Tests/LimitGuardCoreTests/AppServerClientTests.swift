@@ -186,8 +186,10 @@ struct AppServerClientTests {
         await #expect(throws: AppServerError.transportExited(1)) { _ = try await hung.value }
         let result = try await client.request("b", timeout: .seconds(3))
         #expect(json(result)["who"] as? String == "b")
-        let ids = second.requests.map(\.id)
-        #expect(Set(ids).count == ids.count)
+        let firstIds = Set(first.requests.map(\.id))
+        let secondIds = Set(second.requests.map(\.id))
+        #expect(!firstIds.isEmpty && !secondIds.isEmpty)
+        #expect(firstIds.isDisjoint(with: secondIds))
     }
 
     @Test func invalidParamsAreRejectedNotCrashed() async throws {
