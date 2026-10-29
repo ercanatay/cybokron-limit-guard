@@ -24,6 +24,8 @@ public final class ProcessTransport: AppServerTransport, @unchecked Sendable {
     private var process: Process?
     private var stdin: FileHandle?
     private var stopped = false
+    /// Writes never run on the caller's thread: a full pipe must not block the client actor.
+    private let writeQueue = DispatchQueue(label: "limitguard.app-server.writer")
     private var _onLine: (@Sendable (Data) -> Void)?
     private var _onExit: (@Sendable (Int32) -> Void)?
 
@@ -81,11 +83,24 @@ public final class ProcessTransport: AppServerTransport, @unchecked Sendable {
         thread.start()
     }
 
+    /// Queues the write and returns immediately. A failed write terminates the child, which the
+    /// reader thread then reports through `onExit`.
     public func send(_ line: Data) throws {
-        guard let handle = lock.withLock({ stopped ? nil : stdin }) else { throw TransportError.notRunning }
+        guard lock.withLock({ !stopped && stdin != nil }) else { throw TransportError.notRunning }
         var payload = line
         if payload.last != 0x0A { payload.append(0x0A) }
-        try handle.write(contentsOf: payload)
+        writeQueue.async { [weak self] in
+            guard let self else { return }
+            let (handle, process) = self.lock.withLock { () -> (FileHandle?, Process?) in
+                (self.stopped ? nil : self.stdin, self.process)
+            }
+            guard let handle else { return }
+            do {
+                try handle.write(contentsOf: payload)
+            } catch {
+                if let process, process.isRunning { process.terminate() }
+            }
+        }
     }
 
     public func stop() {
@@ -93,7 +108,8 @@ public final class ProcessTransport: AppServerTransport, @unchecked Sendable {
             stopped = true
             return (self.process, self.stdin)
         }
-        try? stdin?.close()
+        // Terminate first so a write blocked on a full pipe fails and frees the queue; close after it.
         if let process, process.isRunning { process.terminate() }
+        writeQueue.async { try? stdin?.close() }
     }
 }

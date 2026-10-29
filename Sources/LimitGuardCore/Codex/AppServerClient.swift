@@ -5,6 +5,8 @@ public enum AppServerError: Error, Equatable, Sendable {
     case transportExited(Int32)
     case rpcError(code: Int, message: String)
     case notStarted
+    /// The params contain values that cannot be encoded as JSON.
+    case invalidParams
 }
 
 /// JSON-RPC client for `codex app-server`: lazily starts the transport, performs `initialize`/`initialized`
@@ -94,7 +96,6 @@ public actor AppServerClient {
             throw AppServerError.transportExited(-1)
         }
         transport = fresh
-        nextId = 1
         handshaken = false
         pump = Task { [weak self] in
             for await event in stream {
@@ -121,15 +122,21 @@ public actor AppServerClient {
             "clientInfo": ["name": clientName, "title": NSNull(), "version": clientVersion],
             "capabilities": NSNull(),
         ]
+        let started = transport
         do {
             _ = try await call("initialize", params: params, deadline: deadline)
-            guard let current = transport else { throw AppServerError.transportExited(lastExitStatus) }
-            try current.send(try Self.encode(["method": "initialized"]))
+            guard let current = transport, current === started else { throw AppServerError.transportExited(lastExitStatus) }
+            do {
+                try current.send(try Self.encode(["method": "initialized"]))
+            } catch {
+                throw AppServerError.transportExited(lastExitStatus)
+            }
             handshaken = true
             consecutiveFailures = 0
             notBefore = nil
         } catch {
-            handshake = nil
+            // A restart may have replaced the transport (and its handshake) while we were suspended.
+            if transport === started { handshake = nil }
             if let rpc = error as? AppServerError, rpc == .timeout {
                 // The server may still answer `initialize` later; a fresh transport is the only clean retry.
                 let current = transport
@@ -182,6 +189,7 @@ public actor AppServerClient {
         nextId += 1
         var message: [String: Any] = ["id": id, "method": method]
         if let params { message["params"] = params }
+        guard JSONSerialization.isValidJSONObject(message) else { throw AppServerError.invalidParams }
         let line = try Self.encode(message)
         return try await withCheckedThrowingContinuation { continuation in
             pending[id] = continuation

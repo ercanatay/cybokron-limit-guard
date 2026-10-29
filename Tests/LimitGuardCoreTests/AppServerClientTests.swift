@@ -157,4 +157,46 @@ struct AppServerClientTests {
             _ = try await client.request("a", timeout: .seconds(1))
         }
     }
+
+    @Test func lateReplyAfterTimeoutGoesNowhere() async throws {
+        let fake = FakeAppServer()
+        fake.script("slow", result: #"{"who":"slow"}"#, delay: .milliseconds(200))
+        fake.script("fast", result: #"{"who":"fast"}"#)
+        let (client, _) = makeClient([fake])
+        await #expect(throws: AppServerError.timeout) {
+            _ = try await client.request("slow", timeout: .milliseconds(50))
+        }
+        let fast = try await client.request("fast", timeout: .seconds(2))
+        #expect(json(fast)["who"] as? String == "fast")
+        try await Task.sleep(for: .milliseconds(300))
+        #expect(await client.isConnected)
+        let again = try await client.request("fast", timeout: .seconds(2))
+        #expect(json(again)["who"] as? String == "fast")
+    }
+
+    @Test func staleTimeoutAfterRestartDoesNotHitNewRequests() async throws {
+        let first = FakeAppServer()
+        first.scriptDrop("hang")
+        let second = FakeAppServer()
+        second.script("b", result: #"{"who":"b"}"#, delay: .milliseconds(400))
+        let (client, _) = makeClient([first, second])
+        let hung = Task { try await client.request("hang", timeout: .milliseconds(250)) }
+        try await Task.sleep(for: .milliseconds(80))
+        first.simulateExit(1)
+        await #expect(throws: AppServerError.transportExited(1)) { _ = try await hung.value }
+        let result = try await client.request("b", timeout: .seconds(3))
+        #expect(json(result)["who"] as? String == "b")
+        let ids = second.requests.map(\.id)
+        #expect(Set(ids).count == ids.count)
+    }
+
+    @Test func invalidParamsAreRejectedNotCrashed() async throws {
+        let fake = FakeAppServer()
+        fake.script("a")
+        let (client, _) = makeClient([fake])
+        await #expect(throws: AppServerError.invalidParams) {
+            _ = try await client.request("a", params: ["bad": UUID()], timeout: .seconds(2))
+        }
+        _ = try await client.request("a", timeout: .seconds(2))
+    }
 }
