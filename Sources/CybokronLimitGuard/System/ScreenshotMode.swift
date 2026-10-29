@@ -30,7 +30,7 @@ enum ScreenshotMode {
     static let isDark = UserDefaults.standard.string(forKey: "LGAppearance") == "dark"
     static let fixture = ScreenshotFixture(now: Date(), home: NSHomeDirectory())
     /// The popover's scrolling part in the screenshots (the app caps it at 520 points).
-    static let popoverContentHeight: CGFloat = 656
+    static let popoverContentHeight: CGFloat = 692
     /// What General shows as the Codex executable, instead of the one found on this Mac.
     static let codexPath = URL(fileURLWithPath: "/opt/homebrew/bin/codex")
 
