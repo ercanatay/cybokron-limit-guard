@@ -25,6 +25,16 @@ public struct CreditRow: Equatable, Sendable, Identifiable {
 }
 
 public enum CreditPresentation {
+    /// The backend's one known credit title, for which the app has a translation. Any other title is
+    /// shown as sent.
+    public static let knownFullResetTitle = "Full reset (Weekly + 5 hr)"
+    public static let knownFullResetTitleKey = "popover.resets.title.fullReset"
+
+    /// The localisation key for `title` when it is the exact known backend title, else nil.
+    public static func localizationKey(forTitle title: String?) -> String? {
+        title == knownFullResetTitle ? knownFullResetTitleKey : nil
+    }
+
     static let soonInterval: TimeInterval = 24 * 3600
 
     /// Credits expiring within 24 h first, each group by expiry (never-expiring last), otherwise in

@@ -298,4 +298,11 @@ struct PresentationTests {
         #expect(PopoverLayout.maxContentHeight(visibleScreenHeight: 900) == 740)
         #expect(PopoverLayout.maxContentHeight(visibleScreenHeight: 400) == 300)
     }
+
+    @Test func onlyTheExactKnownCreditTitleIsMapped() {
+        #expect(CreditPresentation.localizationKey(forTitle: "Full reset (Weekly + 5 hr)") == "popover.resets.title.fullReset")
+        #expect(CreditPresentation.localizationKey(forTitle: "full reset (weekly + 5 hr)") == nil)
+        #expect(CreditPresentation.localizationKey(forTitle: "Bonus reset") == nil)
+        #expect(CreditPresentation.localizationKey(forTitle: nil) == nil)
+    }
 }
