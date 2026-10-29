@@ -16,6 +16,20 @@ public enum ContinueDecision: Equatable {
     case stopRunaway
 }
 
+/// How a usage-limit stop was classified when first seen. Kept because the live windows move on once
+/// the limit resets, which would change the stop's age rule and wait target.
+public struct StopInfo: Codable, Equatable, Sendable {
+    public var turnId: String
+    public var isWeekly: Bool
+    public var resetsAt: Date?
+
+    public init(turnId: String, isWeekly: Bool, resetsAt: Date?) {
+        self.turnId = turnId
+        self.isWeekly = isWeekly
+        self.resetsAt = resetsAt
+    }
+}
+
 public struct ContinueInputs {
     public var session: SessionState
     public var snapshot: AccountSnapshot
@@ -26,10 +40,13 @@ public struct ContinueInputs {
     public var isGuarded: Bool
     public var paused: Bool
     public var now: Date
+    /// Recorded classification of the current stop; ignored when nil or for another turn.
+    public var stopInfo: StopInfo?
 
     public init(
         session: SessionState, snapshot: AccountSnapshot, snapshotAge: TimeInterval, health: ProtocolHealth,
-        settings: Settings, loop: LoopRecord, isGuarded: Bool, paused: Bool, now: Date
+        settings: Settings, loop: LoopRecord, isGuarded: Bool, paused: Bool, now: Date,
+        stopInfo: StopInfo? = nil
     ) {
         self.session = session
         self.snapshot = snapshot
@@ -40,6 +57,7 @@ public struct ContinueInputs {
         self.isGuarded = isGuarded
         self.paused = paused
         self.now = now
+        self.stopInfo = stopInfo
     }
 }
 
@@ -59,17 +77,19 @@ public enum ContinuePolicy {
         if !inputs.isGuarded { return .notEligible(.notGuarded) }
 
         let stopAt: Date
+        let turnId: String
         switch inputs.session.lastStop {
         case .none: return .notEligible(.finished)
         case .otherError: return .notEligible(.otherError)
-        case let .usageLimit(at, _): stopAt = at
+        case let .usageLimit(at, id): stopAt = at; turnId = id
         }
         if inputs.session.userActivityAfterStop { return .notEligible(.userActed) }
 
-        let weekly = stopIsWeekly(snapshot: inputs.snapshot)
-        let weeklyReset = inputs.snapshot.weekly?.resetsAt
-        if weekly, let weeklyReset {
-            if inputs.now > weeklyReset.addingTimeInterval(weeklyGrace) { return .notEligible(.tooOld) }
+        var info = classifyStop(turnId: turnId, snapshot: inputs.snapshot)
+        if let recorded = inputs.stopInfo, recorded.turnId == turnId { info = recorded }
+
+        if info.isWeekly, let resetsAt = info.resetsAt {
+            if inputs.now > resetsAt.addingTimeInterval(weeklyGrace) { return .notEligible(.tooOld) }
         } else if inputs.now.timeIntervalSince(stopAt) > maxStopAge {
             return .notEligible(.tooOld)
         }
@@ -77,18 +97,22 @@ public enum ContinuePolicy {
         if inputs.loop.consecutive >= settings.maxContinues { return .stopLoopGuard }
         if inputs.loop.shortTurnsInARow >= runawayTurns { return .stopRunaway }
 
+        // resetsAt only schedules the first check; an open, fresh gate overrides it (spec 7.2).
+        let gateOpen = inputs.snapshot.ordinaryUsageAllowed == true && inputs.snapshotAge <= maxSnapshotAge
+        var waits: [Date] = []
         if let last = inputs.loop.lastSentAt {
-            let earliest = last.addingTimeInterval(TimeInterval(settings.minGapSeconds))
-            if inputs.now < earliest { return .waitUntil(earliest) }
+            waits.append(last.addingTimeInterval(TimeInterval(settings.minGapSeconds)))
         }
-
-        guard let resetsAt = weekly ? weeklyReset : inputs.snapshot.fiveHour?.resetsAt else { return .waitForGate }
-        if inputs.now < resetsAt { return .waitUntil(resetsAt) }
-
-        guard inputs.snapshot.ordinaryUsageAllowed == true, inputs.snapshotAge <= maxSnapshotAge else {
-            return .waitForGate
-        }
+        if !gateOpen, let resetsAt = info.resetsAt { waits.append(resetsAt) }
+        if let until = waits.max(), until > inputs.now { return .waitUntil(until) }
+        if !gateOpen { return .waitForGate }
         return settings.countdownSeconds > 0 ? .countdown(seconds: settings.countdownSeconds) : .send
+    }
+
+    /// Records which window stopped the session and when it resets; call when a stop is first seen.
+    public static func classifyStop(turnId: String, snapshot: AccountSnapshot) -> StopInfo {
+        let weekly = stopIsWeekly(snapshot: snapshot)
+        return StopInfo(turnId: turnId, isWeekly: weekly, resetsAt: weekly ? snapshot.weekly?.resetsAt : snapshot.fiveHour?.resetsAt)
     }
 
     /// The weekly window is the one that stopped the session: it is full, or the server names it while

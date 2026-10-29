@@ -77,6 +77,8 @@ public struct AppState: Codable, Equatable {
     public var pendingDeliveries: [PendingDelivery] = []
     public var guardedTabs: [GuardedTab] = []
     public var expiryNotified: Set<String> = []
+    /// Keyed by thread id: how the current usage-limit stop was classified when first seen.
+    public var stops: [String: StopInfo] = [:]
 
     public init() {}
 
@@ -89,5 +91,6 @@ public struct AppState: Codable, Equatable {
         pendingDeliveries = try c.decodeIfPresent([PendingDelivery].self, forKey: .pendingDeliveries) ?? []
         guardedTabs = try c.decodeIfPresent([GuardedTab].self, forKey: .guardedTabs) ?? []
         expiryNotified = try c.decodeIfPresent(Set<String>.self, forKey: .expiryNotified) ?? []
+        stops = try c.decodeIfPresent([String: StopInfo].self, forKey: .stops) ?? [:]
     }
 }

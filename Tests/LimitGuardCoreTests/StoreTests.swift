@@ -73,6 +73,7 @@ struct StoreTests {
         state.scheduled = ScheduledContinue(threadId: "t1", text: "continue", fireAt: Date(timeIntervalSince1970: 1_700_000_200))
         state.pendingDeliveries = [PendingDelivery(threadId: "t1", clientMessageId: UUID(), text: "continue", sentAt: Date(timeIntervalSince1970: 1_700_000_300))]
         state.expiryNotified = ["credit-1"]
+        state.stops["t1"] = StopInfo(turnId: "u1", isWeekly: true, resetsAt: Date(timeIntervalSince1970: 1_700_200_000))
         try store.save(state)
         #expect(try store.load() == state)
     }

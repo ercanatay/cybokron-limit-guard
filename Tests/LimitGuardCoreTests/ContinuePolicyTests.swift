@@ -15,7 +15,7 @@ import Testing
     static func inputs(
         stop: StopKind? = nil, userActed: Bool = false, fiveHourResets: Date?? = nil, weekly: RateLimitWindow? = nil,
         reachedType: String? = nil, fiveHourUsed: Double = 100, allowed: Bool? = true, age: TimeInterval = 5, health: ProtocolHealth = .full,
-        settings: Settings = settings(), loop: LoopRecord = LoopRecord(), guarded: Bool = true, paused: Bool = false
+        settings: Settings = settings(), loop: LoopRecord = LoopRecord(), guarded: Bool = true, paused: Bool = false, info: StopInfo? = nil
     ) -> ContinueInputs {
         let now = Self.now
         let resets = fiveHourResets ?? now.addingTimeInterval(-600)
@@ -31,7 +31,7 @@ import Testing
             seenClientMessageIds: [])
         return ContinueInputs(
             session: session, snapshot: snapshot, snapshotAge: age, health: health, settings: settings, loop: loop,
-            isGuarded: guarded, paused: paused, now: now)
+            isGuarded: guarded, paused: paused, now: now, stopInfo: info)
     }
 
     func decide(_ i: ContinueInputs) -> ContinueDecision { ContinuePolicy.decide(i) }
@@ -54,13 +54,43 @@ import Testing
         #expect(decide(Self.inputs(stop: old)) == .notEligible(.tooOld))
     }
 
+    static let threeDaysOld = StopKind.usageLimit(at: now.addingTimeInterval(-3 * 86400), turnId: "u")
+    static let postResetWeekly = RateLimitWindow(usedPercent: 0, windowMinutes: 10080, resetsAt: now.addingTimeInterval(7 * 86400))
+
     @Test func weeklyStopUsesResetsAtPlusOneHour() {
-        let old = StopKind.usageLimit(at: Self.now.addingTimeInterval(-3 * 86400), turnId: "u")
-        func weekly(_ ago: TimeInterval) -> RateLimitWindow {
-            RateLimitWindow(usedPercent: 100, windowMinutes: 10080, resetsAt: Self.now.addingTimeInterval(-ago))
+        func info(_ ago: TimeInterval) -> StopInfo {
+            StopInfo(turnId: "u", isWeekly: true, resetsAt: Self.now.addingTimeInterval(-ago))
         }
-        #expect(decide(Self.inputs(stop: old, weekly: weekly(30 * 60))) == .countdown(seconds: 10))
-        #expect(decide(Self.inputs(stop: old, weekly: weekly(61 * 60))) == .notEligible(.tooOld))
+        #expect(decide(Self.inputs(stop: Self.threeDaysOld, info: info(30 * 60))) == .countdown(seconds: 10))
+        #expect(decide(Self.inputs(stop: Self.threeDaysOld, info: info(61 * 60))) == .notEligible(.tooOld))
+    }
+
+    @Test func weeklyStopSurvivesWindowReset() {
+        let fresh = StopInfo(turnId: "u", isWeekly: true, resetsAt: Self.now.addingTimeInterval(-30 * 60))
+        #expect(decide(Self.inputs(stop: Self.threeDaysOld, weekly: Self.postResetWeekly, info: fresh)) == .countdown(seconds: 10))
+        let stale = StopInfo(turnId: "u", isWeekly: true, resetsAt: Self.now.addingTimeInterval(-61 * 60))
+        #expect(decide(Self.inputs(stop: Self.threeDaysOld, weekly: Self.postResetWeekly, info: stale)) == .notEligible(.tooOld))
+    }
+
+    @Test func staleStopInfoForOtherTurnIsIgnored() {
+        let other = StopInfo(turnId: "older", isWeekly: true, resetsAt: Self.now.addingTimeInterval(-5 * 3600))
+        #expect(decide(Self.inputs(info: other)) == .countdown(seconds: 10))
+    }
+
+    @Test func openGateIgnoresMovedResetsAt() {
+        let info = StopInfo(turnId: "u", isWeekly: false, resetsAt: Self.now.addingTimeInterval(-600))
+        let live = Self.now.addingTimeInterval(5 * 3600)
+        #expect(decide(Self.inputs(fiveHourResets: .some(live), info: info)) == .countdown(seconds: 10))
+    }
+
+    @Test func combinedWaitUsesLaterTime() {
+        let resets = Self.now.addingTimeInterval(1800)
+        let info = StopInfo(turnId: "u", isWeekly: false, resetsAt: resets)
+        let gapEnd = Self.now.addingTimeInterval(30)
+        let loop = LoopRecord(consecutive: 1, lastSentAt: gapEnd.addingTimeInterval(-120))
+        #expect(decide(Self.inputs(allowed: false, loop: loop, info: info)) == .waitUntil(resets))
+        let later = LoopRecord(consecutive: 1, lastSentAt: Self.now.addingTimeInterval(1800))
+        #expect(decide(Self.inputs(allowed: false, loop: later, info: info)) == .waitUntil(Self.now.addingTimeInterval(1800 + 120)))
     }
 
     @Test func weeklyStopWithoutResetsAtUses24hRule() {
@@ -80,17 +110,17 @@ import Testing
 
     @Test func beforeResetsAtWaits() {
         let resets = Self.now.addingTimeInterval(1800)
-        #expect(decide(Self.inputs(fiveHourResets: .some(resets))) == .waitUntil(resets))
+        #expect(decide(Self.inputs(fiveHourResets: .some(resets), allowed: false)) == .waitUntil(resets))
     }
 
     @Test func weeklyStopWaitsForWeeklyResetsAt() {
         let resets = Self.now.addingTimeInterval(7200)
         let weekly = RateLimitWindow(usedPercent: 100, windowMinutes: 10080, resetsAt: resets)
-        #expect(decide(Self.inputs(weekly: weekly)) == .waitUntil(resets))
+        #expect(decide(Self.inputs(weekly: weekly, allowed: false)) == .waitUntil(resets))
     }
 
     @Test func missingResetsAtWaitsForGate() {
-        #expect(decide(Self.inputs(fiveHourResets: .some(nil))) == .waitForGate)
+        #expect(decide(Self.inputs(fiveHourResets: .some(nil), allowed: false)) == .waitForGate)
     }
 
     @Test func gateFalseWaitsForGate() { #expect(decide(Self.inputs(allowed: false)) == .waitForGate) }
