@@ -89,6 +89,9 @@ public struct AppState: Codable, Equatable {
     public var expiryNotified: Set<String> = []
     /// Keyed by thread id: how the current usage-limit stop was classified when first seen.
     public var stops: [String: StopInfo] = [:]
+    /// Keyed by thread id: the turn id of a stop that is never continued automatically again
+    /// (continue sent, cancelled, skipped or stopped by the loop guard). Cleared when the stop is superseded.
+    public var settledStops: [String: String] = [:]
 
     public init() {}
 
@@ -101,5 +104,6 @@ public struct AppState: Codable, Equatable {
         guardedTabs = try c.decodeIfPresent([GuardedTab].self, forKey: .guardedTabs) ?? []
         expiryNotified = try c.decodeIfPresent(Set<String>.self, forKey: .expiryNotified) ?? []
         stops = try c.decodeIfPresent([String: StopInfo].self, forKey: .stops) ?? [:]
+        settledStops = try c.decodeIfPresent([String: String].self, forKey: .settledStops) ?? [:]
     }
 }

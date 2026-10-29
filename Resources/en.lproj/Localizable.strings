@@ -333,3 +333,26 @@
 "chart.axis.time" = "Time";
 "chart.axis.percent" = "Percent";
 "chart.axis.window" = "Window";
+
+/* Engine (LimitGuardCore) */
+"engine.readOnly.state" = "The app's state file can't be used (it may be from a newer version), so automatic actions are paused.";
+"engine.readOnly.autoSpend" = "A reset credit spend has an unknown result, so automatic spending is paused until the app restarts.";
+"engine.skip.sessionChanged" = "The session changed during the countdown.";
+"engine.skip.tabChanged" = "The Terminal tab changed, so nothing was sent.";
+"engine.skip.daemonUnreachable" = "Codex daemon not reachable";
+"engine.skip.ambiguous" = "Several Codex tabs could be this session; continue it by hand.";
+"engine.skip.notWaiting" = "This session isn't waiting on the usage limit.";
+"engine.skip.confirming" = "The last continue is still being confirmed.";
+"engine.skip.stateNotSaved" = "The app's state couldn't be saved, so nothing was sent.";
+"engine.skip.finished" = "The session's last turn finished.";
+"engine.skip.otherError" = "The session stopped with another error.";
+"engine.skip.userActed" = "You typed in the session after the stop.";
+"engine.skip.tooOld" = "The stop is too old to continue.";
+"engine.skip.notGuarded" = "The tab isn't guarded.";
+"engine.skip.paused" = "Limit Guard is paused.";
+"engine.skip.readOnly" = "Codex changed how it reports usage, so automatic actions are paused.";
+"engine.skip.notice" = "The legal notice hasn't been accepted yet.";
+"engine.skip.autoContinueOff" = "Auto-continue is off.";
+"engine.skip.limitNotBack" = "Codex still reports the limit as reached.";
+"engine.skip.loopGuard" = "Stopped after the maximum number of tries.";
+"engine.skip.runaway" = "Stopped: the last continued turns each ended within a minute.";

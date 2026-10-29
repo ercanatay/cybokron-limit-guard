@@ -1,7 +1,7 @@
 import Foundation
 
 /// How a thread's last turn ended.
-public enum StopKind: Equatable {
+public enum StopKind: Equatable, Sendable {
     /// Finished normally, or no turn has ended yet.
     case none
     /// `codex_error_info == "usage_limit_exceeded"`: the only stop auto-continue acts on.
@@ -11,7 +11,7 @@ public enum StopKind: Equatable {
 }
 
 /// What the app knows about one Codex thread, built from its index row and rollout tail.
-public struct SessionState: Equatable {
+public struct SessionState: Equatable, Sendable {
     static let usageLimitErrorInfo = "usage_limit_exceeded"
     /// Durations kept for the runaway brake (spec §7.4 needs the last 3).
     static let keptTurnDurations = 5
