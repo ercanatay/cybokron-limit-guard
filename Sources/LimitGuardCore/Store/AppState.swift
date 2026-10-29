@@ -1,6 +1,6 @@
 import Foundation
 
-public struct TabRef: Codable, Hashable {
+public struct TabRef: Codable, Hashable, Sendable {
     public var windowId: Int
     public var tabIndex: Int
     public var tty: String
