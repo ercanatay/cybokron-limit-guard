@@ -370,6 +370,15 @@ public struct UpdateInstaller: Sendable {
         return clauses.joined(separator: " and ")
     }
 
+    /// The team later versions must be signed by. Release builds record their team in Info.plist
+    /// (`pinned`), so the check never depends on reading the running app's signature; any other
+    /// copy falls back to the team of its own signature (`running`), `nil` when it's signed ad hoc.
+    /// A malformed pinned value is still returned, and refused when it's checked.
+    public static func expectedTeamIdentifier(pinned: String?, running: String?) -> String? {
+        if let pinned, !pinned.isEmpty { return pinned }
+        return running
+    }
+
     /// Apple team identifiers: ten uppercase letters and digits. Anything else is refused before
     /// it's put into a code requirement.
     static func isWellFormedTeamIdentifier(_ value: String) -> Bool {
@@ -419,8 +428,7 @@ public struct UpdateInstaller: Sendable {
     /// `codesign --verify --strict -R=<developerIDRequirement>`. When the requirement isn't met
     /// (exit status 3), the signature's description says which error fits: an ad hoc signature
     /// or another team is `wrongSigner`. When codesign can't evaluate the requirement at all (any
-    /// other failure), the described signature decides instead: it must be anchored at Apple and
-    /// name the expected team.
+    /// other failure), the signature is refused as `invalidSignature`.
     private func verifyDeveloperIDSignature(of url: URL, identifier: String?, expectedTeamIdentifier: String) async throws {
         guard Self.isWellFormedTeamIdentifier(expectedTeamIdentifier) else {
             throw UpdateInstallError.invalidSignature("unexpected team identifier “\(expectedTeamIdentifier)”")
@@ -436,14 +444,8 @@ public struct UpdateInstaller: Sendable {
             }
             throw UpdateInstallError.wrongSigner(found: signature?.teamIdentifier ?? "none", expected: expectedTeamIdentifier)
         }
-        // Fallback: the requirement couldn't be evaluated; the designated requirement must be
-        // anchored at Apple and the signature name the expected team.
-        guard let signature else {
-            throw UpdateInstallError.invalidSignature(Self.describe(check))
-        }
-        guard signature.isAppleAnchored, signature.teamIdentifier == expectedTeamIdentifier else {
-            throw UpdateInstallError.wrongSigner(found: signature.teamIdentifier ?? "none", expected: expectedTeamIdentifier)
-        }
+        // The requirement couldn't be evaluated: nothing vouches for the signature, so it's refused.
+        throw UpdateInstallError.invalidSignature(Self.describe(check))
     }
 
     private static func describe(_ result: ToolResult) -> String {

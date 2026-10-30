@@ -6,6 +6,8 @@
 #   CODESIGN_IDENTITY=<SHA-1> scripts/build-app.sh release
 #                                             → signed with that Developer ID Application identity
 #                                               (hardened runtime, secure timestamp) instead of ad hoc
+#   UPDATE_TEAM_IDENTIFIER=<team>             → with CODESIGN_IDENTITY: recorded in Info.plist as the
+#                                               team the updater holds later versions to
 #
 # The Xcode project (project.yml / CybokronLimitGuard.xcodeproj) is the primary build; this script
 # mirrors its settings. Keep the version numbers below in sync with project.yml.
@@ -52,6 +54,15 @@ plutil -replace CFBundleName -string "$APP_NAME" "$PLIST"
 plutil -replace CFBundleShortVersionString -string "$MARKETING_VERSION" "$PLIST"
 plutil -replace CFBundleVersion -string "$BUILD_NUMBER" "$PLIST"
 plutil -replace LSMinimumSystemVersion -string "$MINIMUM_MACOS" "$PLIST"
+# Developer ID builds name their team, so the updater holds later versions to it without reading
+# the running app's signature.
+if [[ -n "${CODESIGN_IDENTITY:-}" && -n "${UPDATE_TEAM_IDENTIFIER:-}" ]]; then
+    if [[ ! "$UPDATE_TEAM_IDENTIFIER" =~ ^[A-Z0-9]{10}$ ]]; then
+        echo "error: UPDATE_TEAM_IDENTIFIER is not a team identifier" >&2
+        exit 1
+    fi
+    plutil -replace CybokronUpdateTeamIdentifier -string "$UPDATE_TEAM_IDENTIFIER" "$PLIST"
+fi
 if grep -q '\$(' "$PLIST"; then
     echo "error: unresolved build setting left in Info.plist" >&2
     exit 1

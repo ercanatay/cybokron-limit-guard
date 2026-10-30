@@ -184,8 +184,10 @@ jobs:
       - name: Build universal app
         # With NOTARIZE_ENABLED=true, CODESIGN_IDENTITY makes build-app.sh sign the app with the
         # hardened runtime and a secure timestamp; otherwise it is empty and the app is signed ad hoc.
+        # UPDATE_TEAM_IDENTIFIER names the team in Info.plist for the updater (signed builds only).
         env:
           UNIVERSAL: "1"
+          UPDATE_TEAM_IDENTIFIER: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           scripts/build-app.sh release
           echo "APP=build/release/Cybokron Limit Guard.app" >> "$GITHUB_ENV"
@@ -275,6 +277,10 @@ jobs:
           echo "$SIGNATURE"
           grep -q "^TeamIdentifier=$EXPECTED_TEAM_ID$" <<< "$SIGNATURE" \
             || { echo "::error::App is not signed by team $EXPECTED_TEAM_ID"; exit 1; }
+          # The team the updater holds later versions to must be the one that signed this app.
+          PINNED_TEAM="$(plutil -extract CybokronUpdateTeamIdentifier raw "$MOUNTED_APP/Contents/Info.plist" 2>/dev/null || true)"
+          [[ "$PINNED_TEAM" == "$EXPECTED_TEAM_ID" ]] \
+            || { echo "::error::Info.plist CybokronUpdateTeamIdentifier does not match the signing team"; exit 1; }
           xcrun stapler validate "$MOUNTED_APP"
           spctl --assess --type execute --verbose=2 "$MOUNTED_APP"
           syspolicy_check distribution "$MOUNTED_APP"
