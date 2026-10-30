@@ -13,10 +13,10 @@ options:
 
 settings:
   base:
-    MARKETING_VERSION: "0.1.0"
+    MARKETING_VERSION: "0.1.1"
     # CFBundleVersion: major * 10000 + minor * 100 + patch of MARKETING_VERSION (0.1.0 → 100), so
     # LaunchServices prefers the newest copy; scripts/check-version.sh checks it.
-    CURRENT_PROJECT_VERSION: "100"
+    CURRENT_PROJECT_VERSION: "101"
     MACOSX_DEPLOYMENT_TARGET: "14.0"
     SWIFT_VERSION: "5.0"
     # Open-source build: sign ad hoc so anyone can build and run without a developer account.

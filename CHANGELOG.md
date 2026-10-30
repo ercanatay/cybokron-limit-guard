@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-10-30
+
+### Security
+
+- Updates are held to the signing team recorded in the app at release time, so the team check no
+  longer depends on reading the running app's signature.
+- A downloaded update whose Developer ID requirement can't be evaluated is now refused instead of
+  being accepted on the strength of its signature description.
+
 ## [0.1.0] - 2026-10-29
 
 First release (Phase 1: Codex CLI).
@@ -30,4 +39,5 @@ First release (Phase 1: Codex CLI).
 - Project documentation: README, SECURITY, CONTRIBUTING, AGENTS.
 - Project scaffold: SwiftPM and XcodeGen builds, string tables and CI.
 
+[0.1.1]: https://github.com/ercanatay/cybokron-limit-guard/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/ercanatay/cybokron-limit-guard/releases/tag/v0.1.0

@@ -21,9 +21,9 @@ esac
 
 APP_NAME="Cybokron Limit Guard"
 BUNDLE_ID="com.cybokron.limitguard"
-MARKETING_VERSION="0.1.0"
+MARKETING_VERSION="0.1.1"
 # CFBundleVersion: major * 10000 + minor * 100 + patch of MARKETING_VERSION (0.1.0 → 100; scripts/check-version.sh).
-BUILD_NUMBER="100"
+BUILD_NUMBER="101"
 MINIMUM_MACOS="14.0"
 PRODUCT="CybokronLimitGuard"
 
