@@ -343,7 +343,12 @@ final class AutoUpdater: ObservableObject {
                 self?.status = .installing(release)
                 // A Developer ID signed copy only takes a disk image and an app signed with a
                 // Developer ID of its own team; the disk image is checked before it's mounted.
-                let runningTeam = await installer.signature(ofAppAt: appURL)?.signingTeam
+                // Release builds name that team in Info.plist, so it never depends on reading the
+                // running app's signature.
+                let runningTeam = UpdateInstaller.expectedTeamIdentifier(
+                    pinned: AppInfo.updateTeamIdentifier,
+                    running: await installer.signature(ofAppAt: appURL)?.signingTeam
+                )
                 let bundleIdentifier = Bundle.main.bundleIdentifier ?? ""
                 let staged = try await installer.stageApp(
                     fromDiskImage: diskImage,

@@ -162,18 +162,27 @@ struct UpdateSignatureTests {
         #expect(!UpdateInstaller.isWellFormedBundleIdentifier(""))
     }
 
-    @Test func whenTheRequirementCantBeEvaluatedTheDescribedSignatureDecides() async throws {
+    @Test func whenTheRequirementCantBeEvaluatedTheSignatureIsRefused() async {
         let unevaluated = ToolResult(status: 1, output: "error: invalid or corrupted code requirement(s)")
         let developerID = FakeCodesign(requirement: Self.developerIDRequirement(team: "AAAAA11111"), details: Self.developerIDDetails(team: "AAAAA11111"), requirementResult: unevaluated)
         let adHoc = FakeCodesign(requirement: Self.adHocRequirement, details: Self.adHocDetails, requirementResult: unevaluated)
 
-        try await verify(developerID, expectedTeam: "AAAAA11111")
-        await #expect(throws: UpdateInstallError.wrongSigner(found: "AAAAA11111", expected: "BBBBB22222")) {
-            try await verify(developerID, expectedTeam: "BBBBB22222")
+        // Even a description that names the expected team doesn't stand in for the requirement.
+        await #expect(throws: UpdateInstallError.invalidSignature("error: invalid or corrupted code requirement(s)")) {
+            try await verify(developerID, expectedTeam: "AAAAA11111")
         }
-        await #expect(throws: UpdateInstallError.wrongSigner(found: "none", expected: "AAAAA11111")) {
+        await #expect(throws: UpdateInstallError.invalidSignature("error: invalid or corrupted code requirement(s)")) {
             try await verify(adHoc, expectedTeam: "AAAAA11111")
         }
+    }
+
+    @Test func aPinnedTeamWinsOverTheRunningSignature() {
+        #expect(UpdateInstaller.expectedTeamIdentifier(pinned: "AAAAA11111", running: "BBBBB22222") == "AAAAA11111")
+        // The running app's signature can't be read: the pinned team still holds the update to it.
+        #expect(UpdateInstaller.expectedTeamIdentifier(pinned: "AAAAA11111", running: nil) == "AAAAA11111")
+        #expect(UpdateInstaller.expectedTeamIdentifier(pinned: nil, running: "BBBBB22222") == "BBBBB22222")
+        #expect(UpdateInstaller.expectedTeamIdentifier(pinned: "", running: "BBBBB22222") == "BBBBB22222")
+        #expect(UpdateInstaller.expectedTeamIdentifier(pinned: nil, running: nil) == nil)
     }
 
     @Test func aBrokenSignatureIsRefused() async {

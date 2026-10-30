@@ -11,6 +11,12 @@ enum AppInfo {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—"
     }
 
+    /// The team release builds are signed by, written into Info.plist at signing time; `nil` in
+    /// development builds.
+    static var updateTeamIdentifier: String? {
+        Bundle.main.object(forInfoDictionaryKey: "CybokronUpdateTeamIdentifier") as? String
+    }
+
     static var copyright: String? {
         Bundle.main.object(forInfoDictionaryKey: "NSHumanReadableCopyright") as? String
     }
